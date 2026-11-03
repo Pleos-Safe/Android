@@ -2,11 +2,11 @@ plugins {
     id("pleos.android.application")
     id("pleos.android.application.compose")
     id("pleos.android.navigation3")
+    id("pleos.android.hilt")
 }
 
 android {
     namespace = "io.issac.pleosandroid"
-    useLibrary("android.car")
 
     defaultConfig {
         applicationId = "io.issac.pleosandroid"
@@ -25,15 +25,19 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:nav"))
+    implementation(project(":feature:main"))
+    implementation(project(":feature:badges"))
+    implementation(project(":core:vehicle"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.pleos.vehicle)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.rules)
 }

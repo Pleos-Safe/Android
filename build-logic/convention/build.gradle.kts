@@ -24,6 +24,10 @@ dependencies {
 
 gradlePlugin {
     plugins {
+        register("androidHilt") {
+            id = "pleos.android.hilt"
+            implementationClass = "io.issac.pleosandroid.buildlogic.AndroidHiltConventionPlugin"
+        }
         register("androidNavigation3") {
             id = "pleos.android.navigation3"
             implementationClass = "io.issac.pleosandroid.buildlogic.AndroidNavigation3ConventionPlugin"

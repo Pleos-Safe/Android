@@ -1,0 +1,50 @@
+package io.issac.pleosandroid.navigation
+
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.GrantPermissionRule
+import io.issac.pleosandroid.MainActivity
+import io.issac.pleosandroid.core.vehicle.permission.VehiclePermissions
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/** Run with the Pleos emulator parked, without changing any vehicle properties. */
+@RunWith(AndroidJUnit4::class)
+class MainActivityFlowTest {
+    @get:Rule(order = 0)
+    val permission: GrantPermissionRule = GrantPermissionRule.grant(VehiclePermissions.Speed)
+
+    @get:Rule(order = 1)
+    val compose = createAndroidComposeRule<MainActivity>()
+
+    @Test
+    fun hiltFactoriesObserveVehicleFlowAndRestoreJourneyAcrossBadgeAndRecreation() {
+        waitFor("주행 전")
+        compose.waitUntil(timeoutMillis = 15_000) {
+            runCatching { compose.onNodeWithText("여정 시작").assertIsEnabled() }.isSuccess
+        }
+        compose.onNodeWithText("여정 시작").performClick()
+        waitFor("주행 중 · 멈춤")
+        compose.onNodeWithText("배지 보기").performClick()
+        waitFor("배지")
+        compose.onNodeWithText("메인으로 돌아가기").performClick()
+        waitFor("주행 중 · 멈춤")
+        compose.onNodeWithText("여정 종료").performClick()
+        waitFor("주행 종료")
+
+        compose.activityRule.scenario.recreate()
+
+        waitFor("주행 종료")
+    }
+
+    private fun waitFor(text: String) {
+        compose.waitUntil(timeoutMillis = 15_000) {
+            compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+}

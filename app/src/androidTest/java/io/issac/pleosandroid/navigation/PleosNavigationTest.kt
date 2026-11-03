@@ -16,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.issac.pleosandroid.core.navigation.AppRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
+import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavEntryResult
 import io.issac.pleosandroid.feature.nav.PleosNavHost
@@ -68,13 +69,14 @@ class PleosNavigationTest {
     }
 
     @Test
-    fun setupEntryReceivesUpdatedVehicleScreenContent() {
+    fun mainEntryReceivesUpdatedFactoryContent() {
         val label = mutableStateOf("Initial vehicle data")
         compose.setContent {
             val currentLabel = label.value
-            PleosAppNavigation(contentPadding = PaddingValues()) {
-                Text(currentLabel)
+            val factory = NavEntryFactory { route ->
+                if (route == MainRoute) NavEntryResult { Text(currentLabel) } else null
             }
+            PleosAppNavigation(factories = setOf(factory), contentPadding = PaddingValues())
         }
         compose.onNodeWithText("Initial vehicle data").assertExists()
 
