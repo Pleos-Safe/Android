@@ -24,6 +24,10 @@ dependencies {
 
 gradlePlugin {
     plugins {
+        register("androidNavigation3") {
+            id = "pleos.android.navigation3"
+            implementationClass = "io.issac.pleosandroid.buildlogic.AndroidNavigation3ConventionPlugin"
+        }
         register("androidApplication") {
             id = "pleos.android.application"
             implementationClass = "io.issac.pleosandroid.buildlogic.AndroidApplicationConventionPlugin"

@@ -29,3 +29,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "PleosAndroid"
 include(":app")
+include(":core:navigation")
+include(":feature:nav")

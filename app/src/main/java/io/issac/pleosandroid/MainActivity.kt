@@ -28,6 +28,7 @@ import io.issac.pleosandroid.car.CarUxMonitor
 import io.issac.pleosandroid.car.CarUxPolicy
 import io.issac.pleosandroid.car.VehicleDoorReader
 import io.issac.pleosandroid.car.VehicleDoorState
+import io.issac.pleosandroid.navigation.PleosAppNavigation
 import io.issac.pleosandroid.ui.theme.PleosAndroidTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,7 +43,9 @@ class MainActivity : ComponentActivity() {
             val door by doorReader.state.collectAsStateWithLifecycle()
             PleosAndroidTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SetupScreen(policy, door, doorReader::refresh, Modifier.padding(innerPadding))
+                    PleosAppNavigation(contentPadding = innerPadding) { contentPadding ->
+                        SetupScreen(policy, door, doorReader::refresh, Modifier.padding(contentPadding))
+                    }
                 }
             }
         }

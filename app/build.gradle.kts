@@ -1,6 +1,7 @@
 plugins {
     id("pleos.android.application")
     id("pleos.android.application.compose")
+    id("pleos.android.navigation3")
 }
 
 android {
@@ -24,6 +25,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:navigation"))
+    implementation(project(":feature:nav"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.core.ktx)
