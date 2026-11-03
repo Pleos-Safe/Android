@@ -1,4 +1,4 @@
-package io.issac.pleosandroid.core.vehicle.policy
+package io.issac.pleosandroid.core.domain.policy
 
 /** A platform snapshot. Unknown or disconnected states must never unlock restricted UI. */
 data class CarUxPolicy(

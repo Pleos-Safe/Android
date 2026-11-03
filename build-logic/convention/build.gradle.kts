@@ -20,10 +20,15 @@ kotlin {
 dependencies {
     // The main build supplies the full AGP implementation at runtime.
     compileOnly(libs.android.gradle.plugin.api)
+    compileOnly(libs.kotlin.gradle.plugin.api)
 }
 
 gradlePlugin {
     plugins {
+        register("kotlinJvm") {
+            id = "pleos.kotlin.jvm"
+            implementationClass = "io.issac.pleosandroid.buildlogic.KotlinJvmConventionPlugin"
+        }
         register("androidHilt") {
             id = "pleos.android.hilt"
             implementationClass = "io.issac.pleosandroid.buildlogic.AndroidHiltConventionPlugin"

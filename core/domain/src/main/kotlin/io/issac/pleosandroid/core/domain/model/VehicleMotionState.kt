@@ -1,4 +1,4 @@
-package io.issac.pleosandroid.core.vehicle.model
+package io.issac.pleosandroid.core.domain.model
 
 data class VehicleMotionState(
     val motion: VehicleMotion = VehicleMotion.Unknown,

@@ -11,8 +11,8 @@ import io.issac.pleosandroid.core.vehicle.datasource.connection.recoverVehicleSe
 import io.issac.pleosandroid.core.vehicle.datasource.connection.releaseCarResource
 import io.issac.pleosandroid.core.vehicle.di.MainDispatcher
 import io.issac.pleosandroid.core.vehicle.model.CarUxState
-import io.issac.pleosandroid.core.vehicle.model.UxAvailability
-import io.issac.pleosandroid.core.vehicle.policy.CarUxPolicy
+import io.issac.pleosandroid.core.domain.model.UxAvailability
+import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi

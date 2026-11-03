@@ -1,6 +1,6 @@
-package io.issac.pleosandroid.core.vehicle.model
+package io.issac.pleosandroid.core.domain.model
 
-import io.issac.pleosandroid.core.vehicle.policy.CarUxPolicy
+import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
 
 data class VehicleState(
     val motion: VehicleMotionState = VehicleMotionState(),

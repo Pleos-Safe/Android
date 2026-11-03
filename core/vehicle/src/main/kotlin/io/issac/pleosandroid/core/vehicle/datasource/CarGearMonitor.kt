@@ -8,6 +8,9 @@ import android.car.hardware.property.CarPropertyManager
 import android.content.Context
 import android.content.pm.PackageManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.issac.pleosandroid.core.vehicle.datasource.compat.hasAvailableStatus
+import io.issac.pleosandroid.core.vehicle.datasource.compat.subscribePropertyEventsCompat
+import io.issac.pleosandroid.core.vehicle.datasource.compat.unsubscribePropertyEventsCompat
 import io.issac.pleosandroid.core.vehicle.datasource.connection.CarConnection
 import io.issac.pleosandroid.core.vehicle.datasource.connection.CarConnectionState
 import io.issac.pleosandroid.core.vehicle.datasource.connection.VehicleServiceException
@@ -15,7 +18,7 @@ import io.issac.pleosandroid.core.vehicle.datasource.connection.carSdkCall
 import io.issac.pleosandroid.core.vehicle.datasource.connection.recoverVehicleService
 import io.issac.pleosandroid.core.vehicle.datasource.connection.releaseCarResource
 import io.issac.pleosandroid.core.vehicle.di.MainDispatcher
-import io.issac.pleosandroid.core.vehicle.model.VehicleGear
+import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.vehicle.permission.VehiclePermissions
 import io.issac.pleosandroid.core.vehicle.policy.classifyVehicleGear
 import javax.inject.Inject
@@ -51,7 +54,6 @@ internal class CarGearMonitor @Inject constructor(
             failureState = { VehicleGear.Unknown },
         ).flowOn(mainDispatcher)
 
-    @Suppress("DEPRECATION") // registerCallback is supported by the Pleos API 34 image.
     @SuppressLint("MissingPermission") // The normal powertrain permission is checked before subscribing.
     private fun observeGear(car: Car): Flow<VehicleGear> = callbackFlow {
         val manager = carSdkCall("차량 기어 서비스를 확인할 수 없습니다.") {
@@ -76,7 +78,7 @@ internal class CarGearMonitor @Inject constructor(
         val callback = object : CarPropertyManager.CarPropertyEventCallback {
             override fun onChangeEvent(value: CarPropertyValue<*>) {
                 if (!open || !isActive || value.propertyId != VehiclePropertyIds.GEAR_SELECTION || value.areaId != 0) return
-                if (value.status != CarPropertyValue.STATUS_AVAILABLE) {
+                if (!value.hasAvailableStatus()) {
                     fail()
                     return
                 }
@@ -91,7 +93,7 @@ internal class CarGearMonitor @Inject constructor(
         }
         try {
             val registered = carSdkCall("차량 기어 구독에 실패했습니다.") {
-                manager.registerCallback(callback, VehiclePropertyIds.GEAR_SELECTION, CarPropertyManager.SENSOR_RATE_ONCHANGE)
+                manager.subscribePropertyEventsCompat(callback, VehiclePropertyIds.GEAR_SELECTION, CarPropertyManager.SENSOR_RATE_ONCHANGE)
             }
             if (!registered) {
                 open = false
@@ -105,7 +107,7 @@ internal class CarGearMonitor @Inject constructor(
         awaitClose {
             open = false
             initialDeadline.cancel()
-            releaseCarResource { manager.unregisterCallback(callback) }
+            releaseCarResource { manager.unsubscribePropertyEventsCompat(callback) }
         }
     }
 

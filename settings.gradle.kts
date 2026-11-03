@@ -27,6 +27,7 @@ rootProject.name = "PleosAndroid"
 include(":app")
 include(":core:navigation")
 include(":core:designsystem")
+include(":core:domain")
 include(":core:vehicle")
 include(":feature:nav")
 include(":feature:main")

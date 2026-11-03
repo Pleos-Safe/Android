@@ -4,11 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.issac.pleosandroid.core.vehicle.model.MotionAvailability
-import io.issac.pleosandroid.core.vehicle.model.VehicleGear
-import io.issac.pleosandroid.core.vehicle.model.VehicleMotion
-import io.issac.pleosandroid.core.vehicle.repository.VehicleRepository
-import io.issac.pleosandroid.core.vehicle.model.VehicleState
+import io.issac.pleosandroid.core.domain.model.MotionAvailability
+import io.issac.pleosandroid.core.domain.model.VehicleGear
+import io.issac.pleosandroid.core.domain.model.VehicleMotion
+import io.issac.pleosandroid.core.domain.repository.VehicleRepository
+import io.issac.pleosandroid.core.domain.model.VehicleState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

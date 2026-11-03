@@ -6,8 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import io.issac.pleosandroid.core.designsystem.component.PleosButton
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
-import io.issac.pleosandroid.core.vehicle.model.MotionAvailability
-import io.issac.pleosandroid.core.vehicle.model.UxAvailability
+import io.issac.pleosandroid.core.domain.model.MotionAvailability
+import io.issac.pleosandroid.core.domain.model.UxAvailability
 import java.util.Locale
 
 @Composable

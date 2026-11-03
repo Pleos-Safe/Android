@@ -1,6 +1,6 @@
-package io.issac.pleosandroid.core.vehicle.repository
+package io.issac.pleosandroid.core.domain.repository
 
-import io.issac.pleosandroid.core.vehicle.model.VehicleState
+import io.issac.pleosandroid.core.domain.model.VehicleState
 import kotlinx.coroutines.flow.StateFlow
 
 interface VehicleRepository {

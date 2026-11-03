@@ -1,7 +1,7 @@
 package io.issac.pleosandroid.core.vehicle.policy
 
 import android.car.VehicleGear as PlatformGear
-import io.issac.pleosandroid.core.vehicle.model.VehicleGear
+import io.issac.pleosandroid.core.domain.model.VehicleGear
 
 internal fun classifyVehicleGear(value: Int?): VehicleGear = when (value) {
     PlatformGear.GEAR_PARK -> VehicleGear.Park

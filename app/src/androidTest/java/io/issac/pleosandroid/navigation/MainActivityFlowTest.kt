@@ -8,7 +8,6 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import io.issac.pleosandroid.MainActivity
-import io.issac.pleosandroid.core.vehicle.permission.VehiclePermissions
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,7 +16,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class MainActivityFlowTest {
     @get:Rule(order = 0)
-    val permission: GrantPermissionRule = GrantPermissionRule.grant(VehiclePermissions.Speed)
+    val permission: GrantPermissionRule = GrantPermissionRule.grant(VehicleSpeedPermission)
 
     @get:Rule(order = 1)
     val compose = createAndroidComposeRule<MainActivity>()
@@ -48,3 +47,5 @@ class MainActivityFlowTest {
         }
     }
 }
+
+private const val VehicleSpeedPermission = "android.car.permission.CAR_SPEED"

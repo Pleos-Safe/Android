@@ -1,6 +1,6 @@
 package io.issac.pleosandroid.core.vehicle.policy
 
-import io.issac.pleosandroid.core.vehicle.model.VehicleGear
+import io.issac.pleosandroid.core.domain.model.VehicleGear
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

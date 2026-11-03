@@ -11,7 +11,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.issac.pleosandroid.core.navigation.BadgesRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
-import io.issac.pleosandroid.core.vehicle.permission.VehiclePermissions
 
 @Composable
 internal fun MainRouteContent(
@@ -32,9 +31,11 @@ internal fun MainRouteContent(
             if (viewModel.canOpenBadges()) router.navigate(BadgesRoute)
         },
         onRequestSpeedPermission = {
-            if (viewModel.canOpenBadges()) speedPermission.launch(VehiclePermissions.Speed)
+            if (viewModel.canOpenBadges()) speedPermission.launch(VehicleSpeedPermission)
         },
         onRetryVehicle = viewModel::retryVehicle,
         modifier = Modifier.padding(contentPadding),
     )
 }
+
+private const val VehicleSpeedPermission = "android.car.permission.CAR_SPEED"

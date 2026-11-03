@@ -8,6 +8,9 @@ import android.car.hardware.property.CarPropertyManager
 import android.content.Context
 import android.content.pm.PackageManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.issac.pleosandroid.core.vehicle.datasource.compat.hasAvailableStatus
+import io.issac.pleosandroid.core.vehicle.datasource.compat.subscribePropertyEventsCompat
+import io.issac.pleosandroid.core.vehicle.datasource.compat.unsubscribePropertyEventsCompat
 import io.issac.pleosandroid.core.vehicle.datasource.connection.CarConnection
 import io.issac.pleosandroid.core.vehicle.datasource.connection.CarConnectionState
 import io.issac.pleosandroid.core.vehicle.datasource.connection.VehicleServiceException
@@ -15,11 +18,11 @@ import io.issac.pleosandroid.core.vehicle.datasource.connection.carSdkCall
 import io.issac.pleosandroid.core.vehicle.datasource.connection.recoverVehicleService
 import io.issac.pleosandroid.core.vehicle.datasource.connection.releaseCarResource
 import io.issac.pleosandroid.core.vehicle.di.MainDispatcher
-import io.issac.pleosandroid.core.vehicle.model.MotionAvailability
-import io.issac.pleosandroid.core.vehicle.model.VehicleMotion
-import io.issac.pleosandroid.core.vehicle.model.VehicleMotionState
+import io.issac.pleosandroid.core.domain.model.MotionAvailability
+import io.issac.pleosandroid.core.domain.model.VehicleMotion
+import io.issac.pleosandroid.core.domain.model.VehicleMotionState
 import io.issac.pleosandroid.core.vehicle.permission.VehiclePermissions
-import io.issac.pleosandroid.core.vehicle.policy.classifyVehicleMotion
+import io.issac.pleosandroid.core.domain.policy.classifyVehicleMotion
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,7 +63,6 @@ internal class CarSpeedMonitor @Inject constructor(
             },
         ).flowOn(mainDispatcher)
 
-    @Suppress("DEPRECATION") // The Pleos API 34 image supports registerCallback with fixed-rate updates.
     @SuppressLint("MissingPermission") // Checked before subscribing; revocation is translated at the SDK boundary.
     private fun observeSpeed(car: Car): Flow<VehicleMotionState> = callbackFlow {
         val manager = carSdkCall("차량 속도 서비스를 확인할 수 없습니다.") {
@@ -135,21 +137,19 @@ internal class CarSpeedMonitor @Inject constructor(
     )
 }
 
-@Suppress("DEPRECATION")
 private class SpeedSubscription(
     private val manager: CarPropertyManager,
     private val callback: CarPropertyManager.CarPropertyEventCallback,
 ) {
-    fun register(): Boolean = manager.registerCallback(
+    fun register(): Boolean = manager.subscribePropertyEventsCompat(
         callback, VehiclePropertyIds.PERF_VEHICLE_SPEED, CarPropertyManager.SENSOR_RATE_NORMAL,
     )
 
-    fun close() = releaseCarResource { manager.unregisterCallback(callback) }
+    fun close() = releaseCarResource { manager.unsubscribePropertyEventsCompat(callback) }
 }
 
-@Suppress("DEPRECATION")
 private fun CarPropertyValue<*>.toMotionState(): VehicleMotionState? {
-    if (status != CarPropertyValue.STATUS_AVAILABLE) return null
+    if (!hasAvailableStatus()) return null
     val speed = (value as? Number)?.toFloat()
     val motion = classifyVehicleMotion(speed)
     if (motion == VehicleMotion.Unknown) return null

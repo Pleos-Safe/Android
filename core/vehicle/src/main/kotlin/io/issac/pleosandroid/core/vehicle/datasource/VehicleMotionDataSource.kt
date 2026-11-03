@@ -1,6 +1,6 @@
 package io.issac.pleosandroid.core.vehicle.datasource
 
-import io.issac.pleosandroid.core.vehicle.model.VehicleMotionState
+import io.issac.pleosandroid.core.domain.model.VehicleMotionState
 import kotlinx.coroutines.flow.Flow
 
 interface VehicleMotionDataSource {

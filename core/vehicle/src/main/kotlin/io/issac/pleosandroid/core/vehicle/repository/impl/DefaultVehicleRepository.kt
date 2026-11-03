@@ -4,8 +4,8 @@ import io.issac.pleosandroid.core.vehicle.datasource.CarUxDataSource
 import io.issac.pleosandroid.core.vehicle.datasource.VehicleMotionDataSource
 import io.issac.pleosandroid.core.vehicle.datasource.VehicleGearDataSource
 import io.issac.pleosandroid.core.vehicle.di.ApplicationScope
-import io.issac.pleosandroid.core.vehicle.model.VehicleState
-import io.issac.pleosandroid.core.vehicle.repository.VehicleRepository
+import io.issac.pleosandroid.core.domain.model.VehicleState
+import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope

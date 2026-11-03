@@ -1,4 +1,4 @@
-package io.issac.pleosandroid.core.vehicle.policy
+package io.issac.pleosandroid.core.domain.policy
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

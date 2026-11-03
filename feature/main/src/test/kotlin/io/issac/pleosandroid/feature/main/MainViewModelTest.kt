@@ -1,13 +1,13 @@
 package io.issac.pleosandroid.feature.main
 
 import androidx.lifecycle.SavedStateHandle
-import io.issac.pleosandroid.core.vehicle.policy.CarUxPolicy
-import io.issac.pleosandroid.core.vehicle.model.MotionAvailability
-import io.issac.pleosandroid.core.vehicle.model.VehicleGear
-import io.issac.pleosandroid.core.vehicle.model.VehicleMotion
-import io.issac.pleosandroid.core.vehicle.model.VehicleMotionState
-import io.issac.pleosandroid.core.vehicle.repository.VehicleRepository
-import io.issac.pleosandroid.core.vehicle.model.VehicleState
+import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
+import io.issac.pleosandroid.core.domain.model.MotionAvailability
+import io.issac.pleosandroid.core.domain.model.VehicleGear
+import io.issac.pleosandroid.core.domain.model.VehicleMotion
+import io.issac.pleosandroid.core.domain.model.VehicleMotionState
+import io.issac.pleosandroid.core.domain.repository.VehicleRepository
+import io.issac.pleosandroid.core.domain.model.VehicleState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,9 +1,9 @@
 package io.issac.pleosandroid.feature.main
 
-import io.issac.pleosandroid.core.vehicle.model.MotionAvailability
-import io.issac.pleosandroid.core.vehicle.model.VehicleGear
-import io.issac.pleosandroid.core.vehicle.model.VehicleMotion
-import io.issac.pleosandroid.core.vehicle.model.VehicleState
+import io.issac.pleosandroid.core.domain.model.MotionAvailability
+import io.issac.pleosandroid.core.domain.model.VehicleGear
+import io.issac.pleosandroid.core.domain.model.VehicleMotion
+import io.issac.pleosandroid.core.domain.model.VehicleState
 
 enum class MainPhase {
     BeforeDriving,
