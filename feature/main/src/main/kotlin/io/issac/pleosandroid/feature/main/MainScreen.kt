@@ -4,11 +4,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import io.issac.pleosandroid.core.designsystem.component.PleosButton
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.UxAvailability
-import java.util.Locale
 
 @Composable
 fun MainScreen(
@@ -36,7 +36,8 @@ fun MainScreen(
                 )
                 Text(uiState.vehicle.motion.message)
                 uiState.vehicle.motion.speedMetersPerSecond?.let { speed ->
-                    Text(String.format(Locale.getDefault(), "현재 속도: %.1f km/h", speed * 3.6f))
+                    val locale = LocalConfiguration.current.locales[0]
+                    Text(String.format(locale, "현재 속도: %.1f km/h", speed * 3.6f))
                 }
                 if (uiState.vehicle.uxPolicy.restrictionsRequired) {
                     Text(
