@@ -1,12 +1,28 @@
 package io.issac.pleosandroid.core.designsystem.theme
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-// Preserve the starter palette until the product design is defined.
-internal val DarkPrimary = Color(0xFFD0BCFF)
-internal val DarkSecondary = Color(0xFFCCC2DC)
-internal val DarkTertiary = Color(0xFFEFB8C8)
-
-internal val LightPrimary = Color(0xFF6650A4)
-internal val LightSecondary = Color(0xFF625B71)
-internal val LightTertiary = Color(0xFF7D5260)
+/** PRISM/color semantic aliases, matching the Figma Dark mode. */
+@Immutable
+data class PleosColorScheme(
+    val background: Color = PleosReferenceColors.navy950,
+    val shellStart: Color = PleosReferenceColors.navy975,
+    val shellEnd: Color = PleosReferenceColors.navy850,
+    val surface: Color = PleosReferenceColors.navy900,
+    val textPrimary: Color = PleosReferenceColors.ink100,
+    val textSecondary: Color = PleosReferenceColors.ink300,
+    val textDisabled: Color = PleosReferenceColors.ink500,
+    val textOnAction: Color = PleosReferenceColors.navy950,
+    val borderDefault: Color = PleosReferenceColors.line600,
+    val borderControl: Color = PleosReferenceColors.line500,
+    val actionPrimary: Color = PleosReferenceColors.mint200,
+    val actionSecondary: Color = PleosReferenceColors.navy800,
+    val actionDisabled: Color = PleosReferenceColors.navy820,
+    val actionDanger: Color = PleosReferenceColors.rose300,
+    val chipDefault: Color = PleosReferenceColors.navy880,
+    val chipSelected: Color = PleosReferenceColors.navy700,
+    val accentLilac: Color = PleosReferenceColors.lilac300,
+    val statusPending: Color = PleosReferenceColors.amber300,
+    val statusAttention: Color = PleosReferenceColors.rose300,
+)

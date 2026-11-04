@@ -40,8 +40,11 @@ class DrivingScreenCaptureTest {
     fun captureFourDrivingStates() {
         val phase = mutableStateOf(MainPhase.BeforeDriving)
         compose.setContent {
-            PleosTheme(darkTheme = false, dynamicColor = false) {
-                Surface(modifier = Modifier.size(960.dp, 540.dp).testTag("driving-state-capture")) {
+            PleosTheme {
+                Surface(
+                    modifier = Modifier.size(960.dp, 540.dp).testTag("driving-state-capture"),
+                    color = PleosTheme.colors.background,
+                ) {
                     MainScreen(
                         uiState = fixture(phase.value),
                         onStartJourney = {}, onEndJourney = {}, onOpenBadges = {},
