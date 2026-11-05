@@ -21,7 +21,9 @@ class AdjacentNavigationProbeTest {
     fun captureAdjacentNavigationRequest() {
         assumeTrue(InstrumentationRegistry.getArguments().getString("pleosAdjacentProbe") == "true")
         val instrumentation = InstrumentationRegistry.getInstrumentation()
-        val automation = instrumentation.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+        val automation = instrumentation.getUiAutomation(
+            UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES,
+        )
         val output = File(instrumentation.targetContext.filesDir, "screenshots")
         check(output.isDirectory || output.mkdirs())
 

@@ -35,15 +35,18 @@ gradlePlugin {
         }
         register("androidNavigation3") {
             id = "pleos.android.navigation3"
-            implementationClass = "io.issac.pleosandroid.buildlogic.AndroidNavigation3ConventionPlugin"
+            implementationClass =
+                "io.issac.pleosandroid.buildlogic.AndroidNavigation3ConventionPlugin"
         }
         register("androidApplication") {
             id = "pleos.android.application"
-            implementationClass = "io.issac.pleosandroid.buildlogic.AndroidApplicationConventionPlugin"
+            implementationClass =
+                "io.issac.pleosandroid.buildlogic.AndroidApplicationConventionPlugin"
         }
         register("androidApplicationCompose") {
             id = "pleos.android.application.compose"
-            implementationClass = "io.issac.pleosandroid.buildlogic.AndroidApplicationComposeConventionPlugin"
+            implementationClass =
+                "io.issac.pleosandroid.buildlogic.AndroidApplicationComposeConventionPlugin"
         }
         register("androidLibrary") {
             id = "pleos.android.library"
@@ -51,7 +54,8 @@ gradlePlugin {
         }
         register("androidLibraryCompose") {
             id = "pleos.android.library.compose"
-            implementationClass = "io.issac.pleosandroid.buildlogic.AndroidLibraryComposeConventionPlugin"
+            implementationClass =
+                "io.issac.pleosandroid.buildlogic.AndroidLibraryComposeConventionPlugin"
         }
     }
 }

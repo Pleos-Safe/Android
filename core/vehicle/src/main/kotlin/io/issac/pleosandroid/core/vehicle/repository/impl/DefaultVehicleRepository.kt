@@ -1,11 +1,11 @@
 package io.issac.pleosandroid.core.vehicle.repository.impl
 
-import io.issac.pleosandroid.core.vehicle.datasource.CarUxDataSource
-import io.issac.pleosandroid.core.vehicle.datasource.VehicleMotionDataSource
-import io.issac.pleosandroid.core.vehicle.datasource.VehicleGearDataSource
-import io.issac.pleosandroid.core.vehicle.di.ApplicationScope
 import io.issac.pleosandroid.core.domain.model.VehicleState
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
+import io.issac.pleosandroid.core.vehicle.datasource.CarUxDataSource
+import io.issac.pleosandroid.core.vehicle.datasource.VehicleGearDataSource
+import io.issac.pleosandroid.core.vehicle.datasource.VehicleMotionDataSource
+import io.issac.pleosandroid.core.vehicle.di.ApplicationScope
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -28,8 +28,17 @@ class DefaultVehicleRepository @Inject constructor(
     private val retryRequests = MutableStateFlow(0L)
 
     override val state = retryRequests.flatMapLatest {
-        combine(motionSource.observe(), uxSource.observe(), gearSource.observe()) { motion, ux, gear ->
-            VehicleState(motion = motion, uxPolicy = ux.policy, uxAvailability = ux.availability, gear = gear)
+        combine(motionSource.observe(), uxSource.observe(), gearSource.observe()) {
+                motion,
+                ux,
+                gear,
+            ->
+            VehicleState(
+                motion = motion,
+                uxPolicy = ux.policy,
+                uxAvailability = ux.availability,
+                gear = gear,
+            )
         }
     }.stateIn(
         scope = scope,

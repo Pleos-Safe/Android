@@ -13,15 +13,13 @@ import io.issac.pleosandroid.core.navigation.BadgesRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 
 @Composable
-internal fun MainRouteContent(
-    contentPadding: PaddingValues,
-    viewModel: MainViewModel = hiltViewModel(),
-) {
+internal fun MainRouteContent(contentPadding: PaddingValues, viewModel: MainViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val router = LocalNavigationRouter.current
-    val speedPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-        viewModel.retryVehicle()
-    }
+    val speedPermission =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            viewModel.retryVehicle()
+        }
 
     MainScreen(
         uiState = uiState,
@@ -31,11 +29,11 @@ internal fun MainRouteContent(
             if (viewModel.canOpenBadges()) router.navigate(BadgesRoute)
         },
         onRequestSpeedPermission = {
-            if (viewModel.canOpenBadges()) speedPermission.launch(VehicleSpeedPermission)
+            if (viewModel.canOpenBadges()) speedPermission.launch(VEHICLE_SPEED_PERMISSION)
         },
         onRetryVehicle = viewModel::retryVehicle,
         modifier = Modifier.padding(contentPadding),
     )
 }
 
-private const val VehicleSpeedPermission = "android.car.permission.CAR_SPEED"
+private const val VEHICLE_SPEED_PERMISSION = "android.car.permission.CAR_SPEED"

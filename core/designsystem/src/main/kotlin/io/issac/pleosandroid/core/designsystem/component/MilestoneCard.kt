@@ -59,10 +59,30 @@ enum class MilestoneCardAppearance(
     PlaceLevel4(4, false, R.drawable.milestone_place_4_base, R.drawable.milestone_place_4_overlay),
     PlaceLevel5(5, false, R.drawable.milestone_place_5_base, R.drawable.milestone_place_5_overlay),
     SafetyLevel1(1, true, null, R.drawable.milestone_safety_detail_overlay),
-    SafetyLevel2(2, true, R.drawable.milestone_safety_5_base, R.drawable.milestone_safety_detail_overlay),
-    SafetyLevel3(3, true, R.drawable.milestone_safety_5_base, R.drawable.milestone_safety_detail_overlay),
-    SafetyLevel4(4, true, R.drawable.milestone_safety_5_base, R.drawable.milestone_safety_detail_overlay),
-    SafetyLevel5(5, true, R.drawable.milestone_safety_5_base, R.drawable.milestone_safety_5_overlay),
+    SafetyLevel2(
+        2,
+        true,
+        R.drawable.milestone_safety_5_base,
+        R.drawable.milestone_safety_detail_overlay,
+    ),
+    SafetyLevel3(
+        3,
+        true,
+        R.drawable.milestone_safety_5_base,
+        R.drawable.milestone_safety_detail_overlay,
+    ),
+    SafetyLevel4(
+        4,
+        true,
+        R.drawable.milestone_safety_5_base,
+        R.drawable.milestone_safety_detail_overlay,
+    ),
+    SafetyLevel5(
+        5,
+        true,
+        R.drawable.milestone_safety_5_base,
+        R.drawable.milestone_safety_5_overlay,
+    ),
 }
 
 sealed interface MilestoneCardFace {
@@ -81,18 +101,15 @@ sealed interface MilestoneCardFace {
 
 /** Draws a face at its design aspect ratio. Size and interaction are supplied by the caller. */
 @Composable
-fun MilestoneCard(
-    face: MilestoneCardFace,
-    modifier: Modifier = Modifier,
-) {
+fun MilestoneCard(face: MilestoneCardFace, modifier: Modifier = Modifier) {
     BoxWithConstraints(
         modifier = modifier
-            .aspectRatio(CardWidth / CardHeight)
+            .aspectRatio(CARD_WIDTH / CARD_HEIGHT)
             .clipToBounds()
             .semantics(mergeDescendants = true) {},
         contentAlignment = AbsoluteAlignment.TopLeft,
     ) {
-        val scale = maxWidth.value / CardWidth
+        val scale = maxWidth.value / CARD_WIDTH
         when (face) {
             is MilestoneCardFace.Front -> FrontFace(face, scale)
             MilestoneCardFace.CommonBack -> CommonBackFace(scale)
@@ -119,7 +136,7 @@ private fun FrontFace(face: MilestoneCardFace.Front, scale: Float) {
 @Composable
 private fun PlaceArtwork(artwork: Painter, partialReflection: Boolean) {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val scale = size.width / CardWidth
+        val scale = size.width / CARD_WIDTH
         val mask = Path().apply {
             addRoundRect(
                 RoundRect(
@@ -159,7 +176,7 @@ private fun PlaceArtwork(artwork: Painter, partialReflection: Boolean) {
 @Composable
 private fun SafetyBase() {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val scale = size.width / CardWidth
+        val scale = size.width / CARD_WIDTH
         drawRoundRect(
             color = Color(0xFF7D9DAC),
             cornerRadius = CornerRadius(20f * scale),
@@ -177,7 +194,7 @@ private fun SafetyBase() {
 @Composable
 private fun SafetyArtwork(artwork: Painter, appearance: MilestoneCardAppearance) {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val scale = size.width / CardWidth
+        val scale = size.width / CARD_WIDTH
         val corner = CornerRadius(10f * scale)
         val mask = Path().apply {
             addRoundRect(
@@ -365,8 +382,8 @@ private fun CardText(
     )
 }
 
-private const val CardWidth = 360f
-private const val CardHeight = 520f
+private const val CARD_WIDTH = 360f
+private const val CARD_HEIGHT = 520f
 
 @Preview(name = "Milestone card • place front", group = "Basic faces")
 @Composable
@@ -434,24 +451,23 @@ private fun MilestoneCompactLongTitlePreview() {
 }
 
 @Composable
-private fun previewFace(appearance: MilestoneCardAppearance): MilestoneCardFace.Front =
-    if (appearance.isSafety) {
-        MilestoneCardFace.Front(
-            appearance = appearance,
-            artwork = painterResource(R.drawable.milestone_art_safety),
-            contextLabel = "운전습관 · 귀가",
-            title = "안전한 귀가",
-            subtitle = "여정을 차분히 마친 기록",
-            seriesLabel = "SAFETY / SMOOTH / 001",
-        )
-    } else {
-        MilestoneCardFace.Front(
-            appearance = appearance,
-            artwork = painterResource(R.drawable.milestone_art_haeundae),
-            contextLabel = "부산 · 해운대",
-            title = "해운대의 파도",
-            subtitle = "부산의 여름을 간직하다",
-            seriesLabel = "MILESTONE / 001",
-            categoryLabel = "장소의 기억",
-        )
-    }
+private fun previewFace(appearance: MilestoneCardAppearance): MilestoneCardFace.Front = if (appearance.isSafety) {
+    MilestoneCardFace.Front(
+        appearance = appearance,
+        artwork = painterResource(R.drawable.milestone_art_safety),
+        contextLabel = "운전습관 · 귀가",
+        title = "안전한 귀가",
+        subtitle = "여정을 차분히 마친 기록",
+        seriesLabel = "SAFETY / SMOOTH / 001",
+    )
+} else {
+    MilestoneCardFace.Front(
+        appearance = appearance,
+        artwork = painterResource(R.drawable.milestone_art_haeundae),
+        contextLabel = "부산 · 해운대",
+        title = "해운대의 파도",
+        subtitle = "부산의 여름을 간직하다",
+        seriesLabel = "MILESTONE / 001",
+        categoryLabel = "장소의 기억",
+    )
+}

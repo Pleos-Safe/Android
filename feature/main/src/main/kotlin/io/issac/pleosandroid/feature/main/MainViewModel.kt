@@ -7,8 +7,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
-import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.core.domain.model.VehicleState
+import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,14 +22,14 @@ class MainViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val progress = savedStateHandle.getStateFlow(
-        key = JourneyProgressKey,
+        key = JOURNEY_PROGRESS_KEY,
         initialValue = JourneyProgress.Before.name,
     )
 
     private val observedVehicle = vehicleRepository.state.onEach { vehicle ->
         val current = journeyProgress(progress.value)
         val updated = current.onVehicleChanged(vehicle)
-        if (updated != current) savedStateHandle[JourneyProgressKey] = updated.name
+        if (updated != current) savedStateHandle[JOURNEY_PROGRESS_KEY] = updated.name
     }
 
     val uiState: StateFlow<MainUiState> = combine(observedVehicle, progress) { vehicle, value ->
@@ -43,14 +43,14 @@ class MainViewModel @Inject constructor(
     fun startJourney(): Boolean {
         val current = createUiState(vehicleRepository.state.value, progress.value)
         if (!current.canStartJourney) return false
-        savedStateHandle[JourneyProgressKey] = JourneyProgress.Prepared.name
+        savedStateHandle[JOURNEY_PROGRESS_KEY] = JourneyProgress.Prepared.name
         return true
     }
 
     fun endJourney(): Boolean {
         val current = createUiState(vehicleRepository.state.value, progress.value)
         if (!current.canEndJourney) return false
-        savedStateHandle[JourneyProgressKey] = JourneyProgress.Finished.name
+        savedStateHandle[JOURNEY_PROGRESS_KEY] = JourneyProgress.Finished.name
         return true
     }
 
@@ -64,7 +64,9 @@ class MainViewModel @Inject constructor(
         val journey = journeyProgress(value).onVehicleChanged(vehicle)
         val phase = when (journey) {
             JourneyProgress.Before -> MainPhase.BeforeDriving
+
             JourneyProgress.Finished -> MainPhase.Finished
+
             JourneyProgress.Prepared, JourneyProgress.Active -> when {
                 vehicle.motion.availability != MotionAvailability.Available -> null
                 vehicle.motion.motion == VehicleMotion.Moving -> MainPhase.DrivingMoving
@@ -82,8 +84,10 @@ class MainViewModel @Inject constructor(
         if (vehicle.motion.availability != MotionAvailability.Available) return this
         return when {
             vehicle.motion.motion == VehicleMotion.Moving -> JourneyProgress.Active
+
             this == JourneyProgress.Active && vehicle.motion.motion == VehicleMotion.Stopped &&
                 vehicle.gear == VehicleGear.Park -> JourneyProgress.Finished
+
             else -> this
         }
     }
@@ -92,6 +96,6 @@ class MainViewModel @Inject constructor(
     private enum class JourneyProgress { Before, Prepared, Active, Finished }
 
     private companion object {
-        const val JourneyProgressKey = "journey_progress"
+        const val JOURNEY_PROGRESS_KEY = "journey_progress"
     }
 }

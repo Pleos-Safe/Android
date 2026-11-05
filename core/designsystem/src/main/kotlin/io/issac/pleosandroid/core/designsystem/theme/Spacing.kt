@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename") // Theme files are grouped by foundation.
+
 package io.issac.pleosandroid.core.designsystem.theme
 
 import androidx.compose.ui.unit.dp

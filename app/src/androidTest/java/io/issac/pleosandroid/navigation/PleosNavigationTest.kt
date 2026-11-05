@@ -41,6 +41,7 @@ class PleosNavigationTest {
                         Text("Open detail")
                     }
                 }
+
                 is NavigationTestDetail -> NavEntryResult {
                     val router = LocalNavigationRouter.current
                     var count by rememberSaveable { mutableIntStateOf(0) }
@@ -50,6 +51,7 @@ class PleosNavigationTest {
                         Button(onClick = { router.pop() }) { Text("Back") }
                     }
                 }
+
                 else -> null
             }
         }

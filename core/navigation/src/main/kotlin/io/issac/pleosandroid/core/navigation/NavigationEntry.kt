@@ -8,7 +8,4 @@ fun interface NavEntryFactory {
     fun create(route: AppRoute): NavEntryResult?
 }
 
-class NavEntryResult(
-    val metadata: Map<String, Any> = emptyMap(),
-    val content: @Composable (PaddingValues) -> Unit,
-)
+class NavEntryResult(val metadata: Map<String, Any> = emptyMap(), val content: @Composable (PaddingValues) -> Unit)

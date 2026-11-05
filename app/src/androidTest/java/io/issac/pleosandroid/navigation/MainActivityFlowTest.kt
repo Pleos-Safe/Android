@@ -18,7 +18,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class MainActivityFlowTest {
     @get:Rule(order = 0)
-    val permission: GrantPermissionRule = GrantPermissionRule.grant(VehicleSpeedPermission)
+    val permission: GrantPermissionRule = GrantPermissionRule.grant(VEHICLE_SPEED_PERMISSION)
 
     @get:Rule(order = 1)
     val compose = createAndroidComposeRule<MainActivity>()
@@ -106,4 +106,4 @@ class MainActivityFlowTest {
     }
 }
 
-private const val VehicleSpeedPermission = "android.car.permission.CAR_SPEED"
+private const val VEHICLE_SPEED_PERMISSION = "android.car.permission.CAR_SPEED"

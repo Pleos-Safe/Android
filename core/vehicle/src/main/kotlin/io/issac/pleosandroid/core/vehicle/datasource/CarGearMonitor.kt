@@ -8,6 +8,7 @@ import android.car.hardware.property.CarPropertyManager
 import android.content.Context
 import android.content.pm.PackageManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.vehicle.datasource.compat.hasAvailableStatus
 import io.issac.pleosandroid.core.vehicle.datasource.compat.subscribePropertyEventsCompat
 import io.issac.pleosandroid.core.vehicle.datasource.compat.unsubscribePropertyEventsCompat
@@ -18,7 +19,6 @@ import io.issac.pleosandroid.core.vehicle.datasource.connection.carSdkCall
 import io.issac.pleosandroid.core.vehicle.datasource.connection.recoverVehicleService
 import io.issac.pleosandroid.core.vehicle.datasource.connection.releaseCarResource
 import io.issac.pleosandroid.core.vehicle.di.MainDispatcher
-import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.vehicle.permission.VehiclePermissions
 import io.issac.pleosandroid.core.vehicle.policy.classifyVehicleGear
 import javax.inject.Inject
@@ -44,8 +44,12 @@ internal class CarGearMonitor @Inject constructor(
 ) : VehicleGearDataSource {
     override fun observe(): Flow<VehicleGear> = connection.observe().flatMapLatest { state ->
         when (state) {
-            is CarConnectionState.Ready -> if (hasPermission()) observeGear(state.car)
-                else flowOf(VehicleGear.Unknown)
+            is CarConnectionState.Ready -> if (hasPermission()) {
+                observeGear(state.car)
+            } else {
+                flowOf(VehicleGear.Unknown)
+            }
+
             is CarConnectionState.Unsupported -> flowOf(VehicleGear.Unknown)
         }
     }.onStart { emit(VehicleGear.Unknown) }
@@ -77,7 +81,11 @@ internal class CarGearMonitor @Inject constructor(
         }
         val callback = object : CarPropertyManager.CarPropertyEventCallback {
             override fun onChangeEvent(value: CarPropertyValue<*>) {
-                if (!open || !isActive || value.propertyId != VehiclePropertyIds.GEAR_SELECTION || value.areaId != 0) return
+                if (!open || !isActive || value.propertyId != VehiclePropertyIds.GEAR_SELECTION ||
+                    value.areaId != 0
+                ) {
+                    return
+                }
                 if (!value.hasAvailableStatus()) {
                     fail()
                     return
@@ -93,7 +101,11 @@ internal class CarGearMonitor @Inject constructor(
         }
         try {
             val registered = carSdkCall("차량 기어 구독에 실패했습니다.") {
-                manager.subscribePropertyEventsCompat(callback, VehiclePropertyIds.GEAR_SELECTION, CarPropertyManager.SENSOR_RATE_ONCHANGE)
+                manager.subscribePropertyEventsCompat(
+                    callback,
+                    VehiclePropertyIds.GEAR_SELECTION,
+                    CarPropertyManager.SENSOR_RATE_ONCHANGE,
+                )
             }
             if (!registered) {
                 open = false
@@ -112,5 +124,5 @@ internal class CarGearMonitor @Inject constructor(
     }
 
     private fun hasPermission() =
-        context.checkSelfPermission(VehiclePermissions.Powertrain) == PackageManager.PERMISSION_GRANTED
+        context.checkSelfPermission(VehiclePermissions.POWERTRAIN) == PackageManager.PERMISSION_GRANTED
 }

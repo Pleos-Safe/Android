@@ -36,7 +36,11 @@ internal fun CollectionScreen(
     onCardClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    CollectionPage(title = stringResource(R.string.collection_title), onBack = onBack, modifier = modifier) {
+    CollectionPage(
+        title = stringResource(R.string.collection_title),
+        onBack = onBack,
+        modifier = modifier,
+    ) {
         Text(
             text = stringResource(R.string.collection_card_count, cards.size),
             style = MaterialTheme.typography.titleMedium,
@@ -106,11 +110,7 @@ private fun CollectionShelf(cards: List<CollectionCard>, onCardClick: (String) -
 }
 
 @Composable
-private fun CollectionShelfCard(
-    card: CollectionCard,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun CollectionShelfCard(card: CollectionCard, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val openLabel = stringResource(R.string.collection_open_card)
     val openCardAction = stringResource(R.string.collection_open_named_card, card.title)
     Surface(
@@ -138,13 +138,21 @@ private fun CollectionShelfCard(
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 MilestoneCard(card.face(), Modifier.width(192.dp))
             }
-            Text(card.memorySummary, color = CollectionColors.Text, style = MaterialTheme.typography.titleMedium)
+            Text(
+                card.memorySummary,
+                color = CollectionColors.Text,
+                style = MaterialTheme.typography.titleMedium,
+            )
             Text(
                 stringResource(R.string.collection_first_collected) + " · " + card.firstCollectedOn,
                 color = CollectionColors.Muted,
                 style = MaterialTheme.typography.bodyMedium,
             )
-            Text(openLabel, color = CollectionColors.Accent, style = MaterialTheme.typography.labelLarge)
+            Text(
+                openLabel,
+                color = CollectionColors.Accent,
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
     }
 }

@@ -20,11 +20,7 @@ private val FullLayoutMinWidth = 1000.dp
 
 /** Shared scrollable screen shell. Scaffold insets are supplied by the caller's modifier. */
 @Composable
-fun PleosScreen(
-    title: String,
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
-) {
+fun PleosScreen(title: String, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val isFull = maxWidth >= FullLayoutMinWidth
         val horizontalPadding = if (isFull) PleosSpacing.contentHorizontalFull else PleosSpacing.contentHorizontalSplit

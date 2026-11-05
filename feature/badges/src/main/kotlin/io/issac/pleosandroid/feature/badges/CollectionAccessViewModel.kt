@@ -6,8 +6,6 @@ import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import javax.inject.Inject
 
 @HiltViewModel
-internal class CollectionAccessViewModel @Inject constructor(
-    repository: VehicleRepository,
-) : ViewModel() {
+internal class CollectionAccessViewModel @Inject constructor(repository: VehicleRepository) : ViewModel() {
     val vehicle = repository.state
 }

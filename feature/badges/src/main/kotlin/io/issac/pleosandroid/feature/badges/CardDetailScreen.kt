@@ -24,11 +24,7 @@ import io.issac.pleosandroid.core.designsystem.component.MilestoneCard
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 
 @Composable
-internal fun CardDetailScreen(
-    card: CollectionCard,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+internal fun CardDetailScreen(card: CollectionCard, onBack: () -> Unit, modifier: Modifier = Modifier) {
     CollectionPage(
         title = stringResource(R.string.card_detail_collection),
         onBack = onBack,
@@ -59,10 +55,7 @@ internal fun CardDetailScreen(
 }
 
 @Composable
-private fun CardDetailFacts(
-    card: CollectionCard,
-    modifier: Modifier = Modifier,
-) {
+private fun CardDetailFacts(card: CollectionCard, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,

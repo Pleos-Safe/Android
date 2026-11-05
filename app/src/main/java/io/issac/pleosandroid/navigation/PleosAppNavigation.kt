@@ -9,10 +9,7 @@ import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.feature.nav.PleosNavHost
 
 @Composable
-internal fun PleosAppNavigation(
-    factories: Set<NavEntryFactory>,
-    contentPadding: PaddingValues,
-) {
+internal fun PleosAppNavigation(factories: Set<NavEntryFactory>, contentPadding: PaddingValues) {
     PleosNavHost(
         factories = factories,
         startRoute = MainRoute,

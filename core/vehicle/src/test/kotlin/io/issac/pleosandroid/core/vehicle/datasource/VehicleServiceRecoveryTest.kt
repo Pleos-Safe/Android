@@ -50,7 +50,10 @@ class VehicleServiceRecoveryTest {
         runCurrent()
         advanceTimeBy(91_000)
         runCurrent()
-        assertEquals(listOf(0L, 1_000L, 3_000L, 7_000L, 15_000L, 31_000L, 61_000L, 91_000L), attemptTimes)
+        assertEquals(
+            listOf(0L, 1_000L, 3_000L, 7_000L, 15_000L, 31_000L, 61_000L, 91_000L),
+            attemptTimes,
+        )
         job.cancel()
         runCurrent()
         advanceTimeBy(90_000)
@@ -67,7 +70,9 @@ class VehicleServiceRecoveryTest {
                 attemptTimes += testScheduler.currentTime
                 if (++attempts == 2) emit("healthy")
                 throw VehicleServiceException("disconnected")
-            }.recoverVehicleService(isHealthy = { it == "healthy" }, failureState = { "error" }).collect()
+            }.recoverVehicleService(isHealthy = {
+                it == "healthy"
+            }, failureState = { "error" }).collect()
         }
         runCurrent()
         advanceTimeBy(2_000)
@@ -83,7 +88,9 @@ class VehicleServiceRecoveryTest {
         flow<String> {
             attempts++
             throw VehicleServiceException("permission", permissionRequired = true)
-        }.recoverVehicleService(isHealthy = { false }, failureState = { "permission" }).collect(values::add)
+        }.recoverVehicleService(isHealthy = {
+            false
+        }, failureState = { "permission" }).collect(values::add)
         assertEquals(1, attempts)
         assertEquals(listOf("permission"), values)
     }

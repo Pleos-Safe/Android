@@ -5,8 +5,11 @@ import io.issac.pleosandroid.core.domain.model.VehicleGear
 
 internal fun classifyVehicleGear(value: Int?): VehicleGear = when (value) {
     PlatformGear.GEAR_PARK -> VehicleGear.Park
+
     PlatformGear.GEAR_REVERSE -> VehicleGear.Reverse
+
     PlatformGear.GEAR_NEUTRAL -> VehicleGear.Neutral
+
     PlatformGear.GEAR_DRIVE,
     PlatformGear.GEAR_FIRST,
     PlatformGear.GEAR_SECOND,
@@ -16,6 +19,8 @@ internal fun classifyVehicleGear(value: Int?): VehicleGear = when (value) {
     PlatformGear.GEAR_SIXTH,
     PlatformGear.GEAR_SEVENTH,
     PlatformGear.GEAR_EIGHTH,
-    PlatformGear.GEAR_NINTH -> VehicleGear.Drive
+    PlatformGear.GEAR_NINTH,
+    -> VehicleGear.Drive
+
     else -> VehicleGear.Unknown
 }

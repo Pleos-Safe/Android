@@ -5,13 +5,13 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.UxAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
 import io.issac.pleosandroid.core.domain.model.VehicleMotionState
 import io.issac.pleosandroid.core.domain.model.VehicleState
+import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
 import io.issac.pleosandroid.feature.main.MainPhase
 import io.issac.pleosandroid.feature.main.MainScreen
 import io.issac.pleosandroid.feature.main.MainUiState
@@ -30,20 +30,28 @@ class ScreenStateTest {
         compose.setContent {
             val moving = phase.value == MainPhase.DrivingMoving
             MainScreen(
-                uiState = MainUiState.Ready(phase.value, VehicleState(
-                    motion = VehicleMotionState(
-                        if (moving) VehicleMotion.Moving else VehicleMotion.Stopped,
-                        if (moving) 13.9f else 0f,
-                        MotionAvailability.Available,
+                uiState = MainUiState.Ready(
+                    phase.value,
+                    VehicleState(
+                        motion = VehicleMotionState(
+                            if (moving) VehicleMotion.Moving else VehicleMotion.Stopped,
+                            if (moving) 13.9f else 0f,
+                            MotionAvailability.Available,
+                        ),
+                        uxPolicy = if (moving) CarUxPolicy(connected = true, known = true) else unrestricted,
+                        uxAvailability = UxAvailability.Available,
+                        gear = if (phase.value == MainPhase.BeforeDriving || phase.value == MainPhase.Finished) {
+                            VehicleGear.Park
+                        } else {
+                            VehicleGear.Drive
+                        },
                     ),
-                    uxPolicy = if (moving) CarUxPolicy(connected = true, known = true) else unrestricted,
-                    uxAvailability = UxAvailability.Available,
-                    gear = if (phase.value == MainPhase.BeforeDriving || phase.value == MainPhase.Finished) {
-                        VehicleGear.Park
-                    } else VehicleGear.Drive,
-                )),
-                onStartJourney = {}, onEndJourney = {}, onOpenBadges = {},
-                onRequestSpeedPermission = {}, onRetryVehicle = {},
+                ),
+                onStartJourney = {},
+                onEndJourney = {},
+                onOpenBadges = {},
+                onRequestSpeedPermission = {},
+                onRetryVehicle = {},
             )
         }
         val labels = listOf("주행 전", "주행 중 · 멈춤", "주행 중 · 달림", "주행 종료")
@@ -60,17 +68,22 @@ class ScreenStateTest {
 
     @Test
     fun uxReadFailureKeepsActionsRestrictedAndRecoveryRestoresThem() {
-        val vehicle = mutableStateOf(VehicleState(
-            motion = VehicleMotionState(VehicleMotion.Stopped, 0f, MotionAvailability.Available),
-            uxPolicy = CarUxPolicy(message = "차량 서비스 연결을 다시 시도합니다."),
-            uxAvailability = UxAvailability.Error,
-            gear = VehicleGear.Park,
-        ))
+        val vehicle = mutableStateOf(
+            VehicleState(
+                motion = VehicleMotionState(VehicleMotion.Stopped, 0f, MotionAvailability.Available),
+                uxPolicy = CarUxPolicy(message = "차량 서비스 연결을 다시 시도합니다."),
+                uxAvailability = UxAvailability.Error,
+                gear = VehicleGear.Park,
+            ),
+        )
         compose.setContent {
             MainScreen(
                 uiState = MainUiState.Ready(MainPhase.BeforeDriving, vehicle.value),
-                onStartJourney = {}, onEndJourney = {}, onOpenBadges = {},
-                onRequestSpeedPermission = {}, onRetryVehicle = {},
+                onStartJourney = {},
+                onEndJourney = {},
+                onOpenBadges = {},
+                onRequestSpeedPermission = {},
+                onRetryVehicle = {},
             )
         }
         compose.onNodeWithText("차량 UX 제한 상태를 읽지 못해 조작을 제한합니다.").assertExists()
@@ -91,6 +104,9 @@ class ScreenStateTest {
     }
 
     private val unrestricted = CarUxPolicy(
-        connected = true, known = true, requiresDistractionOptimization = false, activeRestrictions = 0,
+        connected = true,
+        known = true,
+        requiresDistractionOptimization = false,
+        activeRestrictions = 0,
     )
 }
