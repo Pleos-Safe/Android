@@ -74,7 +74,7 @@ fun MainScreen(
                 if (uiState.vehicle.motion.availability != MotionAvailability.Available) {
                     PleosButton(text = "차량 상태 다시 확인", onClick = onRetryVehicle, enabled = uiState.canOpenBadges)
                 }
-                PleosButton(text = "배지 보기", onClick = onOpenBadges, enabled = uiState.canOpenBadges)
+                PleosButton(text = "컬렉션 보기", onClick = onOpenBadges, enabled = uiState.canOpenBadges)
                 Text("출발하면 주행을 시작하고, 멈추면 주행 중 멈춤으로 표시하며, 정지 후 P 기어에서 종료합니다.")
             }
         }
