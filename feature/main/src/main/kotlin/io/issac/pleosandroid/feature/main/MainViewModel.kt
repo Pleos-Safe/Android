@@ -36,7 +36,7 @@ class MainViewModel @Inject constructor(
         createUiState(vehicle, value)
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.WhileSubscribed(5_000, replayExpirationMillis = 0),
         initialValue = MainUiState.Loading,
     )
 
@@ -54,7 +54,11 @@ class MainViewModel @Inject constructor(
         return true
     }
 
-    fun canOpenBadges(): Boolean = !vehicleRepository.state.value.uxPolicy.restrictionsRequired
+    fun canUseTabs(): Boolean = vehicleRepository.state.value.allowsTabNavigation
+
+    fun canOpenBadges(): Boolean = canUseTabs()
+
+    fun canRecoverVehicle(): Boolean = vehicleRepository.state.value.allowsVehicleRecovery
 
     fun retryVehicle() {
         vehicleRepository.retry()

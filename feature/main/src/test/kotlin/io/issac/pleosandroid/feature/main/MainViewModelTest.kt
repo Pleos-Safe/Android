@@ -130,6 +130,27 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `tabs require an allowed stationary vehicle in park even when the UX policy alone is permissive`() = runTest {
+        val fixture = fixture()
+        assertTrue(fixture.viewModel.canUseTabs())
+        for (gear in listOf(VehicleGear.Drive, VehicleGear.Reverse, VehicleGear.Neutral, VehicleGear.Unknown)) {
+            fixture.repository.emit(gear = gear)
+            assertFalse(fixture.viewModel.canUseTabs())
+            assertFalse(fixture.viewModel.startJourney())
+            runCurrent()
+            assertFalse(fixture.ready.canUseTabs)
+            assertFalse(fixture.ready.canStartJourney)
+        }
+        fixture.repository.emit(gear = VehicleGear.Park, motion = VehicleMotion.Moving)
+        assertFalse(fixture.viewModel.canUseTabs())
+        fixture.repository.emit(motion = VehicleMotion.Unknown, availability = MotionAvailability.PermissionRequired)
+        assertFalse(fixture.viewModel.canUseTabs())
+        assertTrue(fixture.viewModel.canRecoverVehicle())
+        fixture.repository.emit(policy = CarUxPolicy())
+        assertFalse(fixture.viewModel.canRecoverVehicle())
+    }
+
+    @Test
     fun `finish command checks the latest speed before the UI has collected it`() = runTest {
         val fixture = fixture()
         fixture.viewModel.startJourney()
