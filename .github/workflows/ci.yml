@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up build environment
+        id: setup
+        uses: ./.github/actions/setup-build
+
+      - name: Check formatting
+        run: ./gradlew spotlessCheck --continue --stacktrace --console=plain
+
+      - name: Check Android Lint
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: ./gradlew lintDebug lintRelease --continue --stacktrace --console=plain
+
+      - name: Check convention plugins
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: ./gradlew :build-logic:convention:check --continue --stacktrace --console=plain
+
+      - name: Upload quality reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: quality-reports
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            **/build/reports/lint-results-*
+            build-logic/convention/build/reports/
+            build/reports/problems/
+
+  unit-tests:
+    name: unit-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up build environment
+        uses: ./.github/actions/setup-build
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest :core:domain:test --continue --stacktrace --console=plain
+
+      - name: Upload unit test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unit-test-reports
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            **/build/test-results/test*/**/*.xml
+            **/build/reports/tests/
+            build/reports/problems/
+
+  ci-required:
+    name: ci-required
+    if: ${{ always() }}
+    needs: [quality, unit-tests]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every check to succeed
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          UNIT_TESTS_RESULT: ${{ needs.unit-tests.result }}
+        run: |
+          printf 'quality: %s\nunit-tests: %s\n' "$QUALITY_RESULT" "$UNIT_TESTS_RESULT"
+          if [[ "$QUALITY_RESULT" != 'success' || "$UNIT_TESTS_RESULT" != 'success' ]]; then
+            echo '::error::Both quality and unit-tests must succeed.'
+            exit 1
+          fi
