@@ -2,11 +2,20 @@ package io.issac.pleosandroid.core.navigation
 
 import kotlinx.serialization.Serializable
 
-@Serializable
-data object MainRoute : AppRoute
+/** Roots of the three main tabs. Other routes open inside the current tab. */
+sealed interface MainTabRoute : AppRoute
 
 @Serializable
-data object BadgesRoute : AppRoute
+data object MainRoute : MainTabRoute
+
+@Serializable
+data object BadgesRoute : MainTabRoute
+
+@Serializable
+data object RecordsRoute : MainTabRoute
+
+@Serializable
+data object SettingsRoute : AppRoute
 
 @Serializable
 data class CardDetailRoute(val cardId: String) : AppRoute
