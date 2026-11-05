@@ -13,7 +13,13 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 private fun MilestoneCollectionPreview() {
     PleosTheme {
         Box(Modifier.width(1000.dp)) {
-            CollectionScreen(SampleCollection.cards, null, {}, {})
+            CollectionScreen(
+                cards = SampleCollection.cards,
+                filter = null,
+                onFilterChange = {},
+                onBack = {},
+                onCardClick = {},
+            )
         }
     }
 }
@@ -23,7 +29,13 @@ private fun MilestoneCollectionPreview() {
 private fun MilestoneCollectionCompactPreview() {
     PleosTheme {
         Box(Modifier.width(440.dp)) {
-            CollectionScreen(SampleCollection.cards, CardKind.Place, {}, {})
+            CollectionScreen(
+                cards = SampleCollection.cards,
+                filter = CardKind.Place,
+                onFilterChange = {},
+                onBack = {},
+                onCardClick = {},
+            )
         }
     }
 }

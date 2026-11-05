@@ -9,6 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
 import io.issac.pleosandroid.core.navigation.AppRoute
 import io.issac.pleosandroid.core.navigation.BadgesRoute
+import io.issac.pleosandroid.core.navigation.CardDetailRoute
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavEntryResult
 import javax.inject.Inject
@@ -17,6 +18,9 @@ internal class BadgesNavEntryFactory @Inject constructor() : NavEntryFactory {
     override fun create(route: AppRoute): NavEntryResult? = when (route) {
         BadgesRoute -> NavEntryResult { padding ->
             BadgesRouteContent(modifier = Modifier.padding(padding))
+        }
+        is CardDetailRoute -> NavEntryResult { padding ->
+            CardDetailRouteContent(cardId = route.cardId, modifier = Modifier.padding(padding))
         }
         else -> null
     }

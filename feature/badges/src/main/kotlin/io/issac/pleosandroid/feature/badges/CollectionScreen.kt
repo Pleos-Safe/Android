@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -32,8 +33,8 @@ internal fun CollectionScreen(
     filter: CardKind?,
     onFilterChange: (CardKind?) -> Unit,
     onBack: () -> Unit,
+    onCardClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onCardClick: ((String) -> Unit)? = null,
 ) {
     CollectionPage(title = stringResource(R.string.collection_title), onBack = onBack, modifier = modifier) {
         Text(
@@ -84,7 +85,7 @@ private fun CollectionFilters(filter: CardKind?, onFilterChange: (CardKind?) -> 
 }
 
 @Composable
-private fun CollectionShelf(cards: List<CollectionCard>, onCardClick: ((String) -> Unit)?) {
+private fun CollectionShelf(cards: List<CollectionCard>, onCardClick: (String) -> Unit) {
     BoxWithConstraints(Modifier.widthIn(max = 1040.dp).fillMaxWidth()) {
         val columns = if (maxWidth >= 544.dp) 2 else 1
         val itemWidth = (maxWidth - 16.dp * (columns - 1)) / columns
@@ -94,7 +95,7 @@ private fun CollectionShelf(cards: List<CollectionCard>, onCardClick: ((String) 
                     row.forEach { card ->
                         CollectionShelfCard(
                             card = card,
-                            onClick = onCardClick?.let { { it(card.id) } },
+                            onClick = { onCardClick(card.id) },
                             modifier = Modifier.width(itemWidth),
                         )
                     }
@@ -107,15 +108,11 @@ private fun CollectionShelf(cards: List<CollectionCard>, onCardClick: ((String) 
 @Composable
 private fun CollectionShelfCard(
     card: CollectionCard,
-    onClick: (() -> Unit)?,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val openLabel = stringResource(R.string.collection_open_card)
-    val interaction = if (onClick == null) Modifier else Modifier.clickable(
-        role = Role.Button,
-        onClickLabel = openLabel,
-        onClick = onClick,
-    )
+    val openCardAction = stringResource(R.string.collection_open_named_card, card.title)
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
@@ -123,7 +120,10 @@ private fun CollectionShelfCard(
         border = BorderStroke(1.dp, CollectionColors.Border),
     ) {
         Column(
-            modifier = interaction.padding(16.dp),
+            modifier = Modifier
+                .testTag("collection-card-${card.id}")
+                .clickable(role = Role.Button, onClickLabel = openCardAction, onClick = onClick)
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(Modifier.heightIn(min = 20.dp)) {
@@ -144,9 +144,7 @@ private fun CollectionShelfCard(
                 color = CollectionColors.Muted,
                 style = MaterialTheme.typography.bodyMedium,
             )
-            if (onClick != null) {
-                Text(openLabel, color = CollectionColors.Accent, style = MaterialTheme.typography.labelLarge)
-            }
+            Text(openLabel, color = CollectionColors.Accent, style = MaterialTheme.typography.labelLarge)
         }
     }
 }

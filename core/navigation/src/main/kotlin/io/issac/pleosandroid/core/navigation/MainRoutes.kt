@@ -7,3 +7,6 @@ data object MainRoute : AppRoute
 
 @Serializable
 data object BadgesRoute : AppRoute
+
+@Serializable
+data class CardDetailRoute(val cardId: String) : AppRoute
