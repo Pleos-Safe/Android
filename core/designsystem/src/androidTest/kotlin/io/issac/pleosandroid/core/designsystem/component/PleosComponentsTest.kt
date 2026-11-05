@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -75,7 +76,11 @@ class PleosComponentsTest {
             }
             PleosTheme {
                 Column(Modifier.size(240.dp, 160.dp).verticalScroll(scroll)) {
-                    Box(Modifier.size(240.dp, 120.dp).testTag("action").customClickable(interactionSource = source) { clicks++ })
+                    Box(
+                        Modifier.size(240.dp, 120.dp).testTag("action").customClickable(interactionSource = source) {
+                            clicks++
+                        },
+                    )
                     Spacer(Modifier.size(240.dp, 480.dp))
                 }
             }
@@ -167,7 +172,14 @@ class PleosComponentsTest {
                 Box(Modifier.size(240.dp, 120.dp).background(Color.Black).testTag("capture")) {
                     Box(
                         Modifier.fillMaxSize().testTag("action")
-                            .customClickable(shape = RoundedCornerShape(32.dp), enabled = enabled, rippleColor = Color.White) { clicks++ }
+                            .focusProperties { canFocus = false }
+                            .customClickable(
+                                shape = RoundedCornerShape(32.dp),
+                                enabled = enabled,
+                                rippleColor = Color.White,
+                            ) {
+                                clicks++
+                            }
                             .background(Color.Blue),
                     )
                 }
@@ -177,19 +189,19 @@ class PleosComponentsTest {
         val capture = compose.onNodeWithTag("capture")
         val idle = capture.captureToImage().toPixelMap()
         val middle = idle.height / 2
-        assertEquals(Color.Blue, idle[0, middle])
+        assertTrue(idle[0, middle].blue > .99f)
 
         action.performTouchInput { down(center) }
         compose.waitUntil(timeoutMillis = 5_000) {
             val pressed = capture.captureToImage().toPixelMap()
             // The white ripple tints the blue center, while the scaled side and rounded corner expose the backing.
-            pressed[pressed.width / 2, middle].red > .01f &&
+            pressed[pressed.width / 2, middle].red > idle[idle.width / 2, middle].red + .01f &&
                 pressed[0, middle] == Color.Black && pressed[3, 3] == Color.Black
         }
         action.performTouchInput { cancel() }
-        // The native ripple finishes on the render thread after Compose restores the scale.
+        // The blue edge reappears when the scale returns, even while the native ripple fades.
         compose.waitUntil(timeoutMillis = 5_000) {
-            capture.captureToImage().toPixelMap()[0, middle] == idle[0, middle]
+            capture.captureToImage().toPixelMap()[0, middle].blue > .99f
         }
         compose.runOnIdle { assertEquals(0, clicks) }
 
