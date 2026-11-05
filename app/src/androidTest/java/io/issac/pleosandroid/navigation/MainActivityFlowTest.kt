@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -22,6 +23,26 @@ class MainActivityFlowTest {
 
     @get:Rule(order = 1)
     val compose = createAndroidComposeRule<MainActivity>()
+
+    @Test
+    fun tabsKeepTheirDestinationAcrossSwitchesAndActivityRecreation() {
+        waitFor("기록")
+        compose.onNodeWithText("기록").performClick()
+        waitFor("여정 기록")
+        compose.onNodeWithContentDescription("설정").performClick()
+        waitFor("돌아가기")
+        compose.onNodeWithText("컬렉션").performClick()
+        waitFor("나의 컬렉션")
+        compose.onNodeWithText("기록").performClick()
+        waitFor("돌아가기")
+
+        compose.activityRule.scenario.recreate()
+        waitFor("돌아가기")
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        waitFor("여정 기록")
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        waitFor("주행 전")
+    }
 
     @Test
     fun hiltFactoriesObserveVehicleFlowAndRestoreJourneyAcrossCollectionAndRecreation() {
@@ -101,7 +122,7 @@ class MainActivityFlowTest {
 
     private fun waitFor(text: String) {
         compose.waitUntil(timeoutMillis = 15_000) {
-            compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodesWithText(text).fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
         }
     }
 }
