@@ -1,0 +1,17 @@
+<resources>
+    <string name="pleos_brand" translatable="false">MILESTONE</string>
+    <string name="pleos_tab_travel">여행</string>
+    <string name="pleos_tab_collection">컬렉션</string>
+    <string name="pleos_tab_records">기록</string>
+    <string name="pleos_settings">설정</string>
+    <string name="pleos_parked">주차 중</string>
+    <string name="pleos_restricted">조작 제한</string>
+    <string name="pleos_place_search">장소 검색</string>
+    <string name="pleos_search_hint">어디로 떠나볼까요?</string>
+    <string name="pleos_clear_query">검색어 지우기</string>
+    <string name="pleos_map_north">북쪽</string>
+    <string name="pleos_map_zoom_in">지도 확대</string>
+    <string name="pleos_map_zoom_out">지도 축소</string>
+    <string name="pleos_map_locate">내 위치로 이동</string>
+    <string name="pleos_cluster_label">장소 %1$d곳</string>
+</resources>
