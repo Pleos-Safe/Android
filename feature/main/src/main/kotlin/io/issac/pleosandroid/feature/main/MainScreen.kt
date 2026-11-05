@@ -9,6 +9,7 @@ import io.issac.pleosandroid.core.designsystem.component.PleosButton
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.UxAvailability
+import io.issac.pleosandroid.core.domain.model.VehicleGear
 
 @Composable
 fun MainScreen(
@@ -57,9 +58,25 @@ fun MainScreen(
                     if (!uiState.vehicle.uxPolicy.known) Text(uiState.vehicle.uxPolicy.message)
                     return@PleosScreen
                 }
-                if (uiState.phase == MainPhase.BeforeDriving ||
-                    uiState.phase == MainPhase.Finished
-                ) {
+                if (!uiState.canUseTabs) {
+                    Text(
+                        if (uiState.vehicle.gear == VehicleGear.Unknown) {
+                            "주차 상태를 확인하고 있습니다."
+                        } else {
+                            "주차와 정지가 확인되면 탭을 이용할 수 있습니다."
+                        },
+                    )
+                    if (uiState.vehicle.allowsVehicleRecovery) {
+                        if (uiState.vehicle.motion.availability == MotionAvailability.PermissionRequired) {
+                            PleosButton(text = "차량 속도 접근 허용", onClick = onRequestSpeedPermission)
+                        }
+                        if (uiState.vehicle.motion.availability != MotionAvailability.Available) {
+                            PleosButton(text = "차량 상태 다시 확인", onClick = onRetryVehicle)
+                        }
+                    }
+                    return@PleosScreen
+                }
+                if (uiState.phase == MainPhase.BeforeDriving || uiState.phase == MainPhase.Finished) {
                     PleosButton(
                         text = if (uiState.phase == MainPhase.Finished) "새 여정 시작" else "여정 시작",
                         onClick = onStartJourney,
@@ -76,25 +93,7 @@ fun MainScreen(
                         enabled = uiState.canEndJourney,
                     )
                 }
-                if (uiState.vehicle.motion.availability == MotionAvailability.PermissionRequired) {
-                    PleosButton(
-                        text = "차량 속도 접근 허용",
-                        onClick = onRequestSpeedPermission,
-                        enabled = uiState.canOpenBadges,
-                    )
-                }
-                if (uiState.vehicle.motion.availability != MotionAvailability.Available) {
-                    PleosButton(
-                        text = "차량 상태 다시 확인",
-                        onClick = onRetryVehicle,
-                        enabled = uiState.canOpenBadges,
-                    )
-                }
-                PleosButton(
-                    text = "컬렉션 보기",
-                    onClick = onOpenBadges,
-                    enabled = uiState.canOpenBadges,
-                )
+                PleosButton(text = "컬렉션 보기", onClick = onOpenBadges, enabled = uiState.canOpenBadges)
                 Text("출발하면 주행을 시작하고, 멈추면 주행 중 멈춤으로 표시하며, 정지 후 P 기어에서 종료합니다.")
             }
         }

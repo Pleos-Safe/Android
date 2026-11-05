@@ -16,17 +16,22 @@ sealed interface MainUiState {
     data object Loading : MainUiState
 
     data class Ready(val phase: MainPhase?, val vehicle: VehicleState) : MainUiState {
-        val canOpenBadges: Boolean
-            get() = !vehicle.uxPolicy.restrictionsRequired
+        val canUseTabs: Boolean get() = vehicle.allowsTabNavigation
+
+        val canOpenBadges: Boolean get() = canUseTabs
 
         val canStartJourney: Boolean
-            get() = canOpenBadges && vehicle.motion.availability == MotionAvailability.Available &&
-                vehicle.motion.motion == VehicleMotion.Stopped &&
-                phase in setOf(MainPhase.BeforeDriving, MainPhase.Finished)
+            get() = canUseTabs && (phase == MainPhase.BeforeDriving || phase == MainPhase.Finished)
 
         val canEndJourney: Boolean
-            get() = canOpenBadges && vehicle.motion.availability == MotionAvailability.Available &&
-                vehicle.gear == VehicleGear.Park &&
-                phase == MainPhase.DrivingStopped
+            get() = canUseTabs && phase == MainPhase.DrivingStopped
     }
 }
+
+internal val VehicleState.allowsTabNavigation: Boolean
+    get() = !uxPolicy.restrictionsRequired && gear == VehicleGear.Park &&
+        motion.availability == MotionAvailability.Available && motion.motion == VehicleMotion.Stopped
+
+// A parked driver can grant the speed permission before the first valid speed reading arrives.
+internal val VehicleState.allowsVehicleRecovery: Boolean
+    get() = !uxPolicy.restrictionsRequired && gear == VehicleGear.Park && motion.motion != VehicleMotion.Moving
