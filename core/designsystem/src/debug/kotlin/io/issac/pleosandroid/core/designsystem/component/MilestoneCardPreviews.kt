@@ -87,7 +87,7 @@ private fun previewFace(appearance: MilestoneCardAppearance): MilestoneCardFace.
     if (appearance.isSafety) {
         MilestoneCardFace.Front(
             appearance = appearance,
-            artwork = painterResource(R.drawable.milestone_preview_safety),
+            artwork = painterResource(R.drawable.milestone_art_safety),
             contextLabel = "운전습관 · 귀가",
             title = "안전한 귀가",
             subtitle = "여정을 차분히 마친 기록",
@@ -96,7 +96,7 @@ private fun previewFace(appearance: MilestoneCardAppearance): MilestoneCardFace.
     } else {
         MilestoneCardFace.Front(
             appearance = appearance,
-            artwork = painterResource(R.drawable.milestone_preview_haeundae),
+            artwork = painterResource(R.drawable.milestone_art_haeundae),
             contextLabel = "부산 · 해운대",
             title = "해운대의 파도",
             subtitle = "부산의 여름을 간직하다",

@@ -53,7 +53,7 @@ class ScreenStateTest {
             if (state == MainPhase.DrivingMoving) {
                 compose.onNodeWithText("주행 중에는 상세 조작이 제한됩니다.").assertExists()
                 compose.onNodeWithText("여정 종료").assertDoesNotExist()
-                compose.onNodeWithText("배지 보기").assertDoesNotExist()
+                compose.onNodeWithText("컬렉션 보기").assertDoesNotExist()
             }
         }
     }
@@ -75,7 +75,7 @@ class ScreenStateTest {
         }
         compose.onNodeWithText("차량 UX 제한 상태를 읽지 못해 조작을 제한합니다.").assertExists()
         compose.onNodeWithText("여정 시작").assertDoesNotExist()
-        compose.onNodeWithText("배지 보기").assertDoesNotExist()
+        compose.onNodeWithText("컬렉션 보기").assertDoesNotExist()
         compose.onNodeWithText("차량 속도 접근 허용").assertDoesNotExist()
 
         compose.runOnIdle {
@@ -86,7 +86,7 @@ class ScreenStateTest {
         }
 
         compose.onNodeWithText("여정 시작").assertIsEnabled()
-        compose.onNodeWithText("배지 보기").assertIsEnabled()
+        compose.onNodeWithText("컬렉션 보기").assertIsEnabled()
         compose.onNodeWithText("차량 UX 제한 상태를 읽지 못해 조작을 제한합니다.").assertDoesNotExist()
     }
 
