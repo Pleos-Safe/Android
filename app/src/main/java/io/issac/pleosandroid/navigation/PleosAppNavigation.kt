@@ -1,19 +1,13 @@
 package io.issac.pleosandroid.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
-import io.issac.pleosandroid.feature.nav.PleosNavHost
+import io.issac.pleosandroid.feature.main.PleosMain
 
 @Composable
 internal fun PleosAppNavigation(factories: Set<NavEntryFactory>, contentPadding: PaddingValues) {
-    PleosNavHost(
-        factories = factories,
-        startRoute = MainRoute,
-        contentPadding = contentPadding,
-        modifier = Modifier.fillMaxSize(),
-    )
+    PleosMain(factories = factories, modifier = Modifier.padding(contentPadding))
 }

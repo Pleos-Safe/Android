@@ -1,7 +1,6 @@
 package io.issac.pleosandroid.navigation
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -78,7 +77,7 @@ class PleosNavigationTest {
             val factory = NavEntryFactory { route ->
                 if (route == MainRoute) NavEntryResult { Text(currentLabel) } else null
             }
-            PleosAppNavigation(factories = setOf(factory), contentPadding = PaddingValues())
+            PleosNavHost(factories = setOf(factory), startRoute = MainRoute)
         }
         compose.onNodeWithText("Initial vehicle data").assertExists()
 
