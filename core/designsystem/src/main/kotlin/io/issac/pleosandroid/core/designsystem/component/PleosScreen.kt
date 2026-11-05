@@ -16,7 +16,7 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
-private val FullLayoutMinWidth = 1000.dp
+internal val FullLayoutMinWidth = 1000.dp
 
 /** Shared scrollable screen shell. Scaffold insets are supplied by the caller's modifier. */
 @Composable
