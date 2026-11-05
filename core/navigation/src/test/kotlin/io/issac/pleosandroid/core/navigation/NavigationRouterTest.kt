@@ -127,8 +127,7 @@ class NavigationRouterTest {
         assertEquals(HomeRoute, router.currentEntry)
     }
 
-    private fun router(vararg routes: AppRoute): NavigationRouter =
-        NavigationRouter(NavBackStack<NavKey>(*routes))
+    private fun router(vararg routes: AppRoute): NavigationRouter = NavigationRouter(NavBackStack<NavKey>(*routes))
 }
 
 @Serializable

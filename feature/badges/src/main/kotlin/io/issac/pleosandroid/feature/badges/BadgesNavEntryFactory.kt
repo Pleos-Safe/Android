@@ -19,9 +19,11 @@ internal class BadgesNavEntryFactory @Inject constructor() : NavEntryFactory {
         BadgesRoute -> NavEntryResult { padding ->
             BadgesRouteContent(modifier = Modifier.padding(padding))
         }
+
         is CardDetailRoute -> NavEntryResult { padding ->
             CardDetailRouteContent(cardId = route.cardId, modifier = Modifier.padding(padding))
         }
+
         else -> null
     }
 }

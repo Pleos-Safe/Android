@@ -8,6 +8,10 @@ import android.car.hardware.property.CarPropertyManager
 import android.content.Context
 import android.content.pm.PackageManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.issac.pleosandroid.core.domain.model.MotionAvailability
+import io.issac.pleosandroid.core.domain.model.VehicleMotion
+import io.issac.pleosandroid.core.domain.model.VehicleMotionState
+import io.issac.pleosandroid.core.domain.policy.classifyVehicleMotion
 import io.issac.pleosandroid.core.vehicle.datasource.compat.hasAvailableStatus
 import io.issac.pleosandroid.core.vehicle.datasource.compat.subscribePropertyEventsCompat
 import io.issac.pleosandroid.core.vehicle.datasource.compat.unsubscribePropertyEventsCompat
@@ -18,11 +22,7 @@ import io.issac.pleosandroid.core.vehicle.datasource.connection.carSdkCall
 import io.issac.pleosandroid.core.vehicle.datasource.connection.recoverVehicleService
 import io.issac.pleosandroid.core.vehicle.datasource.connection.releaseCarResource
 import io.issac.pleosandroid.core.vehicle.di.MainDispatcher
-import io.issac.pleosandroid.core.domain.model.MotionAvailability
-import io.issac.pleosandroid.core.domain.model.VehicleMotion
-import io.issac.pleosandroid.core.domain.model.VehicleMotionState
 import io.issac.pleosandroid.core.vehicle.permission.VehiclePermissions
-import io.issac.pleosandroid.core.domain.policy.classifyVehicleMotion
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -47,8 +47,12 @@ internal class CarSpeedMonitor @Inject constructor(
 ) : VehicleMotionDataSource {
     override fun observe(): Flow<VehicleMotionState> = connection.observe().flatMapLatest { state ->
         when (state) {
-            is CarConnectionState.Ready -> if (hasSpeedPermission()) observeSpeed(state.car)
-                else flowOf(permissionRequired())
+            is CarConnectionState.Ready -> if (hasSpeedPermission()) {
+                observeSpeed(state.car)
+            } else {
+                flowOf(permissionRequired())
+            }
+
             is CarConnectionState.Unsupported -> flowOf(
                 VehicleMotionState(availability = MotionAvailability.Unsupported, message = state.message),
             )
@@ -57,9 +61,14 @@ internal class CarSpeedMonitor @Inject constructor(
         .recoverVehicleService(
             isHealthy = { it.availability == MotionAvailability.Available },
             failureState = { error ->
-                if (error.permissionRequired || !hasSpeedPermission()) permissionRequired()
-                else VehicleMotionState(availability = MotionAvailability.Error,
-                    message = "${error.message} 자동으로 다시 연결합니다.")
+                if (error.permissionRequired || !hasSpeedPermission()) {
+                    permissionRequired()
+                } else {
+                    VehicleMotionState(
+                        availability = MotionAvailability.Error,
+                        message = "${error.message} 자동으로 다시 연결합니다.",
+                    )
+                }
             },
         ).flowOn(mainDispatcher)
 
@@ -69,8 +78,12 @@ internal class CarSpeedMonitor @Inject constructor(
             car.getCarManager(Car.PROPERTY_SERVICE) as? CarPropertyManager
         }
         if (manager == null) {
-            trySend(VehicleMotionState(availability = MotionAvailability.Unsupported,
-                message = "이 차량에서 속도 정보를 제공하지 않습니다."))
+            trySend(
+                VehicleMotionState(
+                    availability = MotionAvailability.Unsupported,
+                    message = "이 차량에서 속도 정보를 제공하지 않습니다.",
+                ),
+            )
             close()
             return@callbackFlow
         }
@@ -90,7 +103,11 @@ internal class CarSpeedMonitor @Inject constructor(
         }
         val callback = object : CarPropertyManager.CarPropertyEventCallback {
             override fun onChangeEvent(value: CarPropertyValue<*>) {
-                if (!open || !isActive || value.propertyId != VehiclePropertyIds.PERF_VEHICLE_SPEED || value.areaId != 0) return
+                if (!open || !isActive || value.propertyId != VehiclePropertyIds.PERF_VEHICLE_SPEED ||
+                    value.areaId != 0
+                ) {
+                    return
+                }
                 val state = value.toMotionState()
                 if (state == null) {
                     fail("차량 속도 정보가 현재 유효하지 않습니다.")
@@ -113,8 +130,12 @@ internal class CarSpeedMonitor @Inject constructor(
                 fail("차량 속도 읽기 권한이 필요합니다.")
             } else if (!registered) {
                 open = false
-                trySend(VehicleMotionState(availability = MotionAvailability.Unsupported,
-                    message = "이 차량에서 속도 정보를 제공하지 않습니다."))
+                trySend(
+                    VehicleMotionState(
+                        availability = MotionAvailability.Unsupported,
+                        message = "이 차량에서 속도 정보를 제공하지 않습니다.",
+                    ),
+                )
                 close()
             }
         } catch (exception: VehicleServiceException) {
@@ -129,7 +150,7 @@ internal class CarSpeedMonitor @Inject constructor(
     }
 
     private fun hasSpeedPermission() =
-        context.checkSelfPermission(VehiclePermissions.Speed) == PackageManager.PERMISSION_GRANTED
+        context.checkSelfPermission(VehiclePermissions.SPEED) == PackageManager.PERMISSION_GRANTED
 
     private fun permissionRequired() = VehicleMotionState(
         availability = MotionAvailability.PermissionRequired,
@@ -142,7 +163,9 @@ private class SpeedSubscription(
     private val callback: CarPropertyManager.CarPropertyEventCallback,
 ) {
     fun register(): Boolean = manager.subscribePropertyEventsCompat(
-        callback, VehiclePropertyIds.PERF_VEHICLE_SPEED, CarPropertyManager.SENSOR_RATE_NORMAL,
+        callback,
+        VehiclePropertyIds.PERF_VEHICLE_SPEED,
+        CarPropertyManager.SENSOR_RATE_NORMAL,
     )
 
     fun close() = releaseCarResource { manager.unsubscribePropertyEventsCompat(callback) }

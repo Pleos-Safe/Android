@@ -30,7 +30,9 @@ internal class CarConnection @Inject constructor(
     @param:MainDispatcher private val mainDispatcher: CoroutineDispatcher,
 ) {
     fun observe(): Flow<CarConnectionState> = callbackFlow<CarConnectionState> {
-        check(Looper.myLooper() == Looper.getMainLooper()) { "Car connections must run on the main thread." }
+        check(Looper.myLooper() == Looper.getMainLooper()) {
+            "Car connections must run on the main thread."
+        }
         val unsupported = unsupportedReason()
         if (unsupported != null) {
             trySend(CarConnectionState.Unsupported(unsupported))
@@ -79,7 +81,9 @@ internal class CarConnection @Inject constructor(
     private fun unsupportedReason(): String? = when {
         !context.packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE) ->
             "AAOS 차량 환경에서 확인할 수 있습니다."
+
         Build.VERSION.SDK_INT < Build.VERSION_CODES.Q -> "차량 연결에는 Android 10 이상이 필요합니다."
+
         else -> null
     }
 }

@@ -14,16 +14,22 @@ internal fun <T> Flow<T>.recoverVehicleService(
     failureState: (VehicleServiceException) -> T,
 ): Flow<T> = flow {
     var failures = 0
-    emitAll(this@recoverVehicleService.onEach { if (isHealthy(it)) failures = 0 }
-        .retryWhen { cause, _ ->
-            if (cause !is VehicleServiceException || cause.permissionRequired) return@retryWhen false
-            emit(failureState(cause))
-            val backoff = (1_000L shl failures.coerceAtMost(5)).coerceAtMost(30_000)
-            failures = (failures + 1).coerceAtMost(5)
-            delay(backoff)
-            true
-        }.catch { cause ->
-            if (cause !is VehicleServiceException) throw cause
-            emit(failureState(cause))
-        })
+    emitAll(
+        this@recoverVehicleService.onEach { if (isHealthy(it)) failures = 0 }
+            .retryWhen { cause, _ ->
+                if (cause !is VehicleServiceException ||
+                    cause.permissionRequired
+                ) {
+                    return@retryWhen false
+                }
+                emit(failureState(cause))
+                val backoff = (1_000L shl failures.coerceAtMost(5)).coerceAtMost(30_000)
+                failures = (failures + 1).coerceAtMost(5)
+                delay(backoff)
+                true
+            }.catch { cause ->
+                if (cause !is VehicleServiceException) throw cause
+                emit(failureState(cause))
+            },
+    )
 }

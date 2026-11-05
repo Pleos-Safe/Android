@@ -1,13 +1,13 @@
 package io.issac.pleosandroid.feature.main
 
 import androidx.lifecycle.SavedStateHandle
-import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
 import io.issac.pleosandroid.core.domain.model.VehicleMotionState
-import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.core.domain.model.VehicleState
+import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
+import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,7 +64,10 @@ class MainViewModelTest {
     fun `missing motion keeps an active journey pending instead of treating it as stopped`() = runTest {
         val fixture = fixture()
         fixture.viewModel.startJourney()
-        fixture.repository.emit(motion = VehicleMotion.Unknown, availability = MotionAvailability.Error)
+        fixture.repository.emit(
+            motion = VehicleMotion.Unknown,
+            availability = MotionAvailability.Error,
+        )
         runCurrent()
 
         assertNull(fixture.ready.phase)
@@ -106,7 +109,10 @@ class MainViewModelTest {
         fixture.repository.emit(motion = VehicleMotion.Moving)
         assertFalse(fixture.viewModel.endJourney())
 
-        fixture.repository.emit(motion = VehicleMotion.Unknown, availability = MotionAvailability.Connecting)
+        fixture.repository.emit(
+            motion = VehicleMotion.Unknown,
+            availability = MotionAvailability.Connecting,
+        )
         assertFalse(fixture.viewModel.endJourney())
     }
 
@@ -150,7 +156,8 @@ class MainViewModelTest {
 
     @Test
     fun `restored finished progress remains finished`() = runTest {
-        val fixture = fixture(savedState = SavedStateHandle(mapOf("journey_progress" to "Finished")))
+        val fixture =
+            fixture(savedState = SavedStateHandle(mapOf("journey_progress" to "Finished")))
 
         assertEquals(MainPhase.Finished, fixture.ready.phase)
     }
@@ -159,8 +166,11 @@ class MainViewModelTest {
     fun `launching while moving detects active journey even when controls are restricted`() = runTest {
         val savedState = SavedStateHandle()
         val fixture = fixture(
-            initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive,
-                policy = CarUxPolicy(connected = true, known = true)),
+            initial = vehicle(
+                motion = VehicleMotion.Moving,
+                gear = VehicleGear.Drive,
+                policy = CarUxPolicy(connected = true, known = true),
+            ),
             savedState = savedState,
         )
 
@@ -189,7 +199,8 @@ class MainViewModelTest {
 
     @Test
     fun `stops in drive neutral or unknown gear do not finish a trip`() = runTest {
-        val fixture = fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
+        val fixture =
+            fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
         for (gear in listOf(VehicleGear.Drive, VehicleGear.Neutral, VehicleGear.Unknown)) {
             fixture.repository.emit(motion = VehicleMotion.Stopped, gear = gear)
             runCurrent()
@@ -200,9 +211,13 @@ class MainViewModelTest {
 
     @Test
     fun `parking with unknown speed does not finish until valid stop is received`() = runTest {
-        val fixture = fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
-        fixture.repository.emit(motion = VehicleMotion.Unknown, availability = MotionAvailability.Error,
-            gear = VehicleGear.Park)
+        val fixture =
+            fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
+        fixture.repository.emit(
+            motion = VehicleMotion.Unknown,
+            availability = MotionAvailability.Error,
+            gear = VehicleGear.Park,
+        )
         runCurrent()
         assertNull(fixture.ready.phase)
 
@@ -213,7 +228,8 @@ class MainViewModelTest {
 
     @Test
     fun `restored preparation can wait in park and finish explicitly`() = runTest {
-        val fixture = fixture(savedState = SavedStateHandle(mapOf("journey_progress" to "Prepared")))
+        val fixture =
+            fixture(savedState = SavedStateHandle(mapOf("journey_progress" to "Prepared")))
         assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
         assertTrue(fixture.viewModel.endJourney())
     }
@@ -233,7 +249,9 @@ class MainViewModelTest {
     ): Fixture {
         val repository = FakeVehicleRepository(initial)
         val viewModel = MainViewModel(repository, savedState)
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect { } }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { }
+        }
         runCurrent()
         return Fixture(repository, viewModel)
     }

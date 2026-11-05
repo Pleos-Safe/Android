@@ -1,16 +1,16 @@
 package io.issac.pleosandroid.core.vehicle.repository
 
-import io.issac.pleosandroid.core.vehicle.datasource.CarUxDataSource
-import io.issac.pleosandroid.core.vehicle.datasource.VehicleMotionDataSource
-import io.issac.pleosandroid.core.vehicle.datasource.VehicleGearDataSource
-import io.issac.pleosandroid.core.vehicle.model.CarUxState
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.UxAvailability
+import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
 import io.issac.pleosandroid.core.domain.model.VehicleMotionState
 import io.issac.pleosandroid.core.domain.model.VehicleState
-import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
+import io.issac.pleosandroid.core.vehicle.datasource.CarUxDataSource
+import io.issac.pleosandroid.core.vehicle.datasource.VehicleGearDataSource
+import io.issac.pleosandroid.core.vehicle.datasource.VehicleMotionDataSource
+import io.issac.pleosandroid.core.vehicle.model.CarUxState
 import io.issac.pleosandroid.core.vehicle.repository.impl.DefaultVehicleRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -37,8 +37,12 @@ class DefaultVehicleRepositoryTest {
         val repository = DefaultVehicleRepository(motion, ux, gear, backgroundScope)
         runCurrent()
         assertEquals(0, motion.starts)
-        val first = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.state.collect() }
-        val second = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.state.collect() }
+        val first = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            repository.state.collect()
+        }
+        val second = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            repository.state.collect()
+        }
         runCurrent()
         assertEquals(1, motion.starts)
         assertEquals(1, ux.starts)
@@ -60,7 +64,9 @@ class DefaultVehicleRepositoryTest {
         val ux = FakeUxSource()
         val gear = FakeGearSource()
         val repository = DefaultVehicleRepository(motion, ux, gear, backgroundScope)
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.state.collect() }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            repository.state.collect()
+        }
         runCurrent()
         repository.retry()
         runCurrent()
@@ -80,22 +86,37 @@ class DefaultVehicleRepositoryTest {
         val motion = FakeMotionSource()
         val ux = FakeUxSource()
         val repository = DefaultVehicleRepository(motion, ux, FakeGearSource(), backgroundScope)
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.state.collect() }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            repository.state.collect()
+        }
         runCurrent()
         ux.updates.value = CarUxState(
             availability = UxAvailability.Available,
-            policy = CarUxPolicy(connected = true, known = true, requiresDistractionOptimization = false),
+            policy = CarUxPolicy(
+                connected = true,
+                known = true,
+                requiresDistractionOptimization = false,
+            ),
         )
-        motion.updates.value = VehicleMotionState(motion = VehicleMotion.Stopped,
-            speedMetersPerSecond = 0f, availability = MotionAvailability.Available)
+        motion.updates.value = VehicleMotionState(
+            motion = VehicleMotion.Stopped,
+            speedMetersPerSecond = 0f,
+            availability = MotionAvailability.Available,
+        )
         runCurrent()
         assertFalse(repository.state.value.uxPolicy.restrictionsRequired)
         ux.updates.value = CarUxState(availability = UxAvailability.Error)
         runCurrent()
         assertTrue(repository.state.value.uxPolicy.restrictionsRequired)
         assertEquals(UxAvailability.Error, repository.state.value.uxAvailability)
-        ux.updates.value = CarUxState(availability = UxAvailability.Available,
-            policy = CarUxPolicy(connected = true, known = true, requiresDistractionOptimization = false))
+        ux.updates.value = CarUxState(
+            availability = UxAvailability.Available,
+            policy = CarUxPolicy(
+                connected = true,
+                known = true,
+                requiresDistractionOptimization = false,
+            ),
+        )
         runCurrent()
         assertFalse(repository.state.value.uxPolicy.restrictionsRequired)
         assertEquals(1, ux.starts)
@@ -107,11 +128,22 @@ class DefaultVehicleRepositoryTest {
         val ux = FakeUxSource()
         val gear = FakeGearSource()
         val repository = DefaultVehicleRepository(motion, ux, gear, backgroundScope)
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.state.collect() }
-        motion.updates.value = VehicleMotionState(motion = VehicleMotion.Stopped,
-            speedMetersPerSecond = 0f, availability = MotionAvailability.Available)
-        ux.updates.value = CarUxState(availability = UxAvailability.Available,
-            policy = CarUxPolicy(connected = true, known = true, requiresDistractionOptimization = false))
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            repository.state.collect()
+        }
+        motion.updates.value = VehicleMotionState(
+            motion = VehicleMotion.Stopped,
+            speedMetersPerSecond = 0f,
+            availability = MotionAvailability.Available,
+        )
+        ux.updates.value = CarUxState(
+            availability = UxAvailability.Available,
+            policy = CarUxPolicy(
+                connected = true,
+                known = true,
+                requiresDistractionOptimization = false,
+            ),
+        )
         gear.updates.value = VehicleGear.Park
         runCurrent()
         assertEquals(VehicleGear.Park, repository.state.value.gear)
@@ -137,7 +169,11 @@ class DefaultVehicleRepositoryTest {
         override fun observe(): Flow<VehicleMotionState> = flow {
             starts++
             maxConcurrentSubscriptions = maxOf(maxConcurrentSubscriptions, starts - stops)
-            try { emitAll(updates) } finally { stops++ }
+            try {
+                emitAll(updates)
+            } finally {
+                stops++
+            }
         }
     }
 
@@ -149,7 +185,11 @@ class DefaultVehicleRepositoryTest {
         override fun observe(): Flow<CarUxState> = flow {
             starts++
             maxConcurrentSubscriptions = maxOf(maxConcurrentSubscriptions, starts - stops)
-            try { emitAll(updates) } finally { stops++ }
+            try {
+                emitAll(updates)
+            } finally {
+                stops++
+            }
         }
     }
 
@@ -161,7 +201,11 @@ class DefaultVehicleRepositoryTest {
         override fun observe(): Flow<VehicleGear> = flow {
             starts++
             maxConcurrentSubscriptions = maxOf(maxConcurrentSubscriptions, starts - stops)
-            try { emitAll(updates) } finally { stops++ }
+            try {
+                emitAll(updates)
+            } finally {
+                stops++
+            }
         }
     }
 }

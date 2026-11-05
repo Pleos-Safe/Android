@@ -15,10 +15,7 @@ enum class MainPhase {
 sealed interface MainUiState {
     data object Loading : MainUiState
 
-    data class Ready(
-        val phase: MainPhase?,
-        val vehicle: VehicleState,
-    ) : MainUiState {
+    data class Ready(val phase: MainPhase?, val vehicle: VehicleState) : MainUiState {
         val canOpenBadges: Boolean
             get() = !vehicle.uxPolicy.restrictionsRequired
 

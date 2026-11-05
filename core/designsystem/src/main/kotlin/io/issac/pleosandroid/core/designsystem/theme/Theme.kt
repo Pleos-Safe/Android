@@ -19,10 +19,7 @@ object PleosTheme {
 
 /** App tokens are the source of truth; Material components receive an adapter. */
 @Composable
-fun PleosTheme(
-    colors: PleosColorScheme = DarkColors,
-    content: @Composable () -> Unit,
-) {
+fun PleosTheme(colors: PleosColorScheme = DarkColors, content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalPleosColors provides colors) {
         MaterialTheme(
             colorScheme = remember(colors) { colors.toMaterialColorScheme() },

@@ -47,8 +47,11 @@ class DrivingScreenCaptureTest {
                 ) {
                     MainScreen(
                         uiState = fixture(phase.value),
-                        onStartJourney = {}, onEndJourney = {}, onOpenBadges = {},
-                        onRequestSpeedPermission = {}, onRetryVehicle = {},
+                        onStartJourney = {},
+                        onEndJourney = {},
+                        onOpenBadges = {},
+                        onRequestSpeedPermission = {},
+                        onRetryVehicle = {},
                     )
                 }
             }
@@ -68,7 +71,9 @@ class DrivingScreenCaptureTest {
             compose.runOnIdle { phase.value = capture.phase }
             compose.onNodeWithText(capture.label).assertExists()
             compose.waitForIdle()
-            val image = compose.onNodeWithTag("driving-state-capture").captureToImage().asAndroidBitmap()
+            val image = compose.onNodeWithTag(
+                "driving-state-capture",
+            ).captureToImage().asAndroidBitmap()
             File(outputDirectory, capture.filename).outputStream().use { stream ->
                 check(image.compress(Bitmap.CompressFormat.PNG, 100, stream))
             }
@@ -95,7 +100,9 @@ class DrivingScreenCaptureTest {
                 uxAvailability = UxAvailability.Available,
                 gear = if (phase == MainPhase.BeforeDriving || phase == MainPhase.Finished) {
                     VehicleGear.Park
-                } else VehicleGear.Drive,
+                } else {
+                    VehicleGear.Drive
+                },
             ),
         )
     }
