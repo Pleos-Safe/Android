@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.issac.pleosandroid.core.navigation.CardDetailRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 
 @Composable
@@ -29,6 +30,11 @@ internal fun BadgesRouteContent(
             cards = SampleCollection.cards,
             filter = filter,
             onFilterChange = { filter = it },
+            onCardClick = { cardId ->
+                if (!viewModel.vehicle.value.uxPolicy.restrictionsRequired) {
+                    router.navigate(CardDetailRoute(cardId))
+                }
+            },
             onBack = onBack,
             modifier = modifier,
         )

@@ -8,6 +8,7 @@
     <string name="collection_card_count">간직한 카드 %1$d장</string>
     <string name="collection_featured">홈에 전시 중</string>
     <string name="collection_open_card">카드 보기</string>
+    <string name="collection_open_named_card">%1$s 카드 보기</string>
     <string name="collection_first_collected">처음 간직한 날</string>
     <string name="collection_sample">데모 데이터</string>
     <string name="collection_no_cards">표시할 카드가 없어요.</string>
