@@ -11,6 +11,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             pluginManager.apply("com.android.library")
             extensions.configure<LibraryExtension> {
                 configureAndroid(this)
+                configureAndroidLint(lint)
             }
         }
     }

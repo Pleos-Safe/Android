@@ -11,7 +11,9 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             pluginManager.apply("com.android.application")
             extensions.configure<ApplicationExtension> {
                 configureAndroid(this)
+                configureAndroidLint(lint)
                 defaultConfig.targetSdk = 37
+                lint.checkDependencies = true
             }
         }
     }
