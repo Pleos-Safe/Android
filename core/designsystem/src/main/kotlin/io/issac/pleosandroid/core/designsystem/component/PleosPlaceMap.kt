@@ -2,7 +2,6 @@ package io.issac.pleosandroid.core.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -25,6 +24,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.R
+import io.issac.pleosandroid.core.designsystem.modifier.customClickable
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
@@ -78,14 +78,12 @@ fun PleosPlaceMap(
 
 @Composable
 private fun MapControl(symbol: PleosSymbol, label: String, onClick: (() -> Unit)?) {
-    val colors = PleosTheme.colors
     PleosIconButton(
         symbol = symbol,
         label = label,
         onClick = { onClick?.invoke() },
-        modifier = Modifier.clip(PleosShape.button).background(colors.chipDefault)
-            .border(1.dp, colors.borderControl, PleosShape.button),
         enabled = onClick != null,
+        outlined = true,
     )
 }
 
@@ -98,8 +96,14 @@ fun PleosMapPin(
     showLabel: Boolean = false,
 ) {
     val colors = PleosTheme.colors
+    val markerTint = if (selected) colors.textOnAction else colors.textPrimary
     Column(
-        modifier.clickable(role = Role.Button, onClick = onClick)
+        modifier.customClickable(
+            shape = if (showLabel) PleosShape.button else CircleShape,
+            role = Role.Button,
+            rippleColor = if (showLabel) colors.textPrimary else markerTint,
+            onClick = onClick,
+        )
             .semantics(mergeDescendants = true) {
                 if (!showLabel) contentDescription = label
                 this.selected = selected
@@ -107,7 +111,7 @@ fun PleosMapPin(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         MarkerCircle(selected) {
-            PleosGlyph(PleosSymbol.Pin, if (selected) colors.textOnAction else colors.textPrimary, Modifier.size(18.dp))
+            PleosGlyph(PleosSymbol.Pin, markerTint, Modifier.size(18.dp))
         }
         if (showLabel) {
             Text(
@@ -124,7 +128,14 @@ fun PleosMapPin(
 @Composable
 fun PleosMapCluster(count: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val label = stringResource(R.string.pleos_cluster_label, count)
-    Box(modifier.clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = label }) {
+    Box(
+        modifier.customClickable(
+            shape = CircleShape,
+            role = Role.Button,
+            rippleColor = PleosTheme.colors.actionPrimary,
+            onClick = onClick,
+        ).semantics { contentDescription = label },
+    ) {
         MarkerCircle(selected = false) {
             Text(count.toString(), style = PleosTextStyles.meta, color = PleosTheme.colors.actionPrimary)
         }

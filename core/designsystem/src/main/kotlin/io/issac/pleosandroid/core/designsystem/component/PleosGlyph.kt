@@ -1,10 +1,14 @@
 package io.issac.pleosandroid.core.designsystem.component
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -13,9 +17,12 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import io.issac.pleosandroid.core.designsystem.modifier.customClickable
+import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
@@ -53,13 +60,29 @@ internal fun PleosIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    outlined: Boolean = false,
 ) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(PleosSpacing.space48).semantics { contentDescription = label },
-        enabled = enabled,
+    val colors = PleosTheme.colors
+    val tint = if (enabled) colors.textPrimary else colors.textDisabled
+    val shape = if (outlined) PleosShape.button else CircleShape
+    val outline = if (outlined) {
+        Modifier.background(colors.chipDefault, shape).border(1.dp, colors.borderControl, shape)
+    } else {
+        Modifier
+    }
+    Box(
+        modifier = modifier.size(PleosSpacing.space48)
+            .semantics { contentDescription = label }
+            .customClickable(
+                shape = shape,
+                enabled = enabled,
+                role = Role.Button,
+                rippleColor = tint,
+                onClick = onClick,
+            )
+            .then(outline),
+        contentAlignment = Alignment.Center,
     ) {
-        val colors = PleosTheme.colors
-        PleosGlyph(symbol, tint = if (enabled) colors.textPrimary else colors.textDisabled)
+        PleosGlyph(symbol, tint)
     }
 }

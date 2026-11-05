@@ -2,6 +2,7 @@ package io.issac.pleosandroid.core.designsystem.component
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -18,6 +19,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,6 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.issac.pleosandroid.core.designsystem.R
+import io.issac.pleosandroid.core.designsystem.modifier.pressOnDown
+import io.issac.pleosandroid.core.designsystem.modifier.shapedRipple
+import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
@@ -114,15 +119,26 @@ private fun TabStrip(selectedTab: PleosTab, onSelect: (PleosTab) -> Unit, modifi
     Row(modifier.height(PleosSpacing.space56).selectableGroup()) {
         PleosTab.entries.forEach { tab ->
             val selected = tab == selectedTab
+            val interactions = remember { MutableInteractionSource() }
+            val foreground = if (selected) colors.actionPrimary else colors.textSecondary
+            val select = { onSelect(tab) }
             Box(
                 Modifier.weight(1f).fillMaxHeight()
-                    .selectable(selected, role = Role.Tab, onClick = { onSelect(tab) }),
+                    .selectable(
+                        selected = selected,
+                        interactionSource = interactions,
+                        indication = null,
+                        role = Role.Tab,
+                        onClick = select,
+                    )
+                    .pressOnDown(interactions, onClick = select)
+                    .shapedRipple(interactions, PleosShape.button, foreground),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     stringResource(tab.label),
                     style = PleosTextStyles.body,
-                    color = if (selected) colors.actionPrimary else colors.textSecondary,
+                    color = foreground,
                 )
                 if (selected) {
                     Spacer(
