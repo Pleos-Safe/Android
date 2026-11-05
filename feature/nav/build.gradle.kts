@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    api(project(":core:designsystem"))
     api(project(":core:navigation"))
     testImplementation(libs.junit)
 }
