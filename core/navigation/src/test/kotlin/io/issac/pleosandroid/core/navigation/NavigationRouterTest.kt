@@ -96,6 +96,33 @@ class NavigationRouterTest {
     }
 
     @Test
+    fun `replacing routes within tabs preserves their roots and keeps separate histories`() {
+        val home = NavBackStack<NavKey>(MainRoute)
+        val records = NavBackStack<NavKey>(RecordsRoute, DetailRoute("old"))
+        val router = NavigationRouter(home, selectTab = { if (it == RecordsRoute) records else home })
+
+        assertTrue(router.replace(DetailRoute("home")))
+        router.replaceAll(RecordsRoute, DetailRoute("new"))
+        assertEquals(listOf(MainRoute, DetailRoute("home")), home.toList())
+        assertEquals(listOf(RecordsRoute, DetailRoute("new")), records.toList())
+        router.resetTo(DetailRoute("other"))
+        assertEquals(listOf(MainRoute, DetailRoute("other")), home.toList())
+    }
+
+    @Test
+    fun `a restriction blocks detail and root mutations from a stale entry`() {
+        val stack = NavBackStack<NavKey>(MainRoute, DetailRoute("saved"))
+        val router =
+            NavigationRouter(stack, selectTab = { error("Tab selection is restricted") }, canNavigate = { false })
+
+        assertFalse(router.navigate(RecordsRoute))
+        assertFalse(router.navigate(DetailRoute("new")))
+        assertFalse(router.pop())
+        router.resetTo(MainRoute)
+        assertEquals(listOf(MainRoute, DetailRoute("saved")), stack.toList())
+    }
+
+    @Test
     fun `invalid initial stack is rejected`() {
         assertThrows(IllegalArgumentException::class.java) { router() }
         assertThrows(IllegalArgumentException::class.java) { router(HomeRoute, HomeRoute) }
