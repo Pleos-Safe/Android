@@ -4,9 +4,7 @@
 /local.properties
 /.idea/
 .DS_Store
-/build
-/build-logic/build
-/build-logic/convention/build
+**/build/
 /captures
 /artifacts/
 .externalNativeBuild
