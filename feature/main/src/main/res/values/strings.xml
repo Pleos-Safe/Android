@@ -11,7 +11,7 @@
     <string name="journey_restriction_unconfirmed_body">상태를 확인할 때까지 화면 조작을 멈춰요.\n진행 중이던 기록은 보존됩니다.</string>
     <string name="journey_restriction_navigation">내비게이션 안내는 시스템 화면에서 계속됩니다.</string>
     <string name="journey_restriction_ready_title">출발하면 여정이 시작돼요</string>
-    <string name="journey_restriction_ready_body">차량이 움직이면 여정이 자동으로 시작돼요.</string>
+    <string name="journey_restriction_ready_body">차량이 움직이면 주행 지도와 주변 여행지를 보여드려요.</string>
     <string name="journey_restriction_arrived_title">도착했어요. 주차 후 이어가요</string>
     <string name="journey_restriction_arrived_body">방문 기록과 카드 확인은\n주차가 확인된 뒤에 시작해요.</string>
     <string name="driving_recommendation_checking">현재 경로 확인 중</string>
@@ -37,4 +37,5 @@
     <string name="journey_duration_seconds">%1$d초</string>
     <string name="journey_duration_minutes_seconds">%1$d분 %2$d초</string>
     <string name="journey_duration_hours_minutes">%1$d시간 %2$d분</string>
+    <string name="driving_recommendation_empty">주변에 새로 추천할 여행지가 없어요.</string>
 </resources>

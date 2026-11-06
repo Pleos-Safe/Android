@@ -38,11 +38,7 @@ internal enum class JourneyRestriction(@param:StringRes val title: Int, @param:S
 }
 
 @Composable
-internal fun JourneyRestrictionScreen(
-    restriction: JourneyRestriction,
-    modifier: Modifier = Modifier,
-    recommendation: @Composable (() -> Unit)? = null,
-) {
+internal fun JourneyRestrictionScreen(restriction: JourneyRestriction, modifier: Modifier = Modifier) {
     val colors = PleosTheme.colors
     Box(
         modifier = modifier.fillMaxSize().pleosShellBackground().padding(
@@ -72,7 +68,6 @@ internal fun JourneyRestrictionScreen(
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center,
             )
-            recommendation?.invoke()
             Spacer(Modifier.height(PleosSpacing.space64))
             HorizontalDivider(color = colors.borderDefault)
             Spacer(Modifier.height(PleosSpacing.space16))
@@ -109,12 +104,14 @@ internal fun DrivingRecommendation(
     }
     val showRecheck = operation == PlaceNavigationOperation.Unconfirmed ||
         operation == PlaceNavigationOperation.Unavailable
-    if (status == null && (placeName == null || !showRequest)) return
+    if (status == null && (placeName == null || !showRequest)) {
+        NoDrivingRecommendation()
+        return
+    }
 
     val colors = PleosTheme.colors
     Column(
-        modifier = Modifier.fillMaxWidth().padding(top = PleosSpacing.space24),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(PleosSpacing.space8),
     ) {
         if (status != null) {
@@ -122,26 +119,43 @@ internal fun DrivingRecommendation(
                 text = stringResource(status),
                 style = PleosTextStyles.meta,
                 color = colors.textSecondary,
-                textAlign = TextAlign.Center,
             )
         }
-        if (placeName != null && showRequest) {
+        if (placeName != null && (showRequest || operation == PlaceNavigationOperation.Requesting)) {
             Text(
                 text = placeName,
                 style = PleosTextStyles.body,
                 color = colors.textPrimary,
-                textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            PleosButton(
-                text = stringResource(
-                    if (hasDestination == true) R.string.place_map_add_waypoint else R.string.place_map_set_destination,
-                ),
-                onClick = onRequest,
-            )
-        } else if (placeName != null && showRecheck) {
+            if (showRequest) {
+                PleosButton(
+                    text = stringResource(
+                        if (hasDestination ==
+                            true
+                        ) {
+                            R.string.place_map_add_waypoint
+                        } else {
+                            R.string.place_map_set_destination
+                        },
+                    ),
+                    onClick = onRequest,
+                    modifier = Modifier.fillMaxWidth(),
+                    showArrow = true,
+                )
+            }
+        } else if (showRecheck) {
             PleosButton(text = stringResource(R.string.place_map_check_route), onClick = onRecheck)
         }
     }
+}
+
+@Composable
+internal fun NoDrivingRecommendation() {
+    Text(
+        text = stringResource(R.string.driving_recommendation_empty),
+        style = PleosTextStyles.meta,
+        color = PleosTheme.colors.textSecondary,
+    )
 }
