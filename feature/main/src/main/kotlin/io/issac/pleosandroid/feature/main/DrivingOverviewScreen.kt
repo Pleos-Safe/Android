@@ -20,7 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -30,10 +32,13 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
+internal enum class DrivingSafetyMessage { Good, Violation }
+
 @Composable
 internal fun DrivingOverviewScreen(
     isMoving: Boolean,
     modifier: Modifier = Modifier,
+    safetyMessage: DrivingSafetyMessage? = null,
     map: @Composable (Modifier) -> Unit,
     recommendation: @Composable () -> Unit,
 ) {
@@ -58,12 +63,14 @@ internal fun DrivingOverviewScreen(
                         verticalArrangement = Arrangement.spacedBy(PleosSpacing.space12),
                     ) {
                         DrivingOverviewRecommendation(recommendation)
+                        safetyMessage?.let { DrivingSafetyBanner(it) }
                     }
                 }
             } else {
                 // The map uses the space remaining after the recommendation and its action are measured.
                 DrivingOverviewMap(map, Modifier.weight(1f).fillMaxWidth())
                 DrivingOverviewRecommendation(recommendation)
+                safetyMessage?.let { DrivingSafetyBanner(it) }
             }
         }
     }
@@ -139,6 +146,40 @@ private fun DrivingOverviewRecommendation(recommendation: @Composable () -> Unit
         )
         HorizontalDivider(color = colors.borderDefault)
         recommendation()
+    }
+}
+
+@Composable
+private fun DrivingSafetyBanner(message: DrivingSafetyMessage) {
+    val colors = PleosTheme.colors
+    val accent = if (message == DrivingSafetyMessage.Good) colors.actionPrimary else colors.statusPending
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .background(colors.chipDefault, PleosShape.button)
+            .border(1.dp, colors.borderDefault, PleosShape.button)
+            .padding(horizontal = PleosSpacing.space12, vertical = PleosSpacing.space8)
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+        horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space12),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.driving_overview_safety_demo),
+            color = accent,
+            style = PleosTextStyles.meta,
+        )
+        Text(
+            text = stringResource(
+                when (message) {
+                    DrivingSafetyMessage.Good -> R.string.driving_overview_safety_good
+                    DrivingSafetyMessage.Violation -> R.string.driving_overview_safety_violation
+                },
+            ),
+            modifier = Modifier.weight(1f),
+            color = colors.textPrimary,
+            style = PleosTextStyles.meta,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

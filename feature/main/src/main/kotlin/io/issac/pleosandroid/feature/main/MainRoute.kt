@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.booleanResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,6 +19,7 @@ import io.issac.pleosandroid.feature.main.map.DrivingRegionMap
 import io.issac.pleosandroid.feature.main.map.LocalPlaceMapViewModel
 import io.issac.pleosandroid.feature.main.map.PlaceMapPosition
 import io.issac.pleosandroid.feature.main.map.PlaceMapViewModel
+import io.issac.pleosandroid.feature.main.map.PlaceNavigationOperation
 import io.issac.pleosandroid.feature.main.map.allowsDrivingPlaceRecommendation
 
 @Composable
@@ -83,8 +85,10 @@ private fun JourneyDrivingOverview(
     val navigation by viewModel.navigationState.collectAsStateWithLifecycle()
     val location by viewModel.drivingPosition.collectAsStateWithLifecycle()
     val badgeRegionIds by viewModel.badgeRegionIds.collectAsStateWithLifecycle(initialValue = emptySet())
+    val demoMessage by viewModel.drivingSafetyMessage.collectAsStateWithLifecycle()
+    val demoEnabled = booleanResource(R.bool.driving_safety_demo_enabled)
     LifecycleStartEffect(viewModel, journeyId) {
-        viewModel.startDrivingOverview(journeyId)
+        viewModel.startDrivingOverview(journeyId, demoEnabled)
         onStopOrDispose { viewModel.stopDrivingOverview(journeyId) }
     }
 
@@ -102,6 +106,9 @@ private fun JourneyDrivingOverview(
     DrivingOverviewScreen(
         isMoving = isMoving,
         modifier = modifier,
+        safetyMessage = demoMessage.takeIf {
+            isMoving && demoEnabled && canRecommend && navigation.operation == PlaceNavigationOperation.Idle
+        },
         map = { mapModifier ->
             DrivingRegionMap(location, badgeRegionIds, isMoving, mapModifier)
         },
