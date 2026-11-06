@@ -6,42 +6,101 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.issac.pleosandroid.core.domain.collection.model.PlaceQuery
+import io.issac.pleosandroid.core.domain.collection.repository.PlaceRepository
+import io.issac.pleosandroid.core.domain.driving.repository.DrivingObservationKind
+import io.issac.pleosandroid.core.domain.driving.repository.DrivingRecorder
 import io.issac.pleosandroid.core.domain.repository.BadgeRegionSource
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.feature.main.DrivingSafetyMessage
-import io.issac.pleosandroid.feature.main.allowsTabNavigation
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 // Keep one route writer and one pending request across the parked map and driving home.
 internal val LocalPlaceMapViewModel = staticCompositionLocalOf<PlaceMapViewModel?> { null }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 internal class PlaceMapViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val vehicleRepository: VehicleRepository,
     badgeRegionSource: BadgeRegionSource,
+    placeRepository: PlaceRepository,
+    recorder: DrivingRecorder,
 ) : ViewModel() {
     private val location = PlaceMapLocation(context, viewModelScope)
-    private val navigationDelegate = lazy { PlaceMapNavigation(context, viewModelScope) }
+    private val navigationDelegate = lazy {
+        PlaceMapNavigation(context, viewModelScope).also { it.updateCatalog(this.places.value) }
+    }
     private val navigation by navigationDelegate
     private var parkedMapVisible = false
     private val drivingJourney = MutableStateFlow<Long?>(null)
     private val recommendationSession = DrivingRecommendationSession()
-    private var demoJourneyId: Long? = null
-    private var demoJob: Job? = null
+    private var messageJob: Job? = null
     private val mutableSafetyMessage = MutableStateFlow<DrivingSafetyMessage?>(null)
+
+    private val catalogRefresh = MutableStateFlow(0)
+    private val mutableCatalogError = MutableStateFlow(false)
+    val catalogError = mutableCatalogError.asStateFlow()
+    val places = catalogRefresh.flatMapLatest {
+        placeRepository.observePlaces(PlaceQuery()).onStart { mutableCatalogError.value = false }.catch {
+            mutableCatalogError.value = true
+            emit(emptyList())
+        }
+    }.map { rows ->
+        rows.map { row ->
+            val p = row.place
+            TravelPlace(
+                p.id,
+                p.name,
+                p.latitude,
+                p.longitude,
+                p.district,
+                p.category,
+                p.imageKey,
+                row.ownedCardIds.isNotEmpty(),
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    init {
+        viewModelScope.launch {
+            recorder.observations.collect { observation ->
+                if (drivingJourney.value == observation.startedAtMillis) {
+                    messageJob?.cancel()
+                    mutableSafetyMessage.value = when (observation.kind) {
+                        DrivingObservationKind.Acceleration -> DrivingSafetyMessage.Acceleration
+                        DrivingObservationKind.Braking -> DrivingSafetyMessage.Braking
+                    }
+                    messageJob = viewModelScope.launch {
+                        delay(5_000)
+                        mutableSafetyMessage.value = null
+                    }
+                }
+            }
+        }
+        viewModelScope.launch {
+            this@PlaceMapViewModel.places.collect { list ->
+                if (navigationDelegate.isInitialized()) navigation.updateCatalog(list)
+            }
+        }
+    }
 
     val locationState = location.state
     val navigationState get() = navigation.state
-    val badgeRegionIds = badgeRegionSource.collectedRegionIds
+    val badgeRegionIds = badgeRegionSource.collectedRegionIds.catch { emit(emptySet()) }
     val drivingSafetyMessage = mutableSafetyMessage.asStateFlow()
 
     val drivingPosition = combine(drivingJourney, location.freshFix) { journeyId, fix ->
@@ -49,24 +108,30 @@ internal class PlaceMapViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
 
     val drivingPlace by lazy {
-        combine(drivingJourney, location.freshFix, navigation.state, vehicleRepository.state) {
+        combine(drivingJourney, location.freshFix, navigation.state, vehicleRepository.state, this.places) {
                 journeyId,
                 fix,
                 route,
                 vehicle,
+                catalog,
             ->
             if (journeyId == null || !vehicle.allowsDrivingPlaceRecommendation) {
                 null
             } else {
-                recommendationSession.select(journeyId, currentPosition(fix), route)
+                recommendationSession.select(journeyId, currentPosition(fix), route, catalog)
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
     }
 
     fun canInteract(): Boolean = vehicleRepository.state.value.allowsTabNavigation
 
+    fun retryCatalog() {
+        if (canInteract()) catalogRefresh.value += 1
+    }
+
     fun refreshLocation() {
         if (!canInteract()) return
+        if (catalogError.value) retryCatalog()
         parkedMapVisible = true
         location.refresh()
     }
@@ -76,36 +141,22 @@ internal class PlaceMapViewModel @Inject constructor(
         if (drivingJourney.value == null) location.close()
     }
 
-    fun request(place: TravelPlace) = navigation.request(place, canRequest = ::canInteract)
+    fun request(place: TravelPlace) = navigation.request(place) { canInteract() && place in places.value }
 
     fun recheck() {
         if (canInteract()) navigation.recheck()
     }
 
-    fun startDrivingOverview(journeyId: Long, demoEnabled: Boolean) {
+    fun startDrivingOverview(journeyId: Long) {
         drivingJourney.value = journeyId
         location.refresh()
         navigation.recheck()
-        if (!demoEnabled || demoJourneyId == journeyId) return
-        demoJourneyId = journeyId
-        demoJob?.cancel()
-        mutableSafetyMessage.value = null
-        demoJob = viewModelScope.launch {
-            delay(3_000)
-            mutableSafetyMessage.value = DrivingSafetyMessage.Good
-            delay(5_000)
-            mutableSafetyMessage.value = null
-            delay(4_000)
-            mutableSafetyMessage.value = DrivingSafetyMessage.Violation
-            delay(5_000)
-            mutableSafetyMessage.value = null
-        }
     }
 
     fun stopDrivingOverview(journeyId: Long) {
         if (drivingJourney.value != journeyId) return
         drivingJourney.value = null
-        demoJob?.cancel()
+        messageJob?.cancel()
         mutableSafetyMessage.value = null
         if (!parkedMapVisible) location.close()
     }

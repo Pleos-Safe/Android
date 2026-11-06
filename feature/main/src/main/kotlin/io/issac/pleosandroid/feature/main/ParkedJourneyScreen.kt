@@ -12,36 +12,39 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import io.issac.pleosandroid.core.designsystem.R as DesignR
-import io.issac.pleosandroid.core.designsystem.component.MilestoneCard
-import io.issac.pleosandroid.core.designsystem.component.MilestoneCardFace
 import io.issac.pleosandroid.core.designsystem.component.PleosButton
+import io.issac.pleosandroid.core.designsystem.component.PleosButtonStyle
 import io.issac.pleosandroid.core.designsystem.component.PleosInfoPanel
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
 import io.issac.pleosandroid.core.designsystem.component.PleosTextLink
+import io.issac.pleosandroid.core.designsystem.theme.PleosLayout
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
+import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
 
 @Composable
 internal fun ParkedTravelHome(
+    place: HomePlace? = null,
     onOpenBadges: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenMap: (() -> Unit)? = null,
+    onOpenRecords: () -> Unit = {},
 ) {
     val colors = PleosTheme.colors
     PleosScreen(title = stringResource(R.string.journey_home_title), modifier = modifier) {
@@ -58,18 +61,18 @@ internal fun ParkedTravelHome(
             )
         }
         ParkedJourneyColumns(
-            primaryWeight = 1.8f,
+            primaryWeight = 1.35f,
             primary = { wide ->
-                Column(verticalArrangement = Arrangement.spacedBy(PleosSpacing.space12)) {
-                    RecommendedPlacePhoto(wide)
-                    Column(verticalArrangement = Arrangement.spacedBy(PleosSpacing.space4)) {
+                Column(verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap)) {
+                    RecommendedPlacePhoto(wide, place)
+                    Column(verticalArrangement = Arrangement.spacedBy(PleosSpacing.space4 * PleosTextStyles.scale)) {
                         Text(
-                            text = stringResource(R.string.journey_home_place),
+                            text = place?.name ?: "여행지를 불러오고 있어요",
                             style = PleosTextStyles.section,
                             color = colors.textPrimary,
                         )
                         Text(
-                            text = stringResource(R.string.journey_home_place_district),
+                            text = place?.district.orEmpty(),
                             style = PleosTextStyles.meta,
                             color = colors.textSecondary,
                         )
@@ -84,27 +87,27 @@ internal fun ParkedTravelHome(
                     }
                 }
             },
-            side = { wide ->
+            side = { _ ->
                 PleosInfoPanel(Modifier.fillMaxWidth(), outline = colors.borderControl) {
                     Text(
                         text = stringResource(R.string.journey_home_collection_title),
                         style = PleosTextStyles.section,
                         color = colors.textPrimary,
                     )
-                    if (wide) {
-                        MilestoneCard(
-                            face = MilestoneCardFace.CommonBack,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                                .padding(vertical = PleosSpacing.space8)
-                                .width(120.dp),
-                        )
-                    }
+                    LocalHomeCard.current()
                     Text(
                         text = stringResource(R.string.journey_home_collection_body),
                         style = PleosTextStyles.meta,
                         color = colors.textSecondary,
                     )
-                    PleosTextLink(stringResource(R.string.journey_collection), onOpenBadges)
+                    PleosButton(
+                        stringResource(R.string.journey_collection),
+                        onOpenBadges,
+                        Modifier.fillMaxWidth(),
+                        style = PleosButtonStyle.Secondary,
+                        showArrow = true,
+                    )
+                    PleosTextLink("운전습관 기록", onOpenRecords)
                 }
             },
         )
@@ -114,6 +117,8 @@ internal fun ParkedTravelHome(
 @Composable
 internal fun ParkedJourneySummary(
     summary: JourneySummary?,
+    onOpenRecords: () -> Unit = {},
+    onOpenReport: (String) -> Unit = {},
     onReturnHome: () -> Unit,
     onOpenBadges: () -> Unit,
     modifier: Modifier = Modifier,
@@ -156,12 +161,32 @@ internal fun ParkedJourneySummary(
                 }
             },
             side = {
-                Column(verticalArrangement = Arrangement.spacedBy(PleosSpacing.space12)) {
+                Column(verticalArrangement = Arrangement.spacedBy(PleosLayout.sectionGap)) {
                     Text(
                         text = stringResource(R.string.journey_summary_next),
                         style = PleosTextStyles.body,
                         color = colors.textSecondary,
                     )
+                    val reportId = summary?.reportId
+                    if (reportId != null) {
+                        PleosButton("이번 여정 운전습관 보기", { onOpenReport(reportId) }, Modifier.fillMaxWidth())
+                    } else {
+                        Text(
+                            text = when (summary?.recordingPhase) {
+                                RecordingPhase.Saving,
+                                RecordingPhase.Recording,
+                                -> "주행 기록을 저장하고 있어요."
+
+                                RecordingPhase.Error -> "기록에서 저장을 다시 시도할 수 있어요."
+
+                                RecordingPhase.Disabled -> "주행 기록 저장이 꺼져 있어요."
+
+                                else -> "저장된 주행 기록은 운전습관 탭에서 확인할 수 있어요."
+                            },
+                            style = PleosTextStyles.meta,
+                            color = colors.textSecondary,
+                        )
+                    }
                     PleosButton(
                         text = stringResource(R.string.journey_return_home),
                         onClick = onReturnHome,
@@ -169,6 +194,7 @@ internal fun ParkedJourneySummary(
                         showArrow = true,
                     )
                     PleosTextLink(stringResource(R.string.journey_collection), onOpenBadges)
+                    PleosTextLink("운전습관 기록", onOpenRecords)
                 }
             },
         )
@@ -182,13 +208,13 @@ private fun ParkedJourneyColumns(
     side: @Composable (Boolean) -> Unit,
 ) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        if (maxWidth >= 680.dp) {
-            Row(horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space24)) {
+        if (maxWidth >= PleosLayout.twoPaneMinWidth) {
+            Row(horizontalArrangement = Arrangement.spacedBy(PleosLayout.columnGap)) {
                 Box(Modifier.weight(primaryWeight)) { primary(true) }
                 Box(Modifier.weight(1f)) { side(true) }
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(PleosSpacing.space12)) {
+            Column(verticalArrangement = Arrangement.spacedBy(PleosLayout.sectionGap)) {
                 primary(false)
                 side(false)
             }
@@ -197,23 +223,37 @@ private fun ParkedJourneyColumns(
 }
 
 @Composable
-private fun RecommendedPlacePhoto(wide: Boolean) {
+private fun RecommendedPlacePhoto(wide: Boolean, place: HomePlace?) {
+    val context = LocalContext.current
+    val imageId = remember(place?.imageKey, context) {
+        place?.imageKey?.let { context.resources.getIdentifier(it, "drawable", context.packageName) } ?: 0
+    }
     val colors = PleosTheme.colors
     val shape = PleosShape.button
     Box(
-        modifier = Modifier.fillMaxWidth().aspectRatio(if (wide) 2.45f else 3.6f).clip(shape)
-            .border(2.dp, Brush.linearGradient(listOf(colors.actionPrimary, colors.accentLilac)), shape),
+        modifier = Modifier.fillMaxWidth().aspectRatio(if (wide) 1.7f else 2.05f).clip(shape)
+            .background(colors.surface)
+            .border(1.dp, colors.borderControl, shape),
     ) {
-        Image(
-            painter = painterResource(DesignR.drawable.milestone_art_haeundae),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize().padding(PleosSpacing.space4).clip(shape),
-            contentScale = ContentScale.Crop,
-            alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.35f),
+        if (imageId != 0) {
+            Image(
+                painter = painterResource(imageId),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.35f),
+            )
+        }
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(
+                    listOf(androidx.compose.ui.graphics.Color.Transparent, colors.background.copy(alpha = .65f)),
+                ),
+            ),
         )
         Text(
-            text = stringResource(R.string.journey_home_place_category),
-            modifier = Modifier.align(Alignment.BottomStart).padding(PleosSpacing.space16)
+            text = place?.category.orEmpty(),
+            modifier = Modifier.align(Alignment.BottomStart).padding(PleosLayout.panelPadding)
                 .background(colors.background.copy(alpha = .88f), PleosShape.chip)
                 .padding(horizontal = PleosSpacing.space12, vertical = PleosSpacing.space4),
             style = PleosTextStyles.meta,

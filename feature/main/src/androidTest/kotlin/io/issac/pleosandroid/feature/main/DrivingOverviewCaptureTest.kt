@@ -4,7 +4,8 @@ import android.graphics.Bitmap
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -22,7 +23,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.issac.pleosandroid.core.designsystem.component.PleosHeader
 import io.issac.pleosandroid.core.designsystem.component.PleosTab
 import io.issac.pleosandroid.core.designsystem.component.pleosShellBackground
-import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
+import io.issac.pleosandroid.core.designsystem.theme.PleosWindowTheme
 import io.issac.pleosandroid.feature.main.map.DrivingRegionMap
 import io.issac.pleosandroid.feature.main.map.PlaceMapPosition
 import io.issac.pleosandroid.feature.main.map.PlaceNavigationOperation
@@ -69,19 +70,20 @@ class DrivingOverviewCaptureTest {
                 message = R.string.driving_recommendation_unconfirmed,
                 action = R.string.place_map_check_route,
             ),
-            onRoute.copy(filename = "08-safety-good", safetyMessage = DrivingSafetyMessage.Good),
-            onRoute.copy(filename = "09-safety-violation", safetyMessage = DrivingSafetyMessage.Violation),
+            onRoute.copy(filename = "08-acceleration", safetyMessage = DrivingSafetyMessage.Acceleration),
+            onRoute.copy(filename = "09-braking", safetyMessage = DrivingSafetyMessage.Braking),
         )
         val current = mutableStateOf(moving)
         val width = mutableStateOf(1216.dp)
+        val height = mutableStateOf(760.dp)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val output = File(context.filesDir, "screenshots/driving-overview")
         check(output.isDirectory || output.mkdirs())
 
         compose.setContent {
-            PleosTheme {
+            PleosWindowTheme(Modifier.requiredSize(width.value, height.value)) {
                 val capture = current.value
-                Column(Modifier.size(width.value, 760.dp).testTag(CAPTURE_TAG).pleosShellBackground()) {
+                Column(Modifier.fillMaxSize().testTag(CAPTURE_TAG).pleosShellBackground()) {
                     PleosHeader(PleosTab.Travel, {}, {}, restricted = true)
                     Box(Modifier.weight(1f)) {
                         DrivingOverviewScreen(
@@ -105,15 +107,21 @@ class DrivingOverviewCaptureTest {
             }
         }
 
-        for (captureWidth in listOf(1216.dp, 520.dp)) {
+        for ((captureWidth, captureHeight) in listOf(
+            1216.dp to 760.dp,
+            520.dp to 760.dp,
+            1680.dp to 1210.dp,
+            841.dp to 1210.dp,
+        )) {
             for (capture in cases) {
                 compose.runOnIdle {
                     current.value = capture
                     width.value = captureWidth
+                    height.value = captureHeight
                 }
                 assertState(capture, context::getString)
                 val surface = compose.onNodeWithTag(CAPTURE_TAG)
-                surface.assertWidthIsEqualTo(captureWidth).assertHeightIsEqualTo(760.dp)
+                surface.assertWidthIsEqualTo(captureWidth).assertHeightIsEqualTo(captureHeight)
                 val image = surface.captureToImage().asAndroidBitmap()
                 File(output, "${capture.filename}-${captureWidth.value.toInt()}.png").outputStream().use { stream ->
                     check(image.compress(Bitmap.CompressFormat.PNG, 100, stream))
@@ -143,16 +151,16 @@ class DrivingOverviewCaptureTest {
             if (capture.action == action) node.assertIsDisplayed().assertIsEnabled() else node.assertDoesNotExist()
         }
 
-        val demo = compose.onNodeWithText(label(R.string.driving_overview_safety_demo), useUnmergedTree = true)
+        val observation = compose.onNodeWithText(label(R.string.driving_overview_observation), useUnmergedTree = true)
         val safetyBody = when (capture.safetyMessage) {
-            DrivingSafetyMessage.Good -> R.string.driving_overview_safety_good
-            DrivingSafetyMessage.Violation -> R.string.driving_overview_safety_violation
+            DrivingSafetyMessage.Acceleration -> R.string.driving_overview_acceleration
+            DrivingSafetyMessage.Braking -> R.string.driving_overview_braking
             null -> null
         }
         if (safetyBody == null) {
-            demo.assertDoesNotExist()
+            observation.assertDoesNotExist()
         } else {
-            demo.assertIsDisplayed()
+            observation.assertIsDisplayed()
             compose.onNodeWithText(label(safetyBody), useUnmergedTree = true).assertIsDisplayed()
         }
     }

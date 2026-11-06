@@ -22,7 +22,7 @@
     <string name="place_map_unconfirmed">내비게이션의 응답을 받지 못했어요. 현재 경로를 먼저 확인해 주세요.</string>
     <string name="place_map_navigation_unavailable">내비게이션에 연결할 수 없어요.</string>
     <string name="place_map_check_route">현재 경로 확인</string>
-    <string name="place_map_results">부산 여행지 · %1$d곳</string>
+    <string name="place_map_results">여행지 · %1$d곳</string>
     <string name="place_map_empty">이 조건에 맞는 여행지가 없어요.</string>
     <string name="place_map_basemap_loading">지도를 불러오고 있어요.</string>
     <string name="place_map_basemap_failed">지도를 불러오지 못했어요.</string>

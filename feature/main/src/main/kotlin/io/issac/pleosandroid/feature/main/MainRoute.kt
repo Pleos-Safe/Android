@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.booleanResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
 import io.issac.pleosandroid.core.navigation.BadgesRoute
+import io.issac.pleosandroid.core.navigation.DrivingReportRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
+import io.issac.pleosandroid.core.navigation.RecordsRoute
 import io.issac.pleosandroid.core.navigation.TravelMapRoute
 import io.issac.pleosandroid.feature.main.map.DrivingRegionMap
 import io.issac.pleosandroid.feature.main.map.LocalPlaceMapViewModel
@@ -33,6 +34,8 @@ internal fun MainRouteContent(contentPadding: PaddingValues) {
         onOpenBadges = { if (viewModel.canOpenBadges()) router.navigate(BadgesRoute) },
         modifier = Modifier.padding(contentPadding),
         onOpenMap = { router.navigate(TravelMapRoute) },
+        onOpenRecords = { router.navigate(RecordsRoute) },
+        onOpenReport = { router.navigate(DrivingReportRoute(it)) },
     )
 }
 
@@ -43,12 +46,18 @@ internal fun JourneyContent(
     onOpenBadges: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenMap: (() -> Unit)? = null,
+    onOpenRecords: () -> Unit = {},
+    onOpenReport: (String) -> Unit = {},
 ) {
+    val places = LocalPlaceMapViewModel.current ?: hiltViewModel<PlaceMapViewModel>()
+    val catalog by places.places.collectAsStateWithLifecycle()
+    val homePlace = catalog.firstOrNull()?.let { HomePlace(it.name, it.district, it.category, it.imageKey) }
     val speedPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         viewModel.retryVehicle()
     }
     MainScreen(
         uiState = uiState,
+        homePlace = homePlace,
         onReturnHome = { viewModel.returnHome() },
         onOpenBadges = onOpenBadges,
         onRequestSpeedPermission = {
@@ -57,6 +66,8 @@ internal fun JourneyContent(
         onRetryVehicle = { if (viewModel.canRecoverVehicle()) viewModel.retryVehicle() },
         modifier = modifier,
         onOpenMap = onOpenMap,
+        onOpenRecords = onOpenRecords,
+        onOpenReport = onOpenReport,
         drivingContent = { isMoving, drivingModifier ->
             val ready = uiState as MainUiState.Ready
             JourneyDrivingOverview(
@@ -85,10 +96,9 @@ private fun JourneyDrivingOverview(
     val navigation by viewModel.navigationState.collectAsStateWithLifecycle()
     val location by viewModel.drivingPosition.collectAsStateWithLifecycle()
     val badgeRegionIds by viewModel.badgeRegionIds.collectAsStateWithLifecycle(initialValue = emptySet())
-    val demoMessage by viewModel.drivingSafetyMessage.collectAsStateWithLifecycle()
-    val demoEnabled = booleanResource(R.bool.driving_safety_demo_enabled)
+    val safetyMessage by viewModel.drivingSafetyMessage.collectAsStateWithLifecycle()
     LifecycleStartEffect(viewModel, journeyId) {
-        viewModel.startDrivingOverview(journeyId, demoEnabled)
+        viewModel.startDrivingOverview(journeyId)
         onStopOrDispose { viewModel.stopDrivingOverview(journeyId) }
     }
 
@@ -106,8 +116,8 @@ private fun JourneyDrivingOverview(
     DrivingOverviewScreen(
         isMoving = isMoving,
         modifier = modifier,
-        safetyMessage = demoMessage.takeIf {
-            isMoving && demoEnabled && canRecommend && navigation.operation == PlaceNavigationOperation.Idle
+        safetyMessage = safetyMessage.takeIf {
+            isMoving && canRecommend && navigation.operation == PlaceNavigationOperation.Idle
         },
         map = { mapModifier ->
             DrivingRegionMap(location, badgeRegionIds, isMoving, mapModifier)

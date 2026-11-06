@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.issac.pleosandroid.core.designsystem.theme.PleosLayout
 import io.issac.pleosandroid.core.designsystem.theme.PleosMotion
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
@@ -72,8 +73,8 @@ internal fun DrivingRegionMap(
     val description = stringResource(R.string.driving_region_map_description, locationLabel)
 
     Column(
-        modifier = modifier.background(colors.background).padding(PleosSpacing.space16),
-        verticalArrangement = Arrangement.spacedBy(PleosSpacing.space8),
+        modifier = modifier.background(colors.background).padding(PleosLayout.panelPadding),
+        verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap),
     ) {
         Text(title, color = colors.textSecondary, style = PleosTextStyles.meta)
         Canvas(

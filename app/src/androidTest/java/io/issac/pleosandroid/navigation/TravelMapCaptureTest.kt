@@ -1,6 +1,7 @@
 package io.issac.pleosandroid.navigation
 
 import android.graphics.Bitmap
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -33,28 +34,28 @@ class TravelMapCaptureTest {
         assumeTrue(InstrumentationRegistry.getArguments().getString("pleosMapCapture") == "true")
 
         waitForText("지도에서 찾기")
-        compose.onNodeWithText("지도에서 찾기").performClick()
+        compose.onNodeWithText("지도에서 찾기").performScrollTo().performClick()
         waitForText("지도에서 여행지 찾기")
-        waitForText("부산 여행지 · 4곳")
+        waitForText("여행지 · 6곳")
         compose.waitUntil(timeoutMillis = 60_000) { !hasText("지도를 불러오고 있어요.") }
         capture("travel-map-01-default.png")
 
-        compose.onNodeWithText("해운대 해수욕장").performScrollTo().performClick()
-        waitForText("부산 해운대구 · 해변")
-        compose.onNodeWithText("부산 해운대구 · 해변").performScrollTo()
+        compose.onNodeWithText("해운대 해변").performScrollTo().performClick()
+        waitForText("해운대구 · 자연·산책")
+        compose.onAllNodesWithText("해운대구 · 자연·산책")[0].performScrollTo()
         capture("travel-map-05-haeundae-setup.png")
 
         search("수영구")
-        waitForText("부산 여행지 · 1곳")
-        compose.onNodeWithText("광안리 해수욕장").performScrollTo().performClick()
-        waitForText("부산 수영구 · 해변")
-        compose.onNodeWithText("부산 수영구 · 해변").performScrollTo()
+        waitForText("여행지 · 1곳")
+        compose.onNodeWithText("광안리 해변").performScrollTo().performClick()
+        waitForText("수영구 · 전망·명소")
+        compose.onAllNodesWithText("수영구 · 전망·명소")[0].performScrollTo()
         capture("travel-map-02-selected.png")
 
-        compose.onNodeWithText("목록으로 보기").performScrollTo().performClick()
+        compose.onNodeWithText("목록으로 보기").apply { if (!isDisplayed()) performScrollTo() }.performClick()
         waitForText("지도에서 보기")
         search("")
-        waitForText("부산 여행지 · 4곳")
+        waitForText("여행지 · 6곳")
         capture("travel-map-03-list.png")
 
         search("일치하지 않는 여행지")
@@ -63,7 +64,8 @@ class TravelMapCaptureTest {
     }
 
     private fun search(query: String) {
-        compose.onNodeWithContentDescription("장소 검색").performScrollTo().performTextReplacement(query)
+        compose.onNodeWithContentDescription("장소 검색")
+            .apply { if (!isDisplayed()) performScrollTo() }.performTextReplacement(query)
         compose.onNodeWithContentDescription("장소 검색").performImeAction()
     }
 

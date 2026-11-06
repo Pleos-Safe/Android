@@ -56,6 +56,12 @@ internal class PlaceMapNavigation(context: Context, private val scope: Coroutine
     private var requestTimeout: Job? = null
     private var routeRevision = 0L
     private var closed = false
+    private var catalog: List<TravelPlace> = emptyList()
+
+    fun updateCatalog(places: List<TravelPlace>) = onMain {
+        catalog = places
+        update(state.value.operation)
+    }
 
     init {
         onMain(::connect)
@@ -323,7 +329,7 @@ internal class PlaceMapNavigation(context: Context, private val scope: Coroutine
             emptySet()
         } else {
             val points = listOf(snapshot.destination) + snapshot.waypoints
-            busanTravelPlaces.filter { place ->
+            catalog.filter { place ->
                 val candidate = RoutePoint(place.latitude, place.longitude, place.name)
                 points.any { it.matches(candidate) }
             }.mapTo(mutableSetOf()) { it.id }

@@ -13,10 +13,7 @@ internal val VehicleState.allowsDrivingPlaceRecommendation: Boolean
         (!uxPolicy.contentLimited || (uxPolicy.maxCumulativeContentItems > 0 && uxPolicy.maxContentDepth > 0)) &&
         (!uxPolicy.stringLengthLimited || uxPolicy.maxRestrictedStringLength > 0)
 
-internal fun recommendDrivingPlace(
-    position: PlaceMapPosition,
-    places: List<TravelPlace> = busanTravelPlaces,
-): TravelPlace? {
+internal fun recommendDrivingPlace(position: PlaceMapPosition, places: List<TravelPlace>): TravelPlace? {
     if (!validCoordinates(position.latitude, position.longitude)) return null
 
     return places.asSequence()
@@ -36,7 +33,12 @@ internal class DrivingRecommendationSession {
     private var current: TravelPlace? = null
     private val shown = mutableSetOf<String>()
 
-    fun select(journeyId: Long, position: PlaceMapPosition?, route: PlaceNavigationState): TravelPlace? {
+    fun select(
+        journeyId: Long,
+        position: PlaceMapPosition?,
+        route: PlaceNavigationState,
+        places: List<TravelPlace>,
+    ): TravelPlace? {
         if (this.journeyId != journeyId) {
             this.journeyId = journeyId
             current = null
@@ -47,7 +49,7 @@ internal class DrivingRecommendationSession {
             current = null
             return null
         }
-        val previous = current
+        val previous = current?.let { old -> places.find { it.id == old.id } }
         if (previous != null && previous.id !in route.routePlaceIds &&
             previous.nearbyDistanceMeters(position) != null
         ) {
@@ -55,7 +57,7 @@ internal class DrivingRecommendationSession {
         }
         return recommendDrivingPlace(
             position,
-            busanTravelPlaces.filterNot {
+            places.filterNot {
                 it.id in shown ||
                     it.id in route.routePlaceIds
             },

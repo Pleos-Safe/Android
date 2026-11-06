@@ -1,12 +1,16 @@
 package io.issac.pleosandroid.feature.main
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import io.issac.pleosandroid.core.designsystem.component.PleosButton
+import io.issac.pleosandroid.core.designsystem.component.PleosInfoPanel
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
+import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
+import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
@@ -20,7 +24,10 @@ fun MainScreen(
     onRequestSpeedPermission: () -> Unit,
     onRetryVehicle: () -> Unit,
     modifier: Modifier = Modifier,
+    homePlace: HomePlace? = null,
     onOpenMap: (() -> Unit)? = null,
+    onOpenRecords: () -> Unit = {},
+    onOpenReport: (String) -> Unit = {},
     drivingRecommendation: @Composable (() -> Unit)? = null,
     drivingContent: @Composable ((Boolean, Modifier) -> Unit)? = null,
 ) {
@@ -47,6 +54,8 @@ fun MainScreen(
         if (uiState.canReturnHome) {
             ParkedJourneySummary(
                 summary = uiState.summary,
+                onOpenRecords = onOpenRecords,
+                onOpenReport = onOpenReport,
                 onReturnHome = onReturnHome,
                 onOpenBadges = onOpenBadges,
                 modifier = modifier,
@@ -55,16 +64,21 @@ fun MainScreen(
         }
         if (uiState.phase == MainPhase.BeforeDriving && uiState.canUseTabs) {
             ParkedTravelHome(
+                place = homePlace,
                 onOpenBadges = onOpenBadges,
                 modifier = modifier,
                 onOpenMap = onOpenMap,
+                onOpenRecords = onOpenRecords,
             )
             return
         }
     }
-    PleosScreen(title = "메인", modifier = modifier) {
+    PleosScreen(title = "차량 상태", modifier = modifier) {
         when (uiState) {
-            MainUiState.Loading -> Text("차량 상태를 확인하고 있습니다.")
+            MainUiState.Loading -> PleosInfoPanel(Modifier.fillMaxWidth()) {
+                Text("차량에 연결하고 있어요", style = PleosTextStyles.section, color = PleosTheme.colors.textPrimary)
+                Text("차량 상태를 확인하고 있습니다.", style = PleosTextStyles.body, color = PleosTheme.colors.textSecondary)
+            }
 
             is MainUiState.Ready -> {
                 Text(
