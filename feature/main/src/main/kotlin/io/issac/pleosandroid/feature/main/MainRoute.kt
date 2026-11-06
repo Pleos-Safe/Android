@@ -16,6 +16,7 @@ import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 import io.issac.pleosandroid.core.navigation.TravelMapRoute
 import io.issac.pleosandroid.feature.main.map.DrivingRegionMap
 import io.issac.pleosandroid.feature.main.map.LocalPlaceMapViewModel
+import io.issac.pleosandroid.feature.main.map.PlaceMapPosition
 import io.issac.pleosandroid.feature.main.map.PlaceMapViewModel
 import io.issac.pleosandroid.feature.main.map.allowsDrivingPlaceRecommendation
 
@@ -95,6 +96,9 @@ private fun JourneyDrivingOverview(
             name
         }
     }
+    val distanceKm = place?.let { selected ->
+        location?.distanceMetersTo(PlaceMapPosition(selected.latitude, selected.longitude))?.div(1_000)
+    }
     DrivingOverviewScreen(
         isMoving = isMoving,
         modifier = modifier,
@@ -115,6 +119,7 @@ private fun JourneyDrivingOverview(
                         }
                     },
                     onRecheck = { viewModel.recheckWhileDriving(isRequestAllowed) },
+                    distanceKm = distanceKm,
                 )
             } else {
                 NoDrivingRecommendation()

@@ -88,6 +88,7 @@ internal fun DrivingRecommendation(
     operation: PlaceNavigationOperation,
     onRequest: () -> Unit,
     onRecheck: () -> Unit,
+    distanceKm: Double? = null,
 ) {
     val status = when (operation) {
         PlaceNavigationOperation.Idle -> null
@@ -129,6 +130,13 @@ internal fun DrivingRecommendation(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (distanceKm != null && showRequest) {
+                Text(
+                    text = stringResource(R.string.driving_recommendation_distance, distanceKm),
+                    style = PleosTextStyles.meta,
+                    color = colors.textSecondary,
+                )
+            }
             if (showRequest) {
                 PleosButton(
                     text = stringResource(

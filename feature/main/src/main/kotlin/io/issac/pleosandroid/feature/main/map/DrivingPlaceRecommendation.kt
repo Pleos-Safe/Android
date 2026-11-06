@@ -20,11 +20,51 @@ internal fun recommendDrivingPlace(
     if (!validCoordinates(position.latitude, position.longitude)) return null
 
     return places.asSequence()
-        .filter { validCoordinates(it.latitude, it.longitude) }
-        .map { it to position.distanceMetersTo(PlaceMapPosition(it.latitude, it.longitude)) }
-        .filter { (_, distance) -> distance <= RECOMMENDATION_RADIUS_METERS }
+        .mapNotNull { place -> place.nearbyDistanceMeters(position)?.let { place to it } }
         .minByOrNull { (_, distance) -> distance }
         ?.first
+}
+
+internal fun TravelPlace.nearbyDistanceMeters(position: PlaceMapPosition): Double? {
+    if (!validCoordinates(position.latitude, position.longitude) || !validCoordinates(latitude, longitude)) return null
+    return position.distanceMetersTo(PlaceMapPosition(latitude, longitude))
+        .takeIf { it <= RECOMMENDATION_RADIUS_METERS }
+}
+
+internal class DrivingRecommendationSession {
+    private var journeyId: Long? = null
+    private var current: TravelPlace? = null
+    private val shown = mutableSetOf<String>()
+
+    fun select(journeyId: Long, position: PlaceMapPosition?, route: PlaceNavigationState): TravelPlace? {
+        if (this.journeyId != journeyId) {
+            this.journeyId = journeyId
+            current = null
+            shown.clear()
+        }
+        if (position == null || route.hasDestination == null) return null
+        if (!route.hasWaypointCapacity) {
+            current = null
+            return null
+        }
+        val previous = current
+        if (previous != null && previous.id !in route.routePlaceIds &&
+            previous.nearbyDistanceMeters(position) != null
+        ) {
+            return previous
+        }
+        return recommendDrivingPlace(
+            position,
+            busanTravelPlaces.filterNot {
+                it.id in shown ||
+                    it.id in route.routePlaceIds
+            },
+        )
+            .also { place ->
+                current = place
+                if (place != null) shown += place.id
+            }
+    }
 }
 
 private fun validCoordinates(latitude: Double, longitude: Double): Boolean =

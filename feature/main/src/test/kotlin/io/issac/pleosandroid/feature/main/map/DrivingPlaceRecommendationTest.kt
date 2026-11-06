@@ -92,4 +92,23 @@ class DrivingPlaceRecommendationTest {
         assertNull(recommendDrivingPlace(PlaceMapPosition(Double.NaN, 129.115)))
         assertNull(recommendDrivingPlace(PlaceMapPosition(35.152, 129.115), places = emptyList()))
     }
+
+    @Test
+    fun testRecommendationIsStableUntilUsedAndNewJourneyCanShowItAgain() {
+        val session = DrivingRecommendationSession()
+        val noRoute = PlaceNavigationState(hasDestination = false)
+        val haeundae = PlaceMapPosition(35.1580, 129.1519)
+        val gwangalli = PlaceMapPosition(35.152, 129.115)
+
+        assertNull(session.select(1, haeundae, PlaceNavigationState()))
+        assertEquals("haeundae", session.select(1, haeundae, noRoute)?.id)
+        assertNull(session.select(1, null, noRoute))
+        assertEquals("haeundae", session.select(1, gwangalli, noRoute)?.id)
+
+        val route = noRoute.copy(hasDestination = true, routePlaceIds = setOf("haeundae"))
+        assertEquals("gwangalli", session.select(1, gwangalli, route)?.id)
+        assertNull(session.select(1, gwangalli, route.copy(hasWaypointCapacity = false)))
+        assertEquals("igidae", session.select(1, gwangalli, route)?.id)
+        assertEquals("haeundae", session.select(2, haeundae, noRoute)?.id)
+    }
 }
