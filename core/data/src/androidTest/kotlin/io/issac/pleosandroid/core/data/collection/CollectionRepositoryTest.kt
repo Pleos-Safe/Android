@@ -7,11 +7,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.issac.pleosandroid.core.data.collection.local.CardAwardWriter
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
-import io.issac.pleosandroid.core.data.collection.repository.LocalCatalogRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalCollectionRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalHistoryRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalPlaceRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalProgressRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultCatalogRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
 import io.issac.pleosandroid.core.database.CollectionDatabase
 import io.issac.pleosandroid.core.database.CollectionDatabaseFactory
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
@@ -64,9 +64,9 @@ class CollectionRepositoryTest {
     private lateinit var db: CollectionDatabase
     private lateinit var demoDb: CollectionDatabase
     private lateinit var store: CollectionStore
-    private lateinit var progress: LocalProgressRepository
-    private lateinit var collection: LocalCollectionRepository
-    private lateinit var catalog: LocalCatalogRepository
+    private lateinit var progress: DefaultProgressRepository
+    private lateinit var collection: DefaultCollectionRepository
+    private lateinit var catalog: DefaultCatalogRepository
     private lateinit var generation: String
     private val source = object : CatalogSource {
         override fun load() = pack
@@ -88,9 +88,9 @@ class CollectionRepositoryTest {
     private fun connect(provider: CollectionDatabaseProvider) {
         store = CollectionStore(context, provider, source)
         val awards = CardAwardWriter()
-        progress = LocalProgressRepository(store, awards)
-        collection = LocalCollectionRepository(store)
-        catalog = LocalCatalogRepository(store, source, awards)
+        progress = DefaultProgressRepository(store, awards)
+        collection = DefaultCollectionRepository(store)
+        catalog = DefaultCatalogRepository(store, source, awards)
     }
 
     @After fun close() {
@@ -121,7 +121,7 @@ class CollectionRepositoryTest {
 
     @Test fun newDatabaseContainsCatalogButNoOwnedCards() = runBlocking<Unit> {
         assertTrue(snapshot().cards.isEmpty())
-        assertEquals(listOf(place.id), LocalPlaceRepository(store).observePlaces().first().map { it.place.id })
+        assertEquals(listOf(place.id), DefaultPlaceRepository(store).observePlaces().first().map { it.place.id })
         assertEquals(0, collection.observeCardProgress(card.id).first()!!.earnedLevel)
     }
 
@@ -164,7 +164,7 @@ class CollectionRepositoryTest {
             RecordProgressResult.Rejected(ProgressRejection.VisitNotQualified),
             progress.recordProgress(event().let { it.copy(visit = it.visit.copy(accuracyMeters = 200.0)) }),
         )
-        assertTrue(LocalHistoryRepository(store).observeVisits().first().isEmpty())
+        assertTrue(DefaultHistoryRepository(store).observeVisits().first().isEmpty())
     }
 
     @Test fun previewDoesNotPersistOrConsumeAnOperationId() = runBlocking<Unit> {
@@ -263,7 +263,7 @@ class CollectionRepositoryTest {
                 "BEGIN SELECT RAISE(ABORT, 'injected failure'); END",
         )
         assertEquals(RecordProgressResult.StorageFailure, progress.recordProgress(event()))
-        assertTrue(LocalHistoryRepository(store).observeVisits().first().isEmpty())
+        assertTrue(DefaultHistoryRepository(store).observeVisits().first().isEmpty())
         assertTrue(snapshot().cards.isEmpty())
         assertNull(progress.getProgressResult("visit"))
         db.openHelper.writableDatabase.execSQL("DROP TRIGGER fail_notice")
@@ -280,7 +280,7 @@ class CollectionRepositoryTest {
             cards = listOf(card.copy(front = front.copy(title = "새 이름"))),
         )
         assertEquals(CatalogResult.Applied, catalog.applyCatalog(updated))
-        assertEquals(2, LocalPlaceRepository(store).observePlaces().first().size)
+        assertEquals(2, DefaultPlaceRepository(store).observePlaces().first().size)
         assertEquals(1, snapshot().cards.single().revealedLevel)
         assertEquals("새 이름", snapshot().cards.single().front!!.title)
         assertEquals(CatalogResult.Unchanged, catalog.applyCatalog(updated))
@@ -306,7 +306,7 @@ class CollectionRepositoryTest {
         val result = progress.recordProgress(event()) as RecordProgressResult.Applied
         assertEquals(2, result.receipt.newCards.size)
         assertEquals(2, snapshot().cards.size)
-        assertEquals(1, LocalPlaceRepository(store).observePlaces().first().size)
+        assertEquals(1, DefaultPlaceRepository(store).observePlaces().first().size)
     }
 
     @Test fun maxLevelDoesNotPreventNewMemories() = runBlocking<Unit> {

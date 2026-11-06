@@ -7,11 +7,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.issac.pleosandroid.core.data.collection.local.CardAwardWriter
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
-import io.issac.pleosandroid.core.data.collection.repository.LocalBadgeRegionSource
-import io.issac.pleosandroid.core.data.collection.repository.LocalCollectionRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalHistoryRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalPlaceRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalProgressRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultBadgeRegionSource
+import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
 import io.issac.pleosandroid.core.database.CollectionDatabase
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
 import io.issac.pleosandroid.core.database.entity.DrivingDraftEntity
@@ -70,13 +70,13 @@ class DrivingRecordingTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private lateinit var db: CollectionDatabase
     private lateinit var store: CollectionStore
-    private lateinit var progress: LocalProgressRepository
+    private lateinit var progress: DefaultProgressRepository
     private lateinit var generation: String
     private val clock = TestClock()
     private val vehicle = TestVehicle(clock)
     private val sessionScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val place = Place("beach", "해변", "부산", "해변", 35.15, 129.16, 250.0, 60, "art", regionId = "KR-26")
-    private val journeys by lazy { LocalJourneyRepository(vehicle, clock, sessionScope) }
+    private val journeys by lazy { DefaultJourneyRepository(vehicle, clock, sessionScope) }
 
     @Before fun prepare() = runBlocking<Unit> {
         context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
@@ -112,7 +112,7 @@ class DrivingRecordingTest {
             },
             source,
         )
-        progress = LocalProgressRepository(store, CardAwardWriter())
+        progress = DefaultProgressRepository(store, CardAwardWriter())
         generation = progress.getDataGeneration()
     }
 
@@ -126,9 +126,9 @@ class DrivingRecordingTest {
         val event = ProgressEvent.JourneyCompleted("drive", generation, journey, true)
         val first = progress.recordProgress(event) as RecordProgressResult.Applied
         assertEquals(listOf("safe"), first.receipt.newCards.map { it.cardId })
-        assertEquals(journey, LocalHistoryRepository(store).observeJourney(journey.id).first())
+        assertEquals(journey, DefaultHistoryRepository(store).observeJourney(journey.id).first())
         assertTrue(progress.recordProgress(event) is RecordProgressResult.AlreadyProcessed)
-        assertEquals(1, LocalCollectionRepository(store).observeCard("safe").first()?.earnedLevel)
+        assertEquals(1, DefaultCollectionRepository(store).observeCard("safe").first()?.earnedLevel)
         assertEquals(1, db.collectionDao().journeys().size)
     }
 
@@ -142,7 +142,7 @@ class DrivingRecordingTest {
             ProgressEvent.JourneyCompleted("short", generation, record, true),
         ) as RecordProgressResult.Applied
         assertTrue(result.receipt.changes.isEmpty())
-        assertNull(LocalHistoryRepository(store).observeJourney(record.id).first()?.score)
+        assertNull(DefaultHistoryRepository(store).observeJourney(record.id).first()?.score)
     }
 
     @Test fun inconsistentCompleteScoreAndPoorCoverageAreRejected() = runBlocking {
@@ -170,7 +170,7 @@ class DrivingRecordingTest {
         try {
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
             assertNull(db.collectionDao().drivingDraft())
-            assertEquals(1, LocalCollectionRepository(store).observeCard("safe").first()?.earnedLevel)
+            assertEquals(1, DefaultCollectionRepository(store).observeCard("safe").first()?.earnedLevel)
             assertEquals(1, db.collectionDao().journeys().size)
         } finally {
             job.cancelAndJoin()
@@ -191,7 +191,7 @@ class DrivingRecordingTest {
         val job = launch(Dispatchers.Default) { recorder.monitor() }
         try {
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
-            assertEquals(record, LocalHistoryRepository(store).observeJourney(record.id).first())
+            assertEquals(record, DefaultHistoryRepository(store).observeJourney(record.id).first())
             assertTrue(db.collectionDao().ownedCards().isEmpty())
         } finally {
             job.cancelAndJoin()
@@ -315,8 +315,8 @@ class DrivingRecordingTest {
     @Test fun parkedVisitAwardsAPlaceCardAndUpdatesMapRegionsWithoutDuplicatingTheVisit() = runBlocking {
         val recorder = recorder()
         val fixes = MutableStateFlow<VisitLocation?>(null)
-        val places = LocalPlaceRepository(store)
-        val visits = LocalVisitRecorder(
+        val places = DefaultPlaceRepository(store)
+        val visits = DefaultVisitRecorder(
             store,
             progress,
             places,
@@ -346,16 +346,16 @@ class DrivingRecordingTest {
                 delay(150)
             }
             val visit = withTimeout(10_000) {
-                LocalHistoryRepository(store).observeVisits().first { it.isNotEmpty() }.single()
+                DefaultHistoryRepository(store).observeVisits().first { it.isNotEmpty() }.single()
             }
             assertEquals(active.journeyId, visit.journeyId)
             assertEquals(setOf("place-card"), places.observePlace(place.id).first()?.ownedCardIds)
-            assertEquals(setOf("KR-26"), LocalBadgeRegionSource(store).collectedRegionIds.first())
+            assertEquals(setOf("KR-26"), DefaultBadgeRegionSource(store).collectedRegionIds.first())
             store.realTransaction {
                 putPlaces(places().map { it.copy(active = false) })
                 touch()
             }
-            assertEquals(setOf("KR-26"), LocalBadgeRegionSource(store).collectedRegionIds.first())
+            assertEquals(setOf("KR-26"), DefaultBadgeRegionSource(store).collectedRegionIds.first())
             clock.nanos += 10_000_000_000
             vehicle.park()
             fixes.value = fixes.value!!.copy(elapsedNanos = clock.nanos)
@@ -365,7 +365,7 @@ class DrivingRecordingTest {
                 MutationResult.Success,
                 progress.deleteHistory(DeleteHistoryRequest(HistoryKind.Visit, visit.id, generation)),
             )
-            assertTrue(LocalBadgeRegionSource(store).collectedRegionIds.first().isEmpty())
+            assertTrue(DefaultBadgeRegionSource(store).collectedRegionIds.first().isEmpty())
         } finally {
             visitJob.cancelAndJoin()
             recordingJob.cancelAndJoin()
@@ -401,10 +401,10 @@ class DrivingRecordingTest {
     @Test fun cachedLocationsBeforeParkingOrReparkingCannotCountTowardDwell() = runBlocking {
         val recorder = recorder()
         val fixes = MutableStateFlow<VisitLocation?>(null)
-        val visits = LocalVisitRecorder(
+        val visits = DefaultVisitRecorder(
             store,
             progress,
-            LocalPlaceRepository(store),
+            DefaultPlaceRepository(store),
             journeys,
             recorder,
             object : VisitLocationSource {
@@ -453,7 +453,7 @@ class DrivingRecordingTest {
             vehicle.park()
             fixes.value = fixes.value!!.copy(elapsedNanos = clock.nanos)
             val visit = withTimeout(10_000) {
-                LocalHistoryRepository(store).observeVisits().first { it.isNotEmpty() }.single()
+                DefaultHistoryRepository(store).observeVisits().first { it.isNotEmpty() }.single()
             }
             assertEquals(clock.now().minusSeconds(60), visit.arrivedAt)
             assertEquals(clock.now(), visit.departedAt)
@@ -478,10 +478,10 @@ class DrivingRecordingTest {
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
             val fixes = MutableStateFlow<VisitLocation?>(null)
             val visits =
-                LocalVisitRecorder(
+                DefaultVisitRecorder(
                     store,
                     progress,
-                    LocalPlaceRepository(store),
+                    DefaultPlaceRepository(store),
                     journeys,
                     recorder,
                     object : VisitLocationSource {
@@ -505,7 +505,7 @@ class DrivingRecordingTest {
     }
 
     private fun recorder(repository: ProgressRepository = progress) =
-        LocalDrivingRecorder(context, store, repository, vehicle, clock, journeys)
+        DefaultDrivingRecorder(context, store, repository, vehicle, clock, journeys)
     private fun complete() = JourneyRecord(
         "journey", Instant.parse("2026-11-01T00:00:00Z"), Instant.parse("2026-11-01T00:10:00Z"),
         "Asia/Seoul", 5_000, AssessmentStatus.Complete, 88, 0,

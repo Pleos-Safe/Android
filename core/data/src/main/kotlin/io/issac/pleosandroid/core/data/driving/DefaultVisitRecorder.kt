@@ -25,7 +25,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 @Singleton
-internal class LocalVisitRecorder @Inject constructor(
+internal class DefaultVisitRecorder @Inject constructor(
     private val store: CollectionStore,
     private val progress: ProgressRepository,
     private val places: PlaceRepository,

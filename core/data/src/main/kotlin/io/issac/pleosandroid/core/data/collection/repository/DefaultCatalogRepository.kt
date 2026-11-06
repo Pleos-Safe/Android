@@ -17,7 +17,7 @@ import io.issac.pleosandroid.core.domain.collection.model.ReevaluateRulesRequest
 import io.issac.pleosandroid.core.domain.collection.repository.CatalogRepository
 import javax.inject.Inject
 
-internal class LocalCatalogRepository @Inject constructor(
+internal class DefaultCatalogRepository @Inject constructor(
     private val store: CollectionStore,
     private val loader: CatalogSource,
     private val awards: CardAwardWriter,

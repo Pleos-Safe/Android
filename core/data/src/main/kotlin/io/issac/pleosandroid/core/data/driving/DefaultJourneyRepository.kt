@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @Singleton
-internal class LocalJourneyRepository @Inject constructor(
+internal class DefaultJourneyRepository @Inject constructor(
     private val vehicle: VehicleRepository,
     clock: DrivingClock,
     @ApplicationScope scope: CoroutineScope,
