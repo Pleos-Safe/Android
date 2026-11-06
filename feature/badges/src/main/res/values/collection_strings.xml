@@ -22,6 +22,4 @@
     <string name="collection_filter_sort_count">필터·정렬 %1$d</string>
     <string name="collection_restricted">지금은 컬렉션을 볼 수 없어요</string>
     <string name="collection_restricted_message">차량에서 조작이 허용되면 다시 볼 수 있어요.</string>
-    <string name="collection_sample">데모 데이터</string>
-    <string name="collection_no_cards">표시할 카드가 없어요.</string>
 </resources>
