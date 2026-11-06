@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="place_map_title">지도에서 여행지 찾기</string>
+    <string name="place_map_back">여행 홈으로</string>
+    <string name="place_map_all">전체</string>
+    <string name="place_map_this_area">이 지역에서 찾기</string>
+    <string name="place_map_show_map">지도에서 보기</string>
+    <string name="place_map_show_list">목록으로 보기</string>
+    <string name="place_map_location_permission">위치 권한 설정</string>
+    <string name="place_map_location_unavailable">현재 위치를 확인하지 못했어요. 지도를 직접 탐색할 수 있어요.</string>
+    <string name="place_map_distance">현재 위치에서 직선거리 %1$.1f km</string>
+    <string name="place_map_place_meta">%1$s · %2$s</string>
+    <string name="place_map_waypoint_confirmation">가는 길에 들를까요?</string>
+    <string name="place_map_waypoint_message">기존 목적지는 그대로 두고 %1$s에 들러요.</string>
+    <string name="place_map_set_destination">목적지로 설정</string>
+    <string name="place_map_add_waypoint">경유지로 추가</string>
+    <string name="place_map_cancel">취소</string>
+    <string name="place_map_checking_route">현재 경로를 확인하고 있어요.</string>
+    <string name="place_map_requesting">내비게이션에 전달하고 있어요.</string>
+    <string name="place_map_applied">내비게이션에서 경로 변경을 확인했어요.</string>
+    <string name="place_map_rejected">경로 변경이 거절됐어요. 기존 내비 상태를 유지해요.</string>
+    <string name="place_map_unconfirmed">내비게이션의 응답을 받지 못했어요. 현재 경로를 먼저 확인해 주세요.</string>
+    <string name="place_map_navigation_unavailable">내비게이션에 연결할 수 없어요.</string>
+    <string name="place_map_check_route">현재 경로 확인</string>
+    <string name="place_map_results">부산 여행지 · %1$d곳</string>
+    <string name="place_map_empty">이 조건에 맞는 여행지가 없어요.</string>
+    <string name="place_map_basemap_loading">지도를 불러오고 있어요.</string>
+    <string name="place_map_basemap_failed">지도를 불러오지 못했어요.</string>
+    <string name="place_map_basemap_retry">지도 다시 불러오기</string>
+</resources>

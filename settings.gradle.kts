@@ -20,6 +20,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        exclusiveContent {
+            forRepository {
+                maven(url = "https://nexus-playground.pleos.ai/repository/maven-releases/")
+            }
+            filter { includeGroup("ai.pleos.playground") }
+        }
     }
 }
 

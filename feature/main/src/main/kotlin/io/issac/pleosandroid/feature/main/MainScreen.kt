@@ -8,7 +8,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import io.issac.pleosandroid.core.designsystem.component.PleosButton
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
-import io.issac.pleosandroid.core.domain.model.UxAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 
 @Composable
@@ -16,11 +15,44 @@ fun MainScreen(
     uiState: MainUiState,
     onStartJourney: () -> Unit,
     onEndJourney: () -> Unit,
+    onReturnHome: () -> Unit,
     onOpenBadges: () -> Unit,
     onRequestSpeedPermission: () -> Unit,
     onRetryVehicle: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenMap: (() -> Unit)? = null,
+    drivingRecommendation: @Composable (() -> Unit)? = null,
 ) {
+    val restriction = (uiState as? MainUiState.Ready)?.restriction
+    if (restriction != null) {
+        val recommendation = when (restriction) {
+            JourneyRestriction.Moving, JourneyRestriction.Stopped -> drivingRecommendation
+            JourneyRestriction.Arrived, JourneyRestriction.Unconfirmed -> null
+        }
+        JourneyRestrictionScreen(restriction, modifier, recommendation)
+        return
+    }
+    if (uiState is MainUiState.Ready) {
+        if (uiState.canReturnHome) {
+            ParkedJourneySummary(
+                summary = uiState.summary,
+                onReturnHome = onReturnHome,
+                onStartJourney = onStartJourney,
+                onOpenBadges = onOpenBadges,
+                modifier = modifier,
+            )
+            return
+        }
+        if (uiState.phase == MainPhase.BeforeDriving && uiState.canUseTabs) {
+            ParkedTravelHome(
+                onStartJourney = onStartJourney,
+                onOpenBadges = onOpenBadges,
+                modifier = modifier,
+                onOpenMap = onOpenMap,
+            )
+            return
+        }
+    }
     PleosScreen(title = "메인", modifier = modifier) {
         when (uiState) {
             MainUiState.Loading -> Text("차량 상태를 확인하고 있습니다.")
@@ -41,23 +73,6 @@ fun MainScreen(
                     val locale = LocalConfiguration.current.locales[0]
                     Text(String.format(locale, "현재 속도: %.1f km/h", speed * 3.6f))
                 }
-                if (uiState.vehicle.uxPolicy.restrictionsRequired) {
-                    Text(
-                        when {
-                            uiState.vehicle.uxPolicy.known -> "주행 중에는 상세 조작이 제한됩니다."
-
-                            uiState.vehicle.uxAvailability == UxAvailability.Error ->
-                                "차량 UX 제한 상태를 읽지 못해 조작을 제한합니다."
-
-                            uiState.vehicle.uxAvailability == UxAvailability.Unsupported ->
-                                "차량 UX 제한 정보를 지원하지 않는 환경입니다."
-
-                            else -> "차량 UX 제한 상태를 확인하고 있습니다."
-                        },
-                    )
-                    if (!uiState.vehicle.uxPolicy.known) Text(uiState.vehicle.uxPolicy.message)
-                    return@PleosScreen
-                }
                 if (!uiState.canUseTabs) {
                     Text(
                         if (uiState.vehicle.gear == VehicleGear.Unknown) {
@@ -76,13 +91,6 @@ fun MainScreen(
                     }
                     return@PleosScreen
                 }
-                if (uiState.phase == MainPhase.BeforeDriving || uiState.phase == MainPhase.Finished) {
-                    PleosButton(
-                        text = if (uiState.phase == MainPhase.Finished) "새 여정 시작" else "여정 시작",
-                        onClick = onStartJourney,
-                        enabled = uiState.canStartJourney,
-                    )
-                }
                 if (uiState.phase == MainPhase.DrivingStopped ||
                     uiState.phase == MainPhase.DrivingMoving ||
                     uiState.phase == null
@@ -99,3 +107,21 @@ fun MainScreen(
         }
     }
 }
+
+private val MainUiState.Ready.restriction: JourneyRestriction?
+    get() = when {
+        !vehicle.uxPolicy.connected || !vehicle.uxPolicy.known -> JourneyRestriction.Unconfirmed
+
+        phase == MainPhase.DrivingMoving -> JourneyRestriction.Moving
+
+        phase == MainPhase.DrivingStopped && vehicle.gear != VehicleGear.Park &&
+            vehicle.gear != VehicleGear.Unknown -> if (arrivedBeforeParking) {
+            JourneyRestriction.Arrived
+        } else {
+            JourneyRestriction.Stopped
+        }
+
+        vehicle.uxPolicy.restrictionsRequired -> JourneyRestriction.Unconfirmed
+
+        else -> null
+    }

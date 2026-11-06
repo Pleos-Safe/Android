@@ -15,6 +15,9 @@ data object BadgesRoute : MainTabRoute
 data object RecordsRoute : MainTabRoute
 
 @Serializable
+data object TravelMapRoute : AppRoute
+
+@Serializable
 data object SettingsRoute : AppRoute
 
 @Serializable

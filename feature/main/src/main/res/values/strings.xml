@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="journey_finished_summary">여정을 잘 마쳤어요</string>
+    <string name="journey_return_home">홈으로</string>
+    <string name="journey_open_map">지도에서 찾기</string>
+    <string name="journey_restriction_moving_title">지금은 운전에 집중해요</string>
+    <string name="journey_restriction_moving_body">카드와 기록은 주차 후 이어볼 수 있어요.</string>
+    <string name="journey_restriction_stopped_title">정차 중에도 조작은 잠시 쉬어요</string>
+    <string name="journey_restriction_stopped_body">주차와 조작 허용이 확인되면\n보던 화면으로 돌아갈 수 있어요.</string>
+    <string name="journey_restriction_unconfirmed_title">조작 가능 상태를 확인하고 있어요</string>
+    <string name="journey_restriction_unconfirmed_body">상태를 확인할 때까지 화면 조작을 멈춰요.\n진행 중이던 기록은 보존됩니다.</string>
+    <string name="journey_restriction_navigation">내비게이션 안내는 시스템 화면에서 계속됩니다.</string>
+    <string name="journey_restriction_arrived_title">도착했어요. 주차 후 이어가요</string>
+    <string name="journey_restriction_arrived_body">방문 기록과 카드 확인은\n주차가 확인된 뒤에 시작해요.</string>
+    <string name="driving_recommendation_checking">현재 경로 확인 중</string>
+    <string name="driving_recommendation_requesting">내비에 전달 중</string>
+    <string name="driving_recommendation_applied">내비에 반영됐어요</string>
+    <string name="driving_recommendation_rejected">내비에 반영되지 않았어요</string>
+    <string name="driving_recommendation_unconfirmed">경로 변경을 확인하지 못했어요</string>
+    <string name="driving_recommendation_unavailable">내비에 연결할 수 없어요</string>
+    <string name="journey_before_driving">주행 전</string>
+    <string name="journey_home_title">오늘의 한 장면</string>
+    <string name="journey_home_recommendation">부산 · 추천 장소</string>
+    <string name="journey_home_place">해운대 해변</string>
+    <string name="journey_home_place_category">해변 산책</string>
+    <string name="journey_home_place_district">부산 해운대구</string>
+    <string name="journey_home_collection_title">여정이 남긴 한 장</string>
+    <string name="journey_home_collection_body">여정의 기억을 카드로 간직해요.</string>
+    <string name="journey_collection">컬렉션 보기</string>
+    <string name="journey_start">여정 시작</string>
+    <string name="journey_start_another">새 여정 시작</string>
+    <string name="journey_finished">주행 종료</string>
+    <string name="journey_summary_title">이번 여정</string>
+    <string name="journey_summary_duration">주행 시간</string>
+    <string name="journey_summary_duration_unavailable">확인할 수 있는 주행 시간이 없어요.</string>
+    <string name="journey_summary_next">여행 홈에서 다음 장소를 찾아보세요.</string>
+    <string name="journey_duration_seconds">%1$d초</string>
+    <string name="journey_duration_minutes_seconds">%1$d분 %2$d초</string>
+    <string name="journey_duration_hours_minutes">%1$d시간 %2$d분</string>
+</resources>

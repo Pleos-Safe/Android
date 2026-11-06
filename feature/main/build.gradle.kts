@@ -20,6 +20,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     implementation(libs.hilt.viewmodel.compose)
+    implementation(libs.maplibre.android)
+    implementation(libs.pleos.fused.location)
+    implementation(libs.pleos.navi.helper)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

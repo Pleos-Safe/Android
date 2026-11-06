@@ -37,6 +37,15 @@ internal class MainTabNavigation(
             selection.value = tab
             return true
         }
+        return popToRoot(tab)
+    }
+
+    fun returnToTravelHome() {
+        selection.value = PleosTab.Travel
+        popToRoot(PleosTab.Travel)
+    }
+
+    private fun popToRoot(tab: PleosTab): Boolean {
         val stack = stackFor(tab)
         if (stack.size == 1) return false
         while (stack.size > 1) stack.removeAt(stack.lastIndex)

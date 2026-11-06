@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import io.issac.pleosandroid.MainActivity
@@ -61,6 +62,28 @@ class MainActivityFlowTest {
         compose.activityRule.scenario.recreate()
 
         waitFor("주행 종료")
+        compose.onNodeWithText("홈으로").performClick()
+        waitFor("주행 전")
+
+        compose.activityRule.scenario.recreate()
+
+        waitFor("주행 전")
+        compose.onNodeWithText("홈으로").assertDoesNotExist()
+    }
+
+    @Test
+    fun travelMapFiltersTheBundledCatalogAndReturnsHome() {
+        waitFor("지도에서 찾기")
+        compose.onNodeWithText("지도에서 찾기").performClick()
+        waitFor("지도에서 여행지 찾기")
+        waitFor("부산 여행지 · 4곳")
+
+        compose.onNodeWithContentDescription("장소 검색").performTextInput("수영구")
+        waitFor("부산 여행지 · 1곳")
+        compose.onNodeWithText("해운대 해수욕장").assertDoesNotExist()
+
+        compose.onNodeWithText("여행 홈으로").performClick()
+        waitFor("주행 전")
     }
 
     @Test
