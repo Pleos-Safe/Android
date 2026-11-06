@@ -31,6 +31,8 @@ class NavigationRouter(
     val canPop: Boolean
         get() = (backStack.size > 1 || onBackAtRoot != null) && canNavigate()
 
+    fun isActive(route: AppRoute): Boolean = currentEntry == route && canNavigate()
+
     fun navigate(route: AppRoute): Boolean {
         if (!canNavigate()) return false
         if (route is MainTabRoute && selectTab != null) {

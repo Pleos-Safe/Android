@@ -12,10 +12,22 @@ data object MainRoute : MainTabRoute
 data object BadgesRoute : MainTabRoute
 
 @Serializable
+data object SafetyCollectionRoute : AppRoute
+
+@Serializable
 data object RecordsRoute : MainTabRoute
 
 @Serializable
 data object TravelMapRoute : AppRoute
+
+@Serializable
+data class DrivingReportRoute(val journeyId: String) : AppRoute
+
+@Serializable
+data class DrivingDataStatusRoute(val journeyId: String) : AppRoute
+
+@Serializable
+data object RecordingSettingsRoute : AppRoute
 
 @Serializable
 data object SettingsRoute : AppRoute
