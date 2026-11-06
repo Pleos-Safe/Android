@@ -1,0 +1,1 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@drawable/milestone_art_*,@drawable/milestone_gloss_*,@drawable/milestone_engraving_*" />
