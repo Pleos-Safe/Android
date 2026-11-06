@@ -29,6 +29,7 @@ internal class PlaceMapViewModel @Inject constructor(
     private val navigation by navigationDelegate
     private var parkedMapVisible = false
     private val drivingJourney = MutableStateFlow<Long?>(null)
+    private val recommendationSession = DrivingRecommendationSession()
 
     val locationState = location.state
     val navigationState get() = navigation.state
@@ -48,7 +49,7 @@ internal class PlaceMapViewModel @Inject constructor(
             if (journeyId == null || !vehicle.allowsDrivingPlaceRecommendation) {
                 null
             } else {
-                recommendPlace(currentPosition(fix), route)
+                recommendationSession.select(journeyId, currentPosition(fix), route)
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
     }
@@ -87,8 +88,10 @@ internal class PlaceMapViewModel @Inject constructor(
     fun requestDrivingPlace(place: TravelPlace, hasDestination: Boolean, isAllowed: () -> Boolean) {
         navigation.request(place) {
             val route = navigation.state.value
+            val position = currentPosition(location.freshFix.value)
             drivingJourney.value != null && isAllowed() && route.hasDestination == hasDestination &&
-                recommendPlace(currentPosition(location.freshFix.value), route) == place
+                route.hasWaypointCapacity && place.id !in route.routePlaceIds && drivingPlace.value == place &&
+                position != null && place.nearbyDistanceMeters(position) != null
         }
     }
 
@@ -98,11 +101,6 @@ internal class PlaceMapViewModel @Inject constructor(
 
     private fun currentPosition(fix: FreshPlaceFix?): PlaceMapPosition? =
         fix?.takeIf { it.isFresh() && location.hasPermission() }?.position
-
-    private fun recommendPlace(position: PlaceMapPosition?, route: PlaceNavigationState): TravelPlace? {
-        if (position == null || !route.hasWaypointCapacity) return null
-        return recommendDrivingPlace(position, busanTravelPlaces.filterNot { it.id in route.routePlaceIds })
-    }
 
     override fun onCleared() {
         location.close()
