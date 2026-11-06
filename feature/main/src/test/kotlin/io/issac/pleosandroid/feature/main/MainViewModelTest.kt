@@ -184,6 +184,87 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `returning home dismisses the summary across recreation until the next journey ends`() = runTest {
+        val savedState = SavedStateHandle()
+        val first = fixture(
+            initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive),
+            savedState = savedState,
+        )
+        first.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
+        runCurrent()
+
+        assertEquals(MainPhase.Finished, first.ready.phase)
+        assertTrue(first.ready.canReturnHome)
+        assertTrue(first.viewModel.returnHome())
+        runCurrent()
+        assertEquals(MainPhase.BeforeDriving, first.ready.phase)
+        assertFalse(first.viewModel.returnHome())
+
+        val dismissedProgress = savedState.get<String>("journey_progress")
+        assertEquals("Before", dismissedProgress)
+        val restored = fixture(savedState = SavedStateHandle(mapOf("journey_progress" to dismissedProgress)))
+        assertEquals(MainPhase.BeforeDriving, restored.ready.phase)
+        assertFalse(restored.ready.canReturnHome)
+
+        restored.repository.emit(motion = VehicleMotion.Moving, gear = VehicleGear.Drive)
+        runCurrent()
+        restored.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
+        runCurrent()
+
+        assertEquals(MainPhase.Finished, restored.ready.phase)
+        assertTrue(restored.ready.canReturnHome)
+    }
+
+    @Test
+    fun `an active journey records a summary and clears the arrival signal when driving resumes`() = runTest {
+        val savedState = SavedStateHandle()
+        val fixture = fixture(
+            initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive),
+            savedState = savedState,
+        )
+
+        fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Drive)
+        savedState["journey_arrived"] = true
+        runCurrent()
+        assertTrue(fixture.ready.arrivedBeforeParking)
+
+        fixture.repository.emit(motion = VehicleMotion.Moving, gear = VehicleGear.Drive)
+        runCurrent()
+        fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Drive)
+        runCurrent()
+        assertFalse(fixture.ready.arrivedBeforeParking)
+
+        fixture.repository.emit(gear = VehicleGear.Park)
+        runCurrent()
+        assertEquals(MainPhase.Finished, fixture.ready.phase)
+        assertTrue(checkNotNull(fixture.ready.summary).durationMillis >= 0)
+        assertTrue(fixture.viewModel.returnHome())
+        runCurrent()
+        assertEquals(null, fixture.ready.summary)
+    }
+
+    @Test
+    fun `returning home checks the latest park and UX restrictions before the UI updates`() = runTest {
+        val fixture = fixture(savedState = SavedStateHandle(mapOf("journey_progress" to "Finished")))
+        assertTrue(fixture.ready.canReturnHome)
+
+        fixture.repository.emit(gear = VehicleGear.Drive)
+        assertFalse(fixture.viewModel.returnHome())
+        runCurrent()
+        assertFalse(fixture.ready.canReturnHome)
+
+        fixture.repository.emit(gear = VehicleGear.Park)
+        runCurrent()
+        assertTrue(fixture.ready.canReturnHome)
+
+        fixture.repository.emit(policy = CarUxPolicy())
+        assertFalse(fixture.viewModel.returnHome())
+        runCurrent()
+        assertFalse(fixture.ready.canReturnHome)
+        assertEquals(MainPhase.Finished, fixture.ready.phase)
+    }
+
+    @Test
     fun `launching while moving detects active journey even when controls are restricted`() = runTest {
         val savedState = SavedStateHandle()
         val fixture = fixture(

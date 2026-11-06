@@ -49,17 +49,18 @@ class ScreenStateTest {
                 ),
                 onStartJourney = {},
                 onEndJourney = {},
+                onReturnHome = {},
                 onOpenBadges = {},
                 onRequestSpeedPermission = {},
                 onRetryVehicle = {},
             )
         }
-        val labels = listOf("주행 전", "주행 중 · 멈춤", "주행 중 · 달림", "주행 종료")
+        val labels = listOf("주행 전", "정차 중에도 조작은 잠시 쉬어요", "지금은 운전에 집중해요", "주행 종료")
         MainPhase.entries.forEachIndexed { index, state ->
             compose.runOnIdle { phase.value = state }
             compose.onNodeWithText(labels[index]).assertExists()
-            if (state == MainPhase.DrivingMoving) {
-                compose.onNodeWithText("주행 중에는 상세 조작이 제한됩니다.").assertExists()
+            if (state == MainPhase.DrivingMoving || state == MainPhase.DrivingStopped) {
+                compose.onNodeWithText("내비게이션 안내는 시스템 화면에서 계속됩니다.").assertExists()
                 compose.onNodeWithText("여정 종료").assertDoesNotExist()
                 compose.onNodeWithText("컬렉션 보기").assertDoesNotExist()
             }
@@ -81,12 +82,13 @@ class ScreenStateTest {
                 uiState = MainUiState.Ready(MainPhase.BeforeDriving, vehicle.value),
                 onStartJourney = {},
                 onEndJourney = {},
+                onReturnHome = {},
                 onOpenBadges = {},
                 onRequestSpeedPermission = {},
                 onRetryVehicle = {},
             )
         }
-        compose.onNodeWithText("차량 UX 제한 상태를 읽지 못해 조작을 제한합니다.").assertExists()
+        compose.onNodeWithText("조작 가능 상태를 확인하고 있어요").assertExists()
         compose.onNodeWithText("여정 시작").assertDoesNotExist()
         compose.onNodeWithText("컬렉션 보기").assertDoesNotExist()
         compose.onNodeWithText("차량 속도 접근 허용").assertDoesNotExist()
@@ -100,7 +102,7 @@ class ScreenStateTest {
 
         compose.onNodeWithText("여정 시작").assertIsEnabled()
         compose.onNodeWithText("컬렉션 보기").assertIsEnabled()
-        compose.onNodeWithText("차량 UX 제한 상태를 읽지 못해 조작을 제한합니다.").assertDoesNotExist()
+        compose.onNodeWithText("조작 가능 상태를 확인하고 있어요").assertDoesNotExist()
     }
 
     private val unrestricted = CarUxPolicy(

@@ -12,10 +12,17 @@ enum class MainPhase {
     Finished,
 }
 
+data class JourneySummary(val durationMillis: Long)
+
 sealed interface MainUiState {
     data object Loading : MainUiState
 
-    data class Ready(val phase: MainPhase?, val vehicle: VehicleState) : MainUiState {
+    data class Ready(
+        val phase: MainPhase?,
+        val vehicle: VehicleState,
+        val summary: JourneySummary? = null,
+        val arrivedBeforeParking: Boolean = false,
+    ) : MainUiState {
         val canUseTabs: Boolean get() = vehicle.allowsTabNavigation
 
         val canOpenBadges: Boolean get() = canUseTabs
@@ -25,6 +32,9 @@ sealed interface MainUiState {
 
         val canEndJourney: Boolean
             get() = canUseTabs && phase == MainPhase.DrivingStopped
+
+        val canReturnHome: Boolean
+            get() = canUseTabs && phase == MainPhase.Finished
     }
 }
 

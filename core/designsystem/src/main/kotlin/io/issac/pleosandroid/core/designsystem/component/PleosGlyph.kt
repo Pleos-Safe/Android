@@ -39,6 +39,8 @@ internal enum class PleosSymbol(val outline: String) {
     Locate("M12 1V5M12 19V23M1 12H5M19 12H23M12 5A7 7 0 1 0 12 19A7 7 0 1 0 12 5Z"),
     Plus("M5 12H19M12 5V19"),
     Minus("M5 12H19"),
+    Pause("M8 4V20M16 4V20"),
+    Lock("M5 10H19V22H5ZM8 10V6A4 4 0 0 1 16 6V10M12 15V18"),
 }
 
 @Composable
@@ -51,6 +53,15 @@ internal fun PleosGlyph(symbol: PleosSymbol, tint: Color, modifier: Modifier = M
             if (symbol == PleosSymbol.Mark) drawLine(accent, Offset(1f, 23f), Offset(23f, 23f), 1.4f)
         }
     }
+}
+
+@Composable
+fun PleosRestrictionGlyph(isMoving: Boolean, modifier: Modifier = Modifier) {
+    PleosGlyph(
+        symbol = if (isMoving) PleosSymbol.Pause else PleosSymbol.Lock,
+        tint = PleosTheme.colors.textSecondary,
+        modifier = modifier.size(PleosSpacing.space48),
+    )
 }
 
 @Composable

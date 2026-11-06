@@ -10,11 +10,15 @@ import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavEntryResult
 import io.issac.pleosandroid.core.navigation.SettingsRoute
+import io.issac.pleosandroid.core.navigation.TravelMapRoute
+import io.issac.pleosandroid.feature.main.map.PlaceMapRouteContent
 import javax.inject.Inject
 
 class MainNavEntryFactory @Inject constructor() : NavEntryFactory {
     override fun create(route: AppRoute): NavEntryResult? = when (route) {
         MainRoute -> NavEntryResult { padding -> MainRouteContent(contentPadding = padding) }
+
+        TravelMapRoute -> NavEntryResult { padding -> PlaceMapRouteContent(Modifier.padding(padding)) }
 
         SettingsRoute -> NavEntryResult { padding ->
             val router = LocalNavigationRouter.current

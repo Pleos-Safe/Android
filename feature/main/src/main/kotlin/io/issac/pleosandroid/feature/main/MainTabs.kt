@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -20,6 +21,8 @@ import io.issac.pleosandroid.core.designsystem.component.pleosShellBackground
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavigationRouter
 import io.issac.pleosandroid.core.navigation.SettingsRoute
+import io.issac.pleosandroid.feature.main.map.LocalPlaceMapViewModel
+import io.issac.pleosandroid.feature.main.map.PlaceMapViewModel
 import io.issac.pleosandroid.feature.nav.PleosNavDisplay
 import io.issac.pleosandroid.feature.nav.rememberPleosNavEntries
 
@@ -33,12 +36,17 @@ fun PleosMain(
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    CompositionLocalProvider(LocalMainViewModel provides viewModel) {
+    val placeMapViewModel = hiltViewModel<PlaceMapViewModel>()
+    CompositionLocalProvider(
+        LocalMainViewModel provides viewModel,
+        LocalPlaceMapViewModel provides placeMapViewModel,
+    ) {
         MainTabs(
             factories = factories,
             restricted = (uiState as? MainUiState.Ready)?.canUseTabs != true,
             canNavigate = viewModel::canUseTabs,
             modifier = modifier,
+            showJourneyResult = (uiState as? MainUiState.Ready)?.canReturnHome == true,
             restrictedContent = { JourneyContent(uiState, viewModel, onOpenBadges = {}) },
         )
     }
@@ -50,9 +58,13 @@ internal fun MainTabs(
     restricted: Boolean,
     canNavigate: () -> Boolean,
     modifier: Modifier = Modifier,
+    showJourneyResult: Boolean = false,
     restrictedContent: @Composable () -> Unit,
 ) {
     val navigation = rememberMainTabNavigation()
+    LaunchedEffect(showJourneyResult) {
+        if (showJourneyResult) navigation.returnToTravelHome()
+    }
     val selected = navigation.selectedTab
     val allowed = rememberUpdatedState { !restricted && canNavigate() }
     val routers = remember(navigation) {
