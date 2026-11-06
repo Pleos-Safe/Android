@@ -1,0 +1,1 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@drawable/collection_art_*,@drawable/collection_gloss_*,@drawable/collection_engraving_*" />
