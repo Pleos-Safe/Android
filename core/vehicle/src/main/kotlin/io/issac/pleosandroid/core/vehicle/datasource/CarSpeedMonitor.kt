@@ -180,6 +180,7 @@ private fun CarPropertyValue<*>.toMotionState(): VehicleMotionState? {
         motion = motion,
         speedMetersPerSecond = speed,
         availability = MotionAvailability.Available,
+        timestampNanos = timestamp.takeIf { it > 0 },
         message = if (motion == VehicleMotion.Moving) "차량이 이동 중입니다." else "차량이 멈춰 있습니다.",
     )
 }
