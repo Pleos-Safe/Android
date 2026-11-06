@@ -1,41 +1,43 @@
 package io.issac.pleosandroid.feature.badges
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
+import io.issac.pleosandroid.feature.badges.collection.CollectionScreen
+import io.issac.pleosandroid.feature.badges.model.CollectionCardDesign
+import io.issac.pleosandroid.feature.badges.model.CollectionSeed
+import io.issac.pleosandroid.feature.badges.model.Haeundae
+import io.issac.pleosandroid.feature.badges.model.SafeHome
 
-@Preview(name = "D01 · Collection", widthDp = 1000, heightDp = 620)
+@Preview(name = "D11 · 전체 선반", widthDp = 1216, heightDp = 680)
+@Preview(name = "D11 · 분할 선반", widthDp = 520, heightDp = 616)
 @Composable
-private fun MilestoneCollectionPreview() {
-    PleosTheme {
-        Box(Modifier.width(1000.dp)) {
-            CollectionScreen(
-                cards = SampleCollection.cards,
-                filter = null,
-                onFilterChange = {},
-                onBack = {},
-                onCardClick = {},
-            )
-        }
-    }
+private fun CollectionPreview() {
+    PleosTheme { CollectionScreen(CollectionSeed.cards, CollectionSeed.representativeId, {}) }
 }
 
-@Preview(name = "D01 · Place filter", widthDp = 440, heightDp = 680)
+@Preview(name = "D04 · 첫 카드 전", widthDp = 520, heightDp = 616)
 @Composable
-private fun MilestoneCollectionCompactPreview() {
-    PleosTheme {
-        Box(Modifier.width(440.dp)) {
-            CollectionScreen(
-                cards = SampleCollection.cards,
-                filter = CardKind.Place,
-                onFilterChange = {},
-                onBack = {},
-                onCardClick = {},
-            )
-        }
+private fun EmptyCollectionPreview() {
+    PleosTheme { CollectionScreen(emptyList(), null, {}) }
+}
+
+@Preview(name = "D01F · 첫 소장", widthDp = 1216, heightDp = 680)
+@Composable
+private fun FirstCollectionPreview() {
+    val card = CollectionSeed.cards.first().let {
+        it.copy(earnedLevel = 1, revealedLevel = 1, memories = it.memories.take(1))
     }
+    PleosTheme { CollectionScreen(listOf(card), null, {}) }
+}
+
+@Preview(name = "D01 · 두 장 소장", widthDp = 1216, heightDp = 680)
+@Composable
+private fun TwoCardCollectionPreview() {
+    val cards = CollectionSeed.cards.filter {
+        it.design == CollectionCardDesign.Haeundae ||
+            it.design == CollectionCardDesign.SafeHome
+    }
+        .map { it.copy(revealedLevel = it.earnedLevel) }
+    PleosTheme { CollectionScreen(cards, CollectionSeed.representativeId, {}) }
 }
