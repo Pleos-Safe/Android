@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -35,6 +34,8 @@ class MainViewModel @Inject constructor(
     private var previousMotion = VehicleMotion.Unknown
 
     init {
+        // Older versions let a driver prepare a journey without departing.
+        if (progress.value == "Prepared") updateProgress(JourneyProgress.Before)
         if (arrivalMonitor != null) {
             viewModelScope.launch {
                 progress.collectLatest { value ->
@@ -50,7 +51,17 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private val observedVehicle = vehicleRepository.state.onEach { vehicle ->
+    val uiState: StateFlow<MainUiState> = combine(vehicleRepository.state, progress, arrived) { vehicle, _, _ ->
+        updateJourneyFromVehicle(vehicle)
+        createUiState(vehicle)
+    }.stateIn(
+        scope = viewModelScope,
+        // Keep tracking the trip while system navigation covers the activity.
+        started = SharingStarted.Eagerly,
+        initialValue = MainUiState.Loading,
+    )
+
+    private fun updateJourneyFromVehicle(vehicle: VehicleState) {
         val current = journeyProgress(progress.value)
         val updated = current.onVehicleChanged(vehicle)
         if (updated != current) updateProgress(updated)
@@ -62,30 +73,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    val uiState: StateFlow<MainUiState> = combine(observedVehicle, progress, arrived) { vehicle, value, hasArrived ->
-        createUiState(vehicle, value, hasArrived)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000, replayExpirationMillis = 0),
-        initialValue = MainUiState.Loading,
-    )
-
-    fun startJourney(): Boolean {
-        val current = createUiState(vehicleRepository.state.value, progress.value)
-        if (!current.canStartJourney) return false
-        updateProgress(JourneyProgress.Prepared)
-        return true
-    }
-
-    fun endJourney(): Boolean {
-        val current = createUiState(vehicleRepository.state.value, progress.value)
-        if (!current.canEndJourney) return false
-        updateProgress(JourneyProgress.Finished)
-        return true
-    }
-
     fun returnHome(): Boolean {
-        val current = createUiState(vehicleRepository.state.value, progress.value)
+        val current = createUiState(vehicleRepository.state.value)
         if (!current.canReturnHome) return false
         updateProgress(JourneyProgress.Before)
         return true
@@ -94,7 +83,7 @@ class MainViewModel @Inject constructor(
     fun canUseTabs(): Boolean = vehicleRepository.state.value.allowsTabNavigation
 
     internal fun canUseDrivingRecommendation(): Boolean {
-        val current = createUiState(vehicleRepository.state.value, progress.value)
+        val current = createUiState(vehicleRepository.state.value)
         return current.vehicle.allowsDrivingPlaceRecommendation && !current.arrivedBeforeParking &&
             (current.phase == MainPhase.DrivingMoving || current.phase == MainPhase.DrivingStopped)
     }
@@ -107,18 +96,14 @@ class MainViewModel @Inject constructor(
         vehicleRepository.retry()
     }
 
-    private fun createUiState(
-        vehicle: VehicleState,
-        value: String,
-        hasArrived: Boolean = arrived.value,
-    ): MainUiState.Ready {
-        val journey = journeyProgress(value).onVehicleChanged(vehicle)
+    private fun createUiState(vehicle: VehicleState): MainUiState.Ready {
+        val journey = journeyProgress(progress.value).onVehicleChanged(vehicle)
         val phase = when (journey) {
             JourneyProgress.Before -> MainPhase.BeforeDriving
 
             JourneyProgress.Finished -> MainPhase.Finished
 
-            JourneyProgress.Prepared, JourneyProgress.Active -> when {
+            JourneyProgress.Active -> when {
                 vehicle.motion.availability != MotionAvailability.Available -> null
                 vehicle.motion.motion == VehicleMotion.Moving -> MainPhase.DrivingMoving
                 vehicle.motion.motion == VehicleMotion.Stopped -> MainPhase.DrivingStopped
@@ -130,7 +115,12 @@ class MainViewModel @Inject constructor(
             phase = phase,
             vehicle = vehicle,
             summary = summary,
-            arrivedBeforeParking = phase == MainPhase.DrivingStopped && hasArrived,
+            arrivedBeforeParking = phase == MainPhase.DrivingStopped && arrived.value,
+            journeyStartedAtMillis = if (phase == MainPhase.DrivingMoving || phase == MainPhase.DrivingStopped) {
+                savedStateHandle[JOURNEY_START_KEY]
+            } else {
+                null
+            },
         )
     }
 
@@ -143,7 +133,7 @@ class MainViewModel @Inject constructor(
 
             JourneyProgress.Finished -> savedStateHandle[JOURNEY_END_KEY] = System.currentTimeMillis()
 
-            JourneyProgress.Before, JourneyProgress.Prepared -> {
+            JourneyProgress.Before -> {
                 savedStateHandle.remove<Long>(JOURNEY_START_KEY)
                 savedStateHandle.remove<Long>(JOURNEY_END_KEY)
             }
@@ -173,8 +163,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // A manual start can precede departure; repeated parked snapshots must not end that trip.
-    private enum class JourneyProgress { Before, Prepared, Active, Finished }
+    private enum class JourneyProgress { Before, Active, Finished }
 
     private companion object {
         const val JOURNEY_PROGRESS_KEY = "journey_progress"

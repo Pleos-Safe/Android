@@ -46,28 +46,18 @@ class MainActivityFlowTest {
     }
 
     @Test
-    fun hiltFactoriesObserveVehicleFlowAndRestoreJourneyAcrossCollectionAndRecreation() {
+    fun parkedVehicleStaysBeforeDrivingAcrossCollectionAndActivityRecreation() {
         waitFor("주행 전")
-        compose.waitUntil(timeoutMillis = 15_000) {
-            runCatching { compose.onNodeWithText("여정 시작").assertIsEnabled() }.isSuccess
-        }
-        compose.onNodeWithText("여정 시작").performClick()
-        waitFor("주행 중 · 멈춤")
+        compose.onNodeWithText("여정 시작").assertDoesNotExist()
         openCollection()
         compose.onNodeWithText("뒤로").performClick()
-        waitFor("주행 중 · 멈춤")
-        compose.onNodeWithText("여정 종료").performClick()
-        waitFor("주행 종료")
-
-        compose.activityRule.scenario.recreate()
-
-        waitFor("주행 종료")
-        compose.onNodeWithText("홈으로").performClick()
         waitFor("주행 전")
 
         compose.activityRule.scenario.recreate()
 
         waitFor("주행 전")
+        compose.onNodeWithText("여정 시작").assertDoesNotExist()
+        compose.onNodeWithText("주행 종료").assertDoesNotExist()
         compose.onNodeWithText("홈으로").assertDoesNotExist()
     }
 

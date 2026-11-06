@@ -32,6 +32,7 @@ import io.issac.pleosandroid.feature.main.map.PlaceNavigationOperation
 internal enum class JourneyRestriction(@param:StringRes val title: Int, @param:StringRes val body: Int) {
     Moving(R.string.journey_restriction_moving_title, R.string.journey_restriction_moving_body),
     Stopped(R.string.journey_restriction_stopped_title, R.string.journey_restriction_stopped_body),
+    ReadyToDrive(R.string.journey_restriction_ready_title, R.string.journey_restriction_ready_body),
     Arrived(R.string.journey_restriction_arrived_title, R.string.journey_restriction_arrived_body),
     Unconfirmed(R.string.journey_restriction_unconfirmed_title, R.string.journey_restriction_unconfirmed_body),
 }

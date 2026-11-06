@@ -45,8 +45,6 @@ internal fun JourneyContent(
     }
     MainScreen(
         uiState = uiState,
-        onStartJourney = { viewModel.startJourney() },
-        onEndJourney = { viewModel.endJourney() },
         onReturnHome = { viewModel.returnHome() },
         onOpenBadges = onOpenBadges,
         onRequestSpeedPermission = {

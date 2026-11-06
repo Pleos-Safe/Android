@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.UxAvailability
@@ -47,9 +49,7 @@ class ScreenStateTest {
                         },
                     ),
                 ),
-                onStartJourney = {},
-                onEndJourney = {},
-                onReturnHome = {},
+                onReturnHome = { phase.value = MainPhase.BeforeDriving },
                 onOpenBadges = {},
                 onRequestSpeedPermission = {},
                 onRetryVehicle = {},
@@ -59,12 +59,16 @@ class ScreenStateTest {
         MainPhase.entries.forEachIndexed { index, state ->
             compose.runOnIdle { phase.value = state }
             compose.onNodeWithText(labels[index]).assertExists()
+            compose.onNodeWithText("여정 시작").assertDoesNotExist()
+            compose.onNodeWithText("새 여정 시작").assertDoesNotExist()
+            compose.onNodeWithText("여정 종료").assertDoesNotExist()
             if (state == MainPhase.DrivingMoving || state == MainPhase.DrivingStopped) {
                 compose.onNodeWithText("내비게이션 안내는 시스템 화면에서 계속됩니다.").assertExists()
-                compose.onNodeWithText("여정 종료").assertDoesNotExist()
                 compose.onNodeWithText("컬렉션 보기").assertDoesNotExist()
             }
         }
+        compose.onNodeWithText("홈으로").performScrollTo().performClick()
+        compose.onNodeWithText("주행 전").assertExists()
     }
 
     @Test
@@ -80,16 +84,15 @@ class ScreenStateTest {
         compose.setContent {
             MainScreen(
                 uiState = MainUiState.Ready(MainPhase.BeforeDriving, vehicle.value),
-                onStartJourney = {},
-                onEndJourney = {},
                 onReturnHome = {},
                 onOpenBadges = {},
                 onRequestSpeedPermission = {},
                 onRetryVehicle = {},
+                onOpenMap = {},
             )
         }
         compose.onNodeWithText("조작 가능 상태를 확인하고 있어요").assertExists()
-        compose.onNodeWithText("여정 시작").assertDoesNotExist()
+        compose.onNodeWithText("지도에서 찾기").assertDoesNotExist()
         compose.onNodeWithText("컬렉션 보기").assertDoesNotExist()
         compose.onNodeWithText("차량 속도 접근 허용").assertDoesNotExist()
 
@@ -100,7 +103,7 @@ class ScreenStateTest {
             )
         }
 
-        compose.onNodeWithText("여정 시작").assertIsEnabled()
+        compose.onNodeWithText("지도에서 찾기").assertIsEnabled()
         compose.onNodeWithText("컬렉션 보기").assertIsEnabled()
         compose.onNodeWithText("조작 가능 상태를 확인하고 있어요").assertDoesNotExist()
     }

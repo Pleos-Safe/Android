@@ -10,6 +10,8 @@
     <string name="journey_restriction_unconfirmed_title">조작 가능 상태를 확인하고 있어요</string>
     <string name="journey_restriction_unconfirmed_body">상태를 확인할 때까지 화면 조작을 멈춰요.\n진행 중이던 기록은 보존됩니다.</string>
     <string name="journey_restriction_navigation">내비게이션 안내는 시스템 화면에서 계속됩니다.</string>
+    <string name="journey_restriction_ready_title">출발하면 여정이 시작돼요</string>
+    <string name="journey_restriction_ready_body">차량이 움직이면 여정이 자동으로 시작돼요.</string>
     <string name="journey_restriction_arrived_title">도착했어요. 주차 후 이어가요</string>
     <string name="journey_restriction_arrived_body">방문 기록과 카드 확인은\n주차가 확인된 뒤에 시작해요.</string>
     <string name="driving_recommendation_checking">현재 경로 확인 중</string>
@@ -27,8 +29,6 @@
     <string name="journey_home_collection_title">여정이 남긴 한 장</string>
     <string name="journey_home_collection_body">여정의 기억을 카드로 간직해요.</string>
     <string name="journey_collection">컬렉션 보기</string>
-    <string name="journey_start">여정 시작</string>
-    <string name="journey_start_another">새 여정 시작</string>
     <string name="journey_finished">주행 종료</string>
     <string name="journey_summary_title">이번 여정</string>
     <string name="journey_summary_duration">주행 시간</string>
