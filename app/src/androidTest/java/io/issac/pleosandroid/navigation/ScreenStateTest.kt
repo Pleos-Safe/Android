@@ -63,7 +63,7 @@ class ScreenStateTest {
             compose.onNodeWithText("새 여정 시작").assertDoesNotExist()
             compose.onNodeWithText("여정 종료").assertDoesNotExist()
             if (state == MainPhase.DrivingMoving || state == MainPhase.DrivingStopped) {
-                compose.onNodeWithText("내비게이션 안내는 시스템 화면에서 계속됩니다.").assertExists()
+                compose.onNodeWithText("주행 위치 지도").assertExists()
                 compose.onNodeWithText("컬렉션 보기").assertDoesNotExist()
             }
         }

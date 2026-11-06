@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="driving_overview_moving">주행 중</string>
+    <string name="driving_overview_stopped">정차 중</string>
+    <string name="driving_overview_recommendation">주변 추천</string>
+</resources>

@@ -6,9 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.issac.pleosandroid.core.domain.repository.BadgeRegionSource
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.feature.main.allowsTabNavigation
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -20,28 +22,49 @@ internal val LocalPlaceMapViewModel = staticCompositionLocalOf<PlaceMapViewModel
 internal class PlaceMapViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val vehicleRepository: VehicleRepository,
+    badgeRegionSource: BadgeRegionSource,
 ) : ViewModel() {
     private val location = PlaceMapLocation(context, viewModelScope)
     private val navigationDelegate = lazy { PlaceMapNavigation(context, viewModelScope) }
     private val navigation by navigationDelegate
-    private var drivingRecommendationVisible = false
+    private var parkedMapVisible = false
+    private val drivingJourney = MutableStateFlow<Long?>(null)
 
     val locationState = location.state
     val navigationState get() = navigation.state
+    val badgeRegionIds = badgeRegionSource.collectedRegionIds
+
+    val drivingPosition = combine(drivingJourney, location.freshFix) { journeyId, fix ->
+        if (journeyId != null) currentPosition(fix) else null
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
 
     val drivingPlace by lazy {
-        combine(location.freshFix, navigation.state) { fix, route ->
-            recommendPlace(fix, route)
+        combine(drivingJourney, location.freshFix, navigation.state, vehicleRepository.state) {
+                journeyId,
+                fix,
+                route,
+                vehicle,
+            ->
+            if (journeyId == null || !vehicle.allowsDrivingPlaceRecommendation) {
+                null
+            } else {
+                recommendPlace(currentPosition(fix), route)
+            }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
     }
 
     fun canInteract(): Boolean = vehicleRepository.state.value.allowsTabNavigation
 
     fun refreshLocation() {
-        if (canInteract()) location.refresh()
+        if (!canInteract()) return
+        parkedMapVisible = true
+        location.refresh()
     }
 
-    fun stopLocation() = location.close()
+    fun stopLocation() {
+        parkedMapVisible = false
+        if (drivingJourney.value == null) location.close()
+    }
 
     fun request(place: TravelPlace) = navigation.request(place, canRequest = ::canInteract)
 
@@ -49,33 +72,36 @@ internal class PlaceMapViewModel @Inject constructor(
         if (canInteract()) navigation.recheck()
     }
 
-    fun startDrivingRecommendation(isAllowed: () -> Boolean) {
-        if (!isAllowed()) return
-        drivingRecommendationVisible = true
+    fun startDrivingOverview(journeyId: Long) {
+        drivingJourney.value = journeyId
         location.refresh()
         navigation.recheck()
     }
 
-    fun stopDrivingRecommendation() {
-        drivingRecommendationVisible = false
-        location.close()
+    fun stopDrivingOverview(journeyId: Long) {
+        if (drivingJourney.value != journeyId) return
+        drivingJourney.value = null
+        if (!parkedMapVisible) location.close()
     }
 
     fun requestDrivingPlace(place: TravelPlace, hasDestination: Boolean, isAllowed: () -> Boolean) {
         navigation.request(place) {
             val route = navigation.state.value
-            drivingRecommendationVisible && isAllowed() && route.hasDestination == hasDestination &&
-                recommendPlace(location.freshFix.value, route) == place
+            drivingJourney.value != null && isAllowed() && route.hasDestination == hasDestination &&
+                recommendPlace(currentPosition(location.freshFix.value), route) == place
         }
     }
 
     fun recheckWhileDriving(isAllowed: () -> Boolean) {
-        if (drivingRecommendationVisible && isAllowed()) navigation.recheck()
+        if (drivingJourney.value != null && isAllowed()) navigation.recheck()
     }
 
-    private fun recommendPlace(fix: FreshPlaceFix?, route: PlaceNavigationState): TravelPlace? {
-        if (fix == null || !fix.isFresh() || !location.hasPermission() || !route.hasWaypointCapacity) return null
-        return recommendDrivingPlace(fix.position, busanTravelPlaces.filterNot { it.id in route.routePlaceIds })
+    private fun currentPosition(fix: FreshPlaceFix?): PlaceMapPosition? =
+        fix?.takeIf { it.isFresh() && location.hasPermission() }?.position
+
+    private fun recommendPlace(position: PlaceMapPosition?, route: PlaceNavigationState): TravelPlace? {
+        if (position == null || !route.hasWaypointCapacity) return null
+        return recommendDrivingPlace(position, busanTravelPlaces.filterNot { it.id in route.routePlaceIds })
     }
 
     override fun onCleared() {

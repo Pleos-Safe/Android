@@ -24,6 +24,7 @@ internal data class CollectionCard(
     val latestMemory: String,
     val description: String,
     val featured: Boolean = false,
+    val regionId: String? = null,
 )
 
 @Composable
@@ -54,6 +55,7 @@ internal object SampleCollection {
             latestMemory = "11월 2일 · 가장 최근에 남긴 기억",
             description = "다시 만난 바다의 순간들.\n이 한 장에 차곡차곡 남아 있어요.",
             featured = true,
+            regionId = "KR-26",
         ),
         CollectionCard(
             id = "safety-smooth-001",

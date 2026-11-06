@@ -10,6 +10,7 @@ import io.issac.pleosandroid.core.designsystem.component.PleosScreen
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
+import io.issac.pleosandroid.feature.main.map.DrivingRegionMap
 
 @Composable
 fun MainScreen(
@@ -21,14 +22,25 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     onOpenMap: (() -> Unit)? = null,
     drivingRecommendation: @Composable (() -> Unit)? = null,
+    drivingContent: @Composable ((Boolean, Modifier) -> Unit)? = null,
 ) {
     val restriction = (uiState as? MainUiState.Ready)?.restriction
     if (restriction != null) {
-        val recommendation = when (restriction) {
-            JourneyRestriction.Moving, JourneyRestriction.Stopped -> drivingRecommendation
-            JourneyRestriction.ReadyToDrive, JourneyRestriction.Arrived, JourneyRestriction.Unconfirmed -> null
+        if (restriction == JourneyRestriction.Moving || restriction == JourneyRestriction.Stopped) {
+            val isMoving = restriction == JourneyRestriction.Moving
+            if (drivingContent != null) {
+                drivingContent(isMoving, modifier)
+            } else {
+                DrivingOverviewScreen(
+                    isMoving = isMoving,
+                    modifier = modifier,
+                    map = { DrivingRegionMap(null, emptySet(), isMoving, it) },
+                    recommendation = { drivingRecommendation?.invoke() ?: NoDrivingRecommendation() },
+                )
+            }
+        } else {
+            JourneyRestrictionScreen(restriction, modifier)
         }
-        JourneyRestrictionScreen(restriction, modifier, recommendation)
         return
     }
     if (uiState is MainUiState.Ready) {

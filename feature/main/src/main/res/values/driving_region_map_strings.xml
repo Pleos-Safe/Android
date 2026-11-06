@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="driving_region_map_title">주행 위치 지도</string>
+    <string name="driving_region_map_description">대한민국 주행 위치 지도, %1$s</string>
+    <string name="driving_region_map_current_position">현재 위치</string>
+    <string name="driving_region_map_location_unavailable">위치 확인 중</string>
+    <string name="driving_region_map_location_outside">지도 범위 밖</string>
+    <string name="driving_region_map_owned_badge_area">보유 배지 지역</string>
+</resources>
