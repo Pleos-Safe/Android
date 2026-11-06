@@ -22,8 +22,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import io.issac.pleosandroid.core.designsystem.theme.PleosCorners
-import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
+import io.issac.pleosandroid.core.designsystem.theme.PleosLayout
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
@@ -38,8 +39,8 @@ fun PleosInfoPanel(
         modifier.clip(shape)
             .background(PleosTheme.colors.surface)
             .border(1.dp, outline, shape)
-            .padding(PleosSpacing.space24),
-        verticalArrangement = Arrangement.spacedBy(PleosSpacing.space8),
+            .padding(PleosLayout.panelPadding),
+        verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap),
         content = content,
     )
 }
@@ -57,11 +58,13 @@ fun PleosDialog(
     confirmStyle: PleosButtonStyle = PleosButtonStyle.Primary,
     confirmEnabled: Boolean = true,
 ) {
-    Dialog(onDismissRequest = onDismissRequest) {
-        PleosInfoPanel(modifier.widthIn(max = 520.dp).fillMaxWidth()) {
+    Dialog(onDismissRequest = onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        PleosInfoPanel(
+            modifier.padding(PleosLayout.sectionGap).widthIn(max = 520.dp * PleosTextStyles.scale).fillMaxWidth(),
+        ) {
             Column(
                 Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(PleosSpacing.space16),
+                verticalArrangement = Arrangement.spacedBy(PleosLayout.sectionGap),
             ) {
                 Text(
                     title,
@@ -110,11 +113,11 @@ fun PleosBottomSheet(
     ) {
         Column(
             Modifier.fillMaxWidth().padding(
-                start = PleosSpacing.space24,
-                end = PleosSpacing.space24,
-                bottom = PleosSpacing.space24,
+                start = PleosLayout.panelPadding,
+                end = PleosLayout.panelPadding,
+                bottom = PleosLayout.panelPadding,
             ),
-            verticalArrangement = Arrangement.spacedBy(PleosSpacing.space12),
+            verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap),
         ) {
             Text(title, Modifier.semantics { heading() }, style = PleosTextStyles.section)
             content()

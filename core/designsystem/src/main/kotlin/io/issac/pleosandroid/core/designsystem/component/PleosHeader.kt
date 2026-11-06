@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import io.issac.pleosandroid.core.designsystem.R
 import io.issac.pleosandroid.core.designsystem.modifier.pressOnDown
 import io.issac.pleosandroid.core.designsystem.modifier.shapedRipple
+import io.issac.pleosandroid.core.designsystem.theme.PleosLayout
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
@@ -52,19 +53,20 @@ fun PleosHeader(
 ) {
     val colors = PleosTheme.colors
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val full = maxWidth >= FullLayoutMinWidth
-        val margin = if (full) PleosSpacing.contentHorizontalFull else PleosSpacing.contentHorizontalSplit
+        val scale = PleosTextStyles.scale
+        val full = maxWidth >= FullLayoutMinWidth * scale
+        val margin = PleosLayout.horizontalPadding(full)
         Box(
             Modifier.fillMaxWidth()
                 .padding(horizontal = margin)
-                .height(if (full) 80.dp else 72.dp),
+                .height((if (full) 80.dp else 72.dp) * scale),
         ) {
             Row(
                 Modifier.fillMaxWidth().align(Alignment.Center),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space12),
             ) {
-                PleosGlyph(PleosSymbol.Mark, colors.textPrimary, Modifier.size(30.dp))
+                PleosGlyph(PleosSymbol.Mark, colors.textPrimary, Modifier.size(30.dp * scale))
                 Text(
                     stringResource(R.string.pleos_brand),
                     Modifier.weight(1f),
@@ -87,7 +89,12 @@ fun PleosHeader(
                 )
             }
             if (full && !restricted) {
-                TabStrip(selectedTab, onTabSelected, Modifier.align(Alignment.Center).width(336.dp), bottom = false)
+                TabStrip(
+                    selectedTab,
+                    onTabSelected,
+                    Modifier.align(Alignment.Center).width(336.dp * scale),
+                    bottom = false,
+                )
             }
             HorizontalDivider(Modifier.align(Alignment.BottomCenter), color = colors.borderDefault)
         }
@@ -104,7 +111,7 @@ fun PleosBottomTabs(
     if (restricted) return
     val colors = PleosTheme.colors
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        if (maxWidth < FullLayoutMinWidth) {
+        if (maxWidth < FullLayoutMinWidth * PleosTextStyles.scale) {
             Box(Modifier.fillMaxWidth().background(colors.surface)) {
                 HorizontalDivider(color = colors.borderDefault)
                 TabStrip(selectedTab, onTabSelected, Modifier.fillMaxWidth(), bottom = true)
@@ -116,7 +123,8 @@ fun PleosBottomTabs(
 @Composable
 private fun TabStrip(selectedTab: PleosTab, onSelect: (PleosTab) -> Unit, modifier: Modifier, bottom: Boolean) {
     val colors = PleosTheme.colors
-    Row(modifier.height(PleosSpacing.space56).selectableGroup()) {
+    val scale = PleosTextStyles.scale
+    Row(modifier.height(PleosSpacing.space56 * scale).selectableGroup()) {
         PleosTab.entries.forEach { tab ->
             val selected = tab == selectedTab
             val interactions = remember { MutableInteractionSource() }
@@ -143,7 +151,7 @@ private fun TabStrip(selectedTab: PleosTab, onSelect: (PleosTab) -> Unit, modifi
                 if (selected) {
                     Spacer(
                         Modifier.align(if (bottom) Alignment.TopCenter else Alignment.BottomCenter)
-                            .size(if (tab == PleosTab.Collection) 50.dp else 34.dp, 2.dp)
+                            .size((if (tab == PleosTab.Collection) 50.dp else 34.dp) * scale, 2.dp * scale)
                             .background(colors.actionPrimary),
                     )
                 }

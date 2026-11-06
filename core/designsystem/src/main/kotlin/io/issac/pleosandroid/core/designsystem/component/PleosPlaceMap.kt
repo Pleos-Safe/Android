@@ -40,13 +40,14 @@ fun PleosPlaceMap(
     onLocate: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val scale = PleosTextStyles.scale
     val colors = PleosTheme.colors
     val shape = RoundedCornerShape(PleosSpacing.space16)
     val north = stringResource(R.string.pleos_map_north)
     Box(modifier.clip(shape).background(colors.surface).border(1.dp, colors.borderControl, shape)) {
         content()
         Box(
-            Modifier.align(Alignment.TopEnd).padding(PleosSpacing.space16).size(PleosSpacing.space40)
+            Modifier.align(Alignment.TopEnd).padding(PleosSpacing.space16 * scale).size(PleosSpacing.space40 * scale)
                 .background(colors.chipDefault, CircleShape).border(1.dp, colors.borderControl, CircleShape)
                 .clearAndSetSemantics { contentDescription = north },
             contentAlignment = Alignment.Center,
@@ -65,8 +66,8 @@ fun PleosPlaceMap(
         }
         if (onZoomIn != null || onZoomOut != null || onLocate != null) {
             Column(
-                Modifier.align(Alignment.BottomEnd).padding(PleosSpacing.space16),
-                verticalArrangement = Arrangement.spacedBy(PleosSpacing.space8),
+                Modifier.align(Alignment.BottomEnd).padding(PleosSpacing.space16 * scale),
+                verticalArrangement = Arrangement.spacedBy(PleosSpacing.space8 * scale),
             ) {
                 MapControl(PleosSymbol.Plus, stringResource(R.string.pleos_map_zoom_in), onZoomIn)
                 MapControl(PleosSymbol.Minus, stringResource(R.string.pleos_map_zoom_out), onZoomOut)
@@ -111,7 +112,7 @@ fun PleosMapPin(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         MarkerCircle(selected) {
-            PleosGlyph(PleosSymbol.Pin, markerTint, Modifier.size(18.dp))
+            PleosGlyph(PleosSymbol.Pin, markerTint, Modifier.size(18.dp * PleosTextStyles.scale))
         }
         if (showLabel) {
             Text(
@@ -144,15 +145,21 @@ fun PleosMapCluster(count: Int, onClick: () -> Unit, modifier: Modifier = Modifi
 
 @Composable
 private fun MarkerCircle(selected: Boolean, content: @Composable () -> Unit) {
+    val scale = PleosTextStyles.scale
     val colors = PleosTheme.colors
-    Box(Modifier.defaultMinSize(PleosSpacing.space56, PleosSpacing.space56), contentAlignment = Alignment.Center) {
+    Box(
+        Modifier.defaultMinSize(PleosSpacing.space56 * scale, PleosSpacing.space56 * scale),
+        contentAlignment = Alignment.Center,
+    ) {
         if (selected) {
             Box(
-                Modifier.size(PleosSpacing.space56).background(colors.actionPrimary.copy(alpha = .25f), CircleShape),
+                Modifier.size(
+                    PleosSpacing.space56 * scale,
+                ).background(colors.actionPrimary.copy(alpha = .25f), CircleShape),
             )
         }
         Box(
-            Modifier.defaultMinSize(PleosSpacing.space40, PleosSpacing.space40)
+            Modifier.defaultMinSize(PleosSpacing.space40 * scale, PleosSpacing.space40 * scale)
                 .background(if (selected) colors.actionPrimary else colors.chipDefault, CircleShape)
                 .border(2.dp, if (selected) colors.actionPrimary else colors.textPrimary, CircleShape),
             contentAlignment = Alignment.Center,

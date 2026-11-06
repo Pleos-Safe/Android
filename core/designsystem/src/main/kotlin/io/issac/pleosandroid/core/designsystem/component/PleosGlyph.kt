@@ -24,10 +24,12 @@ import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.modifier.customClickable
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
+import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
 internal enum class PleosSymbol(val outline: String) {
     Arrow("M2 12H22M15 5L22 12L15 19"),
+    Back("M22 12H2M9 5L2 12L9 19"),
     Mark("M1 19V1H5L12 13L19 1H23V19"),
     Search("M17 17L23 23M10 2A8 8 0 1 0 10 18A8 8 0 1 0 10 2Z"),
     Close("M5 5L19 19M19 5L5 19"),
@@ -60,7 +62,7 @@ fun PleosRestrictionGlyph(isMoving: Boolean, modifier: Modifier = Modifier) {
     PleosGlyph(
         symbol = if (isMoving) PleosSymbol.Pause else PleosSymbol.Lock,
         tint = PleosTheme.colors.textSecondary,
-        modifier = modifier.size(PleosSpacing.space48),
+        modifier = modifier.size(PleosSpacing.space48 * PleosTextStyles.scale),
     )
 }
 
@@ -74,6 +76,7 @@ internal fun PleosIconButton(
     outlined: Boolean = false,
 ) {
     val colors = PleosTheme.colors
+    val scale = PleosTextStyles.scale
     val tint = if (enabled) colors.textPrimary else colors.textDisabled
     val shape = if (outlined) PleosShape.button else CircleShape
     val outline = if (outlined) {
@@ -82,7 +85,7 @@ internal fun PleosIconButton(
         Modifier
     }
     Box(
-        modifier = modifier.size(PleosSpacing.space48)
+        modifier = modifier.size(PleosSpacing.space48 * scale)
             .semantics { contentDescription = label }
             .customClickable(
                 shape = shape,
@@ -94,6 +97,6 @@ internal fun PleosIconButton(
             .then(outline),
         contentAlignment = Alignment.Center,
     ) {
-        PleosGlyph(symbol, tint)
+        PleosGlyph(symbol, tint, Modifier.size(PleosSpacing.space24 * scale))
     }
 }
