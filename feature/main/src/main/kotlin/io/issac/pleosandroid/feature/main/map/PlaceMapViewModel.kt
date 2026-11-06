@@ -8,12 +8,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.issac.pleosandroid.core.domain.repository.BadgeRegionSource
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
+import io.issac.pleosandroid.feature.main.DrivingSafetyMessage
 import io.issac.pleosandroid.feature.main.allowsTabNavigation
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 // Keep one route writer and one pending request across the parked map and driving home.
 internal val LocalPlaceMapViewModel = staticCompositionLocalOf<PlaceMapViewModel?> { null }
@@ -30,10 +35,14 @@ internal class PlaceMapViewModel @Inject constructor(
     private var parkedMapVisible = false
     private val drivingJourney = MutableStateFlow<Long?>(null)
     private val recommendationSession = DrivingRecommendationSession()
+    private var demoJourneyId: Long? = null
+    private var demoJob: Job? = null
+    private val mutableSafetyMessage = MutableStateFlow<DrivingSafetyMessage?>(null)
 
     val locationState = location.state
     val navigationState get() = navigation.state
     val badgeRegionIds = badgeRegionSource.collectedRegionIds
+    val drivingSafetyMessage = mutableSafetyMessage.asStateFlow()
 
     val drivingPosition = combine(drivingJourney, location.freshFix) { journeyId, fix ->
         if (journeyId != null) currentPosition(fix) else null
@@ -73,15 +82,31 @@ internal class PlaceMapViewModel @Inject constructor(
         if (canInteract()) navigation.recheck()
     }
 
-    fun startDrivingOverview(journeyId: Long) {
+    fun startDrivingOverview(journeyId: Long, demoEnabled: Boolean) {
         drivingJourney.value = journeyId
         location.refresh()
         navigation.recheck()
+        if (!demoEnabled || demoJourneyId == journeyId) return
+        demoJourneyId = journeyId
+        demoJob?.cancel()
+        mutableSafetyMessage.value = null
+        demoJob = viewModelScope.launch {
+            delay(3_000)
+            mutableSafetyMessage.value = DrivingSafetyMessage.Good
+            delay(5_000)
+            mutableSafetyMessage.value = null
+            delay(4_000)
+            mutableSafetyMessage.value = DrivingSafetyMessage.Violation
+            delay(5_000)
+            mutableSafetyMessage.value = null
+        }
     }
 
     fun stopDrivingOverview(journeyId: Long) {
         if (drivingJourney.value != journeyId) return
         drivingJourney.value = null
+        demoJob?.cancel()
+        mutableSafetyMessage.value = null
         if (!parkedMapVisible) location.close()
     }
 
