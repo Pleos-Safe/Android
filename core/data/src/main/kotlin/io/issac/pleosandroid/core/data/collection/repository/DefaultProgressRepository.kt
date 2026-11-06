@@ -30,7 +30,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 
-internal class LocalProgressRepository @Inject constructor(
+internal class DefaultProgressRepository @Inject constructor(
     private val store: CollectionStore,
     private val awards: CardAwardWriter,
 ) : ProgressRepository {

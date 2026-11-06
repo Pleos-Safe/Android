@@ -7,13 +7,13 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.issac.pleosandroid.core.data.collection.local.CatalogLoader
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
-import io.issac.pleosandroid.core.data.collection.repository.LocalBadgeRegionSource
-import io.issac.pleosandroid.core.data.collection.repository.LocalCatalogRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalCollectionRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalDemoRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalHistoryRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalPlaceRepository
-import io.issac.pleosandroid.core.data.collection.repository.LocalProgressRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultBadgeRegionSource
+import io.issac.pleosandroid.core.data.collection.repository.DefaultCatalogRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionDemoRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
 import io.issac.pleosandroid.core.database.CollectionDatabaseFactory
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
 import io.issac.pleosandroid.core.domain.collection.repository.CatalogRepository
@@ -39,25 +39,25 @@ internal abstract class CollectionModule {
     abstract fun database(impl: CollectionDatabaseFactory): CollectionDatabaseProvider
 
     @Binds @Singleton
-    abstract fun collection(impl: LocalCollectionRepository): CollectionRepository
+    abstract fun collection(impl: DefaultCollectionRepository): CollectionRepository
 
     @Binds @Singleton
-    abstract fun progress(impl: LocalProgressRepository): ProgressRepository
+    abstract fun progress(impl: DefaultProgressRepository): ProgressRepository
 
     @Binds @Singleton
-    abstract fun places(impl: LocalPlaceRepository): PlaceRepository
+    abstract fun places(impl: DefaultPlaceRepository): PlaceRepository
 
     @Binds @Singleton
-    abstract fun history(impl: LocalHistoryRepository): HistoryRepository
+    abstract fun history(impl: DefaultHistoryRepository): HistoryRepository
 
     @Binds @Singleton
-    abstract fun catalog(impl: LocalCatalogRepository): CatalogRepository
+    abstract fun catalog(impl: DefaultCatalogRepository): CatalogRepository
 
     @Binds @Singleton
-    abstract fun demo(impl: LocalDemoRepository): CollectionDemoRepository
+    abstract fun demo(impl: DefaultCollectionDemoRepository): CollectionDemoRepository
 
     @Binds @Singleton
-    abstract fun regions(impl: LocalBadgeRegionSource): BadgeRegionSource
+    abstract fun regions(impl: DefaultBadgeRegionSource): BadgeRegionSource
 
     companion object {
         @Provides fun beginReveal(cards: CollectionRepository, vehicle: VehicleRepository) =

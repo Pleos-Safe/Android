@@ -47,7 +47,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 @Singleton
-internal class LocalDrivingRecorder @Inject constructor(
+internal class DefaultDrivingRecorder @Inject constructor(
     @param:ApplicationContext context: Context,
     private val store: CollectionStore,
     private val progress: ProgressRepository,

@@ -18,7 +18,7 @@ import java.time.ZoneId
 import java.util.UUID
 import javax.inject.Inject
 
-internal class LocalDemoRepository @Inject constructor(
+internal class DefaultCollectionDemoRepository @Inject constructor(
     private val store: CollectionStore,
     private val awards: CardAwardWriter,
 ) : CollectionDemoRepository {

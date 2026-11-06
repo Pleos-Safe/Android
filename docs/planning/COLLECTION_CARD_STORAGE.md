@@ -174,7 +174,7 @@ when (val result = progressRepository.recordProgress(event)) {
 
 ## 운전습관 측정과 여정 저장
 
-`core:domain/driving`의 `DrivingAnalyzer`가 순수 계산을 맡고, `core:data`의 `LocalDrivingRecorder`가 차량 구독·암호화 체크포인트·기존 `ProgressRepository` 호출을 연결한다. feature는 `DrivingRecorder`와 `HistoryRepository`만 사용한다. Android foreground service는 app 모듈에 있다.
+`core:domain/driving`의 `DrivingAnalyzer`가 순수 계산을 맡고, `core:data`의 `DefaultDrivingRecorder`가 차량 구독·암호화 체크포인트·기존 `ProgressRepository` 호출을 연결한다. feature는 `DrivingRecorder`와 `HistoryRepository`만 사용한다. Android foreground service는 app 모듈에 있다.
 
 - 기록 저장은 기본 OFF다. 주차 중 켠 뒤 다음 출발부터 수집한다. 끄면 미완료 여정을 폐기하고 기존 기록·카드는 유지한다. 폐기 도중 종료되거나 삭제가 실패해도, 다시 켜기 전에 이전 체크포인트를 제거한다. 데모 DB에 실제 차량 기록을 저장하지 않는다.
 - `PERF_VEHICLE_SPEED`의 단조 증가 timestamp를 사용한다. UI 재전달, 동일 timestamp, 역순 이벤트는 적분/집계하지 않는다. 속도는 5Hz를 요청하고 API 35 이상에서도 가변 업데이트를 끈다. 실제 지원 주기는 차량에 따라 다르다. [CarPropertyValue timestamp](https://developer.android.com/reference/android/car/hardware/CarPropertyValue#getTimestamp())
@@ -188,7 +188,7 @@ when (val result = progressRepository.recordProgress(event)) {
 
 기록 탭은 정상 리포트, 데이터 상태, 기록 부족, 빈 목록, 로드/저장 오류, 저장 설정을 제공한다. 모든 상세 조작은 공통 차량 제한 정책을 따르며, 주행 중 점수를 표시하지 않는다.
 
-홈 추천·지도 검색·지도 핀·주행 중 근거리 추천·경로 중복 판정은 모두 `PlaceRepository`의 활성 장소 Flow를 읽는다. 장소 추가/수정/비활성화가 반영되며 지도 사진은 `imageKey`로 찾는다. `LocalBadgeRegionSource`는 실제 소유 카드가 있는 장소의 `regionId`를 반환한다. 지도 경계 자산의 ID와 일치해야 하며 부산은 `KR-26`이다. 컬렉션 안내의 부산 일러스트는 별도의 장식용 화면이다.
+홈 추천·지도 검색·지도 핀·주행 중 근거리 추천·경로 중복 판정은 모두 `PlaceRepository`의 활성 장소 Flow를 읽는다. 장소 추가/수정/비활성화가 반영되며 지도 사진은 `imageKey`로 찾는다. `DefaultBadgeRegionSource`는 실제 소유 카드가 있는 장소의 `regionId`를 반환한다. 지도 경계 자산의 ID와 일치해야 하며 부산은 `KR-26`이다. 컬렉션 안내의 부산 일러스트는 별도의 장식용 화면이다.
 
 홈의 대표 카드는 `observeRepresentativeCard()`에 연결한다. 여정 종료 화면은 현재 세션과 같은 ID의 저장 결과가 있을 때만 운전습관 상세 링크를 표시한다. 저장 중/꺼짐/실패 상태는 별도로 안내한다. 주행 중 관찰 배너는 측정기의 급가속/급감속 이벤트만 표시하며, 정해진 시간에 가상의 관찰을 만들어 내지 않는다.
 

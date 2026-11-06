@@ -15,7 +15,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-internal class LocalCollectionRepository @Inject constructor(private val store: CollectionStore) :
+internal class DefaultCollectionRepository @Inject constructor(private val store: CollectionStore) :
     CollectionRepository {
     override fun observeCollection() = store.observe().map { it.publicSnapshot() }.distinctUntilChanged()
     override fun observeCard(cardId: String) = store.observe().map { it.card(cardId) }.distinctUntilChanged()
