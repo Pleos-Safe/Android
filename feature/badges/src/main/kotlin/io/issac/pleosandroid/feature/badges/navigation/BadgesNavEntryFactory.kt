@@ -1,4 +1,4 @@
-package io.issac.pleosandroid.feature.badges
+package io.issac.pleosandroid.feature.badges.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
@@ -12,17 +12,16 @@ import io.issac.pleosandroid.core.navigation.BadgesRoute
 import io.issac.pleosandroid.core.navigation.CardDetailRoute
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavEntryResult
+import io.issac.pleosandroid.core.navigation.SafetyCollectionRoute
 import javax.inject.Inject
 
 internal class BadgesNavEntryFactory @Inject constructor() : NavEntryFactory {
     override fun create(route: AppRoute): NavEntryResult? = when (route) {
-        BadgesRoute -> NavEntryResult { padding ->
-            BadgesRouteContent(modifier = Modifier.padding(padding))
-        }
-
-        is CardDetailRoute -> NavEntryResult { padding ->
-            CardDetailRouteContent(cardId = route.cardId, modifier = Modifier.padding(padding))
-        }
+        BadgesRoute, SafetyCollectionRoute, UnopenedCardsRoute,
+        is CardDetailRoute, is CardMemoriesRoute, is RevealCardRoute,
+        is RepresentativeCardRoute, is CollectionGuideRoute, is CollectedPlaceRoute, is CollectionMemoryRoute,
+        ->
+            NavEntryResult { padding -> BadgesRouteContent(route, Modifier.padding(padding)) }
 
         else -> null
     }

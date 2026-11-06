@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="card_detail_collection">컬렉션</string>
     <string name="card_detail_place">장소의 기억</string>
     <string name="card_detail_safety">운전습관의 기억</string>
     <string name="card_detail_memory">이 카드의 기억</string>
