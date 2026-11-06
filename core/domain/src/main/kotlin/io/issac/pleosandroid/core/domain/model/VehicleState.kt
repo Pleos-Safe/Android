@@ -7,4 +7,8 @@ data class VehicleState(
     val uxPolicy: CarUxPolicy = CarUxPolicy(),
     val uxAvailability: UxAvailability = UxAvailability.Connecting,
     val gear: VehicleGear = VehicleGear.Unknown,
-)
+) {
+    val allowsTabNavigation: Boolean
+        get() = !uxPolicy.restrictionsRequired && gear == VehicleGear.Park &&
+            motion.availability == MotionAvailability.Available && motion.motion == VehicleMotion.Stopped
+}
