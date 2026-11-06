@@ -4,171 +4,121 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.issac.pleosandroid.core.domain.collection.repository.HistoryRepository
+import io.issac.pleosandroid.core.domain.driving.repository.DrivingRecorder
+import io.issac.pleosandroid.core.domain.driving.repository.JourneyRepository
+import io.issac.pleosandroid.core.domain.driving.repository.JourneyState
+import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
-import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
-import io.issac.pleosandroid.core.domain.model.VehicleState
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.feature.main.map.JourneyArrivalMonitor
 import io.issac.pleosandroid.feature.main.map.allowsDrivingPlaceRecommendation
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val vehicleRepository: VehicleRepository,
     private val savedStateHandle: SavedStateHandle,
+    private val journeys: JourneyRepository,
+    private val recorder: DrivingRecorder,
+    history: HistoryRepository,
     arrivalMonitor: JourneyArrivalMonitor? = null,
 ) : ViewModel() {
-    private val progress = savedStateHandle.getStateFlow(
-        key = JOURNEY_PROGRESS_KEY,
-        initialValue = JourneyProgress.Before.name,
-    )
-
-    private val arrived = savedStateHandle.getStateFlow(JOURNEY_ARRIVED_KEY, false)
-    private var previousMotion = VehicleMotion.Unknown
+    private val arrivedJourney = savedStateHandle.getStateFlow<String?>("arrived_journey_id", null)
+    private val report = journeys.state.map { it.session?.id }.distinctUntilChanged().flatMapLatest { id ->
+        if (id == null) flowOf(null) else history.observeJourney(id).catch { emit(null) }
+    }
 
     init {
-        // Older versions let a driver prepare a journey without departing.
-        if (progress.value == "Prepared") updateProgress(JourneyProgress.Before)
+        // Legacy UI-only trip state must not override the shared vehicle journey.
+        savedStateHandle.remove<String>("journey_progress")
         if (arrivalMonitor != null) {
             viewModelScope.launch {
-                progress.collectLatest { value ->
-                    if (journeyProgress(value) == JourneyProgress.Active) {
-                        arrivalMonitor.arrivals().collect {
-                            if (journeyProgress(progress.value) == JourneyProgress.Active) {
-                                savedStateHandle[JOURNEY_ARRIVED_KEY] = true
+                journeys.state.map { it.session?.takeUnless { session -> session.finished }?.id }
+                    .distinctUntilChanged().collectLatest { id ->
+                        if (id != null) {
+                            arrivalMonitor.arrivals().collect {
+                                if (journeys.state.value.session?.id == id) savedStateHandle["arrived_journey_id"] = id
                             }
                         }
                     }
+            }
+        }
+        viewModelScope.launch {
+            var previous = VehicleMotion.Unknown
+            journeys.state.collect { state ->
+                val motion = state.vehicle.motion
+                if (motion.availability == MotionAvailability.Available) {
+                    if (previous == VehicleMotion.Stopped && motion.motion == VehicleMotion.Moving) {
+                        savedStateHandle["arrived_journey_id"] = null
+                    }
+                    previous = motion.motion
                 }
             }
         }
     }
 
-    val uiState: StateFlow<MainUiState> = combine(vehicleRepository.state, progress, arrived) { vehicle, _, _ ->
-        updateJourneyFromVehicle(vehicle)
-        createUiState(vehicle)
-    }.stateIn(
-        scope = viewModelScope,
-        // Keep tracking the trip while system navigation covers the activity.
-        started = SharingStarted.Eagerly,
-        initialValue = MainUiState.Loading,
-    )
-
-    private fun updateJourneyFromVehicle(vehicle: VehicleState) {
-        val current = journeyProgress(progress.value)
-        val updated = current.onVehicleChanged(vehicle)
-        if (updated != current) updateProgress(updated)
-        if (vehicle.motion.availability == MotionAvailability.Available) {
-            if (previousMotion == VehicleMotion.Stopped && vehicle.motion.motion == VehicleMotion.Moving) {
-                savedStateHandle[JOURNEY_ARRIVED_KEY] = false
-            }
-            previousMotion = vehicle.motion.motion
-        }
-    }
-
-    fun returnHome(): Boolean {
-        val current = createUiState(vehicleRepository.state.value)
-        if (!current.canReturnHome) return false
-        updateProgress(JourneyProgress.Before)
-        return true
-    }
-
-    fun canUseTabs(): Boolean = vehicleRepository.state.value.allowsTabNavigation
-
-    internal fun canUseDrivingRecommendation(): Boolean {
-        val current = createUiState(vehicleRepository.state.value)
-        return current.vehicle.allowsDrivingPlaceRecommendation && !current.arrivedBeforeParking &&
-            (current.phase == MainPhase.DrivingMoving || current.phase == MainPhase.DrivingStopped)
-    }
-
-    fun canOpenBadges(): Boolean = canUseTabs()
-
-    fun canRecoverVehicle(): Boolean = vehicleRepository.state.value.allowsVehicleRecovery
-
-    fun retryVehicle() {
-        vehicleRepository.retry()
-    }
-
-    private fun createUiState(vehicle: VehicleState): MainUiState.Ready {
-        val journey = journeyProgress(progress.value).onVehicleChanged(vehicle)
-        val phase = when (journey) {
-            JourneyProgress.Before -> MainPhase.BeforeDriving
-
-            JourneyProgress.Finished -> MainPhase.Finished
-
-            JourneyProgress.Active -> when {
-                vehicle.motion.availability != MotionAvailability.Available -> null
-                vehicle.motion.motion == VehicleMotion.Moving -> MainPhase.DrivingMoving
-                vehicle.motion.motion == VehicleMotion.Stopped -> MainPhase.DrivingStopped
-                else -> null
-            }
-        }
-        val summary = if (phase == MainPhase.Finished) journeySummary() else null
-        return MainUiState.Ready(
+    val uiState: StateFlow<MainUiState> = combine(
+        journeys.state,
+        recorder.state,
+        recorder.enabled,
+        report,
+        arrivedJourney,
+    ) { journey, recording, enabled, record, arrivedId ->
+        val phase = journey.phase()
+        val session = journey.session
+        MainUiState.Ready(
             phase = phase,
-            vehicle = vehicle,
-            summary = summary,
-            arrivedBeforeParking = phase == MainPhase.DrivingStopped && arrived.value,
-            journeyStartedAtMillis = if (phase == MainPhase.DrivingMoving || phase == MainPhase.DrivingStopped) {
-                savedStateHandle[JOURNEY_START_KEY]
-            } else {
-                null
+            vehicle = journey.vehicle,
+            summary = session?.takeIf { it.finished }?.let {
+                JourneySummary(
+                    durationMillis = checkNotNull(it.durationMillis),
+                    reportId = record?.takeIf { record -> record.id == it.id }?.id,
+                    recordingPhase = if (recording.journeyId == it.id) {
+                        recording.phase
+                    } else if (enabled) {
+                        RecordingPhase.Waiting
+                    } else {
+                        RecordingPhase.Disabled
+                    },
+                )
             },
+            arrivedBeforeParking = phase == MainPhase.DrivingStopped && session?.id == arrivedId,
+            journeyStartedAtMillis = session?.takeUnless { it.finished }?.startedAt?.toEpochMilli(),
         )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
+
+    fun returnHome(): Boolean = canUseTabs() && journeys.returnHome()
+    fun canUseTabs(): Boolean = vehicleRepository.state.value.allowsTabNavigation
+    internal fun canUseDrivingRecommendation(): Boolean {
+        val state = journeys.state.value
+        return vehicleRepository.state.value.allowsDrivingPlaceRecommendation && state.session?.finished == false &&
+            !(state.phase() == MainPhase.DrivingStopped && arrivedJourney.value == state.session?.id)
     }
+    fun canOpenBadges(): Boolean = canUseTabs()
+    fun canRecoverVehicle(): Boolean = vehicleRepository.state.value.allowsVehicleRecovery
+    fun retryVehicle() = vehicleRepository.retry()
+}
 
-    private fun updateProgress(next: JourneyProgress) {
-        when (next) {
-            JourneyProgress.Active -> {
-                savedStateHandle[JOURNEY_START_KEY] = System.currentTimeMillis()
-                savedStateHandle.remove<Long>(JOURNEY_END_KEY)
-            }
-
-            JourneyProgress.Finished -> savedStateHandle[JOURNEY_END_KEY] = System.currentTimeMillis()
-
-            JourneyProgress.Before -> {
-                savedStateHandle.remove<Long>(JOURNEY_START_KEY)
-                savedStateHandle.remove<Long>(JOURNEY_END_KEY)
-            }
-        }
-        savedStateHandle[JOURNEY_ARRIVED_KEY] = false
-        savedStateHandle[JOURNEY_PROGRESS_KEY] = next.name
-    }
-
-    private fun journeySummary(): JourneySummary? {
-        val start = savedStateHandle.get<Long>(JOURNEY_START_KEY) ?: return null
-        val end = savedStateHandle.get<Long>(JOURNEY_END_KEY) ?: return null
-        return (end - start).takeIf { it >= 0 }?.let(::JourneySummary)
-    }
-
-    private fun journeyProgress(value: String): JourneyProgress =
-        JourneyProgress.entries.firstOrNull { it.name == value } ?: JourneyProgress.Before
-
-    private fun JourneyProgress.onVehicleChanged(vehicle: VehicleState): JourneyProgress {
-        if (vehicle.motion.availability != MotionAvailability.Available) return this
-        return when {
-            vehicle.motion.motion == VehicleMotion.Moving -> JourneyProgress.Active
-
-            this == JourneyProgress.Active && vehicle.motion.motion == VehicleMotion.Stopped &&
-                vehicle.gear == VehicleGear.Park -> JourneyProgress.Finished
-
-            else -> this
-        }
-    }
-
-    private enum class JourneyProgress { Before, Active, Finished }
-
-    private companion object {
-        const val JOURNEY_PROGRESS_KEY = "journey_progress"
-        const val JOURNEY_START_KEY = "journey_start_millis"
-        const val JOURNEY_END_KEY = "journey_end_millis"
-        const val JOURNEY_ARRIVED_KEY = "journey_arrived"
-    }
+private fun JourneyState.phase(): MainPhase? = when {
+    session == null -> MainPhase.BeforeDriving
+    session?.finished == true -> MainPhase.Finished
+    vehicle.motion.availability != MotionAvailability.Available -> null
+    vehicle.motion.motion == VehicleMotion.Moving -> MainPhase.DrivingMoving
+    vehicle.motion.motion == VehicleMotion.Stopped -> MainPhase.DrivingStopped
+    else -> null
 }

@@ -1,6 +1,6 @@
 package io.issac.pleosandroid.feature.main
 
-import io.issac.pleosandroid.core.domain.model.MotionAvailability
+import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
 import io.issac.pleosandroid.core.domain.model.VehicleState
@@ -12,7 +12,14 @@ enum class MainPhase {
     Finished,
 }
 
-data class JourneySummary(val durationMillis: Long)
+data class HomePlace(val name: String, val district: String, val category: String, val imageKey: String)
+
+data class JourneySummary(
+    val durationMillis: Long,
+    val reportId: String? = null,
+    val recordingPhase: RecordingPhase =
+        RecordingPhase.Disabled,
+)
 
 sealed interface MainUiState {
     data object Loading : MainUiState
@@ -32,10 +39,6 @@ sealed interface MainUiState {
             get() = canUseTabs && phase == MainPhase.Finished
     }
 }
-
-internal val VehicleState.allowsTabNavigation: Boolean
-    get() = !uxPolicy.restrictionsRequired && gear == VehicleGear.Park &&
-        motion.availability == MotionAvailability.Available && motion.motion == VehicleMotion.Stopped
 
 // A parked driver can grant the speed permission before the first valid speed reading arrives.
 internal val VehicleState.allowsVehicleRecovery: Boolean

@@ -12,6 +12,8 @@ internal data class TravelPlace(
     val longitude: Double,
     val district: String,
     val category: String,
+    val imageKey: String = "",
+    val collected: Boolean = false,
 )
 
 internal data class PlaceMapPosition(val latitude: Double, val longitude: Double) {
@@ -37,17 +39,9 @@ internal data class PlaceMapBounds(val south: Double, val west: Double, val nort
     }
 }
 
-// Initial Busan catalog. Coordinates describe the selected place, not live vehicle positions.
-internal val busanTravelPlaces = listOf(
-    TravelPlace("haeundae", "해운대 해수욕장", 35.15855, 129.16053, "부산 해운대구", "해변"),
-    TravelPlace("gwangalli", "광안리 해수욕장", 35.15089, 129.11910, "부산 수영구", "해변"),
-    TravelPlace("cheongsapo", "청사포 정거장", 35.16129, 129.19137, "부산 해운대구", "명소"),
-    TravelPlace("igidae", "이기대 해안산책로", 35.13145, 129.12042, "부산 남구", "산책"),
-)
-
-internal fun searchTravelPlaces(query: String, bounds: PlaceMapBounds?): List<TravelPlace> {
+internal fun searchTravelPlaces(query: String, bounds: PlaceMapBounds?, catalog: List<TravelPlace>): List<TravelPlace> {
     val terms = query.trim().split(Regex("\\s+")).filter(String::isNotEmpty)
-    return busanTravelPlaces.filter { place ->
+    return catalog.filter { place ->
         val searchable = "${place.name} ${place.district} ${place.category}"
         (bounds == null || bounds.contains(place)) && terms.all { searchable.contains(it, ignoreCase = true) }
     }

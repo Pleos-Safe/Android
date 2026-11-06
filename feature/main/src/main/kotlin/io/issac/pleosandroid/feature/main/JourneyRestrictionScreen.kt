@@ -50,7 +50,9 @@ internal fun JourneyRestrictionScreen(restriction: JourneyRestriction, modifier:
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth().verticalScroll(rememberScrollState()),
+            modifier = Modifier.widthIn(
+                max = 480.dp * PleosTextStyles.scale,
+            ).fillMaxWidth().verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             PleosRestrictionGlyph(isMoving = restriction == JourneyRestriction.Moving)

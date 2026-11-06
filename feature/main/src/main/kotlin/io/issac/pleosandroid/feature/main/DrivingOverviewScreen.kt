@@ -27,12 +27,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.component.pleosShellBackground
+import io.issac.pleosandroid.core.designsystem.theme.PleosLayout
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
-internal enum class DrivingSafetyMessage { Good, Violation }
+internal enum class DrivingSafetyMessage { Acceleration, Braking }
 
 @Composable
 internal fun DrivingOverviewScreen(
@@ -43,24 +44,24 @@ internal fun DrivingOverviewScreen(
     recommendation: @Composable () -> Unit,
 ) {
     BoxWithConstraints(modifier.fillMaxSize().pleosShellBackground()) {
-        val wide = maxWidth >= WideOverviewMinWidth
+        val wide = maxWidth >= WideOverviewMinWidth * PleosTextStyles.scale
         Column(
             modifier = Modifier.fillMaxSize().padding(
-                horizontal = if (wide) PleosSpacing.contentHorizontalFull else PleosSpacing.space24,
-                vertical = PleosSpacing.space16,
+                horizontal = PleosLayout.horizontalPadding(wide),
+                vertical = PleosLayout.sectionGap,
             ),
-            verticalArrangement = Arrangement.spacedBy(PleosSpacing.space16),
+            verticalArrangement = Arrangement.spacedBy(PleosLayout.sectionGap),
         ) {
             DrivingOverviewHeading(isMoving, wide)
             if (wide) {
                 Row(
                     Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space24),
+                    horizontalArrangement = Arrangement.spacedBy(PleosLayout.sectionGap),
                 ) {
                     DrivingOverviewMap(map, Modifier.weight(1f).fillMaxSize())
                     Column(
-                        Modifier.width(OverviewSidePanelWidth),
-                        verticalArrangement = Arrangement.spacedBy(PleosSpacing.space12),
+                        Modifier.width(OverviewSidePanelWidth * PleosTextStyles.scale),
+                        verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap),
                     ) {
                         DrivingOverviewRecommendation(recommendation)
                         safetyMessage?.let { DrivingSafetyBanner(it) }
@@ -135,13 +136,13 @@ private fun DrivingOverviewRecommendation(recommendation: @Composable () -> Unit
         modifier = Modifier.fillMaxWidth()
             .background(colors.surface, PleosShape.inset)
             .border(1.dp, colors.borderDefault, PleosShape.inset)
-            .padding(horizontal = PleosSpacing.space16, vertical = PleosSpacing.space12),
-        verticalArrangement = Arrangement.spacedBy(PleosSpacing.space4),
+            .padding(PleosLayout.panelPadding),
+        verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap),
     ) {
         Text(
             text = stringResource(R.string.driving_overview_recommendation),
             color = colors.textPrimary,
-            style = PleosTextStyles.body,
+            style = PleosTextStyles.meta,
             modifier = Modifier.semantics { heading() },
         )
         HorizontalDivider(color = colors.borderDefault)
@@ -152,7 +153,7 @@ private fun DrivingOverviewRecommendation(recommendation: @Composable () -> Unit
 @Composable
 private fun DrivingSafetyBanner(message: DrivingSafetyMessage) {
     val colors = PleosTheme.colors
-    val accent = if (message == DrivingSafetyMessage.Good) colors.actionPrimary else colors.statusPending
+    val accent = colors.statusPending
     Row(
         modifier = Modifier.fillMaxWidth()
             .background(colors.chipDefault, PleosShape.button)
@@ -163,15 +164,15 @@ private fun DrivingSafetyBanner(message: DrivingSafetyMessage) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(R.string.driving_overview_safety_demo),
+            text = stringResource(R.string.driving_overview_observation),
             color = accent,
             style = PleosTextStyles.meta,
         )
         Text(
             text = stringResource(
                 when (message) {
-                    DrivingSafetyMessage.Good -> R.string.driving_overview_safety_good
-                    DrivingSafetyMessage.Violation -> R.string.driving_overview_safety_violation
+                    DrivingSafetyMessage.Acceleration -> R.string.driving_overview_acceleration
+                    DrivingSafetyMessage.Braking -> R.string.driving_overview_braking
                 },
             ),
             modifier = Modifier.weight(1f),
@@ -183,5 +184,5 @@ private fun DrivingSafetyBanner(message: DrivingSafetyMessage) {
     }
 }
 
-private val WideOverviewMinWidth = 1000.dp
+private val WideOverviewMinWidth = 900.dp
 private val OverviewSidePanelWidth = 352.dp

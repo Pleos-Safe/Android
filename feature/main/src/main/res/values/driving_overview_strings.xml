@@ -3,7 +3,7 @@
     <string name="driving_overview_moving">주행 중</string>
     <string name="driving_overview_stopped">정차 중</string>
     <string name="driving_overview_recommendation">주변 추천</string>
-    <string name="driving_overview_safety_demo">안전운전 예시</string>
-    <string name="driving_overview_safety_good">부드러운 주행이 이어지고 있어요.</string>
-    <string name="driving_overview_safety_violation">급감속이 감지됐어요.</string>
+    <string name="driving_overview_observation">주행 관찰</string>
+    <string name="driving_overview_acceleration">급가속이 관찰됐어요.</string>
+    <string name="driving_overview_braking">급감속이 관찰됐어요.</string>
 </resources>

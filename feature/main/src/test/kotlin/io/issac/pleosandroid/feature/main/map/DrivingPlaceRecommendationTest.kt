@@ -81,15 +81,15 @@ class DrivingPlaceRecommendationTest {
     fun testNearestPlaceIsRecommendedWhenWithinRange() {
         val position = PlaceMapPosition(35.152, 129.115)
 
-        assertEquals("gwangalli", recommendDrivingPlace(position)?.id)
+        assertEquals("gwangalli", recommendDrivingPlace(position, busanTravelPlaces)?.id)
         val invalid = busanTravelPlaces.first().copy(latitude = 91.0)
         assertEquals("gwangalli", recommendDrivingPlace(position, listOf(invalid) + busanTravelPlaces)?.id)
     }
 
     @Test
     fun testFarAwayOrInvalidPositionsDoNotRecommendAPlace() {
-        assertNull(recommendDrivingPlace(PlaceMapPosition(37.5665, 126.9780)))
-        assertNull(recommendDrivingPlace(PlaceMapPosition(Double.NaN, 129.115)))
+        assertNull(recommendDrivingPlace(PlaceMapPosition(37.5665, 126.9780), busanTravelPlaces))
+        assertNull(recommendDrivingPlace(PlaceMapPosition(Double.NaN, 129.115), busanTravelPlaces))
         assertNull(recommendDrivingPlace(PlaceMapPosition(35.152, 129.115), places = emptyList()))
     }
 
@@ -100,15 +100,27 @@ class DrivingPlaceRecommendationTest {
         val haeundae = PlaceMapPosition(35.1580, 129.1519)
         val gwangalli = PlaceMapPosition(35.152, 129.115)
 
-        assertNull(session.select(1, haeundae, PlaceNavigationState()))
-        assertEquals("haeundae", session.select(1, haeundae, noRoute)?.id)
-        assertNull(session.select(1, null, noRoute))
-        assertEquals("haeundae", session.select(1, gwangalli, noRoute)?.id)
+        assertNull(session.select(1, haeundae, PlaceNavigationState(), busanTravelPlaces))
+        assertEquals("haeundae", session.select(1, haeundae, noRoute, busanTravelPlaces)?.id)
+        assertNull(session.select(1, null, noRoute, busanTravelPlaces))
+        assertEquals("haeundae", session.select(1, gwangalli, noRoute, busanTravelPlaces)?.id)
 
         val route = noRoute.copy(hasDestination = true, routePlaceIds = setOf("haeundae"))
-        assertEquals("gwangalli", session.select(1, gwangalli, route)?.id)
-        assertNull(session.select(1, gwangalli, route.copy(hasWaypointCapacity = false)))
-        assertEquals("igidae", session.select(1, gwangalli, route)?.id)
-        assertEquals("haeundae", session.select(2, haeundae, noRoute)?.id)
+        assertEquals("gwangalli", session.select(1, gwangalli, route, busanTravelPlaces)?.id)
+        assertNull(session.select(1, gwangalli, route.copy(hasWaypointCapacity = false), busanTravelPlaces))
+        assertEquals("igidae", session.select(1, gwangalli, route, busanTravelPlaces)?.id)
+        assertEquals("haeundae", session.select(2, haeundae, noRoute, busanTravelPlaces)?.id)
+    }
+
+    @Test
+    fun catalogUpdatesReplaceRemovedCandidatesAndSearchNewPlaces() {
+        val session = DrivingRecommendationSession()
+        val position = PlaceMapPosition(35.158, 129.1519)
+        val route = PlaceNavigationState(hasDestination = false)
+        assertEquals("haeundae", session.select(1, position, route, busanTravelPlaces)?.id)
+        val added = busanTravelPlaces.first().copy(id = "new", name = "새 장소")
+        assertEquals("new", session.select(1, position, route, listOf(added))?.id)
+        assertEquals(listOf(added), searchTravelPlaces("새 장소", null, listOf(added)))
+        assertNull(session.select(1, position, route, emptyList()))
     }
 }

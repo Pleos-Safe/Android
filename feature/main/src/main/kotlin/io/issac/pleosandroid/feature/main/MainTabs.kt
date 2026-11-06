@@ -29,16 +29,20 @@ import io.issac.pleosandroid.feature.nav.rememberPleosNavEntries
 // Keep one journey running while the driver switches tabs or the vehicle enters a restricted state.
 internal val LocalMainViewModel = staticCompositionLocalOf<MainViewModel?> { null }
 
+internal val LocalHomeCard = staticCompositionLocalOf<@Composable () -> Unit> { {} }
+
 @Composable
 fun PleosMain(
     factories: Set<NavEntryFactory>,
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel(),
+    homeCard: @Composable () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val placeMapViewModel = hiltViewModel<PlaceMapViewModel>()
     CompositionLocalProvider(
         LocalMainViewModel provides viewModel,
+        LocalHomeCard provides homeCard,
         LocalPlaceMapViewModel provides placeMapViewModel,
     ) {
         MainTabs(
