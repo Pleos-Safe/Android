@@ -52,6 +52,7 @@ class DrivingScreenCaptureTest {
             Capture(MainPhase.Finished, "주행 종료", "04-finished"),
             Capture(MainPhase.DrivingStopped, "도착했어요. 주차 후 이어가요", "05-arrived", arrived = true),
             Capture(MainPhase.BeforeDriving, "조작 가능 상태를 확인하고 있어요", "06-ux-unconfirmed", known = false),
+            Capture(MainPhase.BeforeDriving, "출발하면 여정이 시작돼요", "07-drive-before-motion", driveBeforeMotion = true),
         )
         val current = mutableStateOf(cases.first())
         val width = mutableStateOf(1216.dp)
@@ -67,8 +68,6 @@ class DrivingScreenCaptureTest {
                         Box(Modifier.weight(1f)) {
                             MainScreen(
                                 uiState = state,
-                                onStartJourney = {},
-                                onEndJourney = {},
                                 onReturnHome = {},
                                 onOpenBadges = {},
                                 onRequestSpeedPermission = {},
@@ -119,11 +118,13 @@ class DrivingScreenCaptureTest {
                 uxPolicy = CarUxPolicy(
                     connected = true,
                     known = capture.known,
-                    requiresDistractionOptimization = moving,
+                    requiresDistractionOptimization = moving || capture.driveBeforeMotion,
                     activeRestrictions = if (moving) CarUxPolicy.FULLY_RESTRICTED else 0,
                 ),
                 uxAvailability = UxAvailability.Available,
-                gear = if (phase == MainPhase.BeforeDriving || phase == MainPhase.Finished) {
+                gear = if (!capture.driveBeforeMotion &&
+                    (phase == MainPhase.BeforeDriving || phase == MainPhase.Finished)
+                ) {
                     VehicleGear.Park
                 } else {
                     VehicleGear.Drive
@@ -138,5 +139,6 @@ class DrivingScreenCaptureTest {
         val filename: String,
         val arrived: Boolean = false,
         val known: Boolean = true,
+        val driveBeforeMotion: Boolean = false,
     )
 }

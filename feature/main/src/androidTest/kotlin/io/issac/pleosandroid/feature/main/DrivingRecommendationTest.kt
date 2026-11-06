@@ -122,8 +122,6 @@ class DrivingRecommendationTest {
             PleosTheme {
                 MainScreen(
                     uiState = uiState,
-                    onStartJourney = {},
-                    onEndJourney = {},
                     onReturnHome = {},
                     onOpenBadges = {},
                     onRequestSpeedPermission = {},

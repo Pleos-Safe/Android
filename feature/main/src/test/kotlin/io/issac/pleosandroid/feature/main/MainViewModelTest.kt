@@ -1,6 +1,7 @@
 package io.issac.pleosandroid.feature.main
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
@@ -10,11 +11,11 @@ import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -30,6 +31,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
     private val dispatcher = StandardTestDispatcher()
+    private val viewModels = mutableListOf<MainViewModel>()
 
     @Before
     fun setUp() {
@@ -38,6 +40,7 @@ class MainViewModelTest {
 
     @After
     fun tearDown() {
+        viewModels.forEach { it.viewModelScope.cancel() }
         Dispatchers.resetMain()
     }
 
@@ -49,21 +52,23 @@ class MainViewModelTest {
         fixture.repository.emit(motion = VehicleMotion.Moving, gear = VehicleGear.Drive)
         runCurrent()
         assertEquals(MainPhase.DrivingMoving, fixture.ready.phase)
+        val startedAt = checkNotNull(fixture.ready.journeyStartedAtMillis)
 
         fixture.repository.emit(motion = VehicleMotion.Stopped)
         runCurrent()
         assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
-        assertFalse(fixture.ready.canEndJourney)
+        assertFalse(fixture.ready.canReturnHome)
+        assertEquals(startedAt, fixture.ready.journeyStartedAtMillis)
 
         fixture.repository.emit(gear = VehicleGear.Park)
         runCurrent()
         assertEquals(MainPhase.Finished, fixture.ready.phase)
+        assertNull(fixture.ready.journeyStartedAtMillis)
     }
 
     @Test
     fun `missing motion keeps an active journey pending instead of treating it as stopped`() = runTest {
-        val fixture = fixture()
-        fixture.viewModel.startJourney()
+        val fixture = fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
         fixture.repository.emit(
             motion = VehicleMotion.Unknown,
             availability = MotionAvailability.Error,
@@ -71,8 +76,7 @@ class MainViewModelTest {
         runCurrent()
 
         assertNull(fixture.ready.phase)
-        assertFalse(fixture.ready.canEndJourney)
-        assertFalse(fixture.viewModel.endJourney())
+        assertFalse(fixture.ready.canReturnHome)
 
         fixture.repository.emit(motion = VehicleMotion.Moving)
         runCurrent()
@@ -81,49 +85,41 @@ class MainViewModelTest {
 
     @Test
     fun `a new departure after finishing automatically starts another journey`() = runTest {
-        val fixture = fixture()
-        fixture.viewModel.startJourney()
-        assertTrue(fixture.viewModel.endJourney())
+        val fixture = fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
+        fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
         runCurrent()
         assertEquals(MainPhase.Finished, fixture.ready.phase)
 
         fixture.repository.emit(motion = VehicleMotion.Moving, gear = VehicleGear.Drive)
         runCurrent()
         assertEquals(MainPhase.DrivingMoving, fixture.ready.phase)
-        assertFalse(fixture.viewModel.startJourney())
+        assertNull(fixture.ready.summary)
 
         fixture.repository.emit(motion = VehicleMotion.Stopped)
         runCurrent()
         assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
-        assertFalse(fixture.viewModel.endJourney())
     }
 
     @Test
-    fun `moving or unavailable vehicles cannot start or finish a journey`() = runTest {
+    fun `unavailable motion cannot start a journey`() = runTest {
         val fixture = fixture()
-        fixture.repository.emit(motion = VehicleMotion.Moving)
-        assertFalse(fixture.viewModel.startJourney())
-
-        fixture.repository.emit(motion = VehicleMotion.Stopped)
-        assertTrue(fixture.viewModel.startJourney())
-        fixture.repository.emit(motion = VehicleMotion.Moving)
-        assertFalse(fixture.viewModel.endJourney())
-
         fixture.repository.emit(
-            motion = VehicleMotion.Unknown,
-            availability = MotionAvailability.Connecting,
+            motion = VehicleMotion.Moving,
+            availability = MotionAvailability.Error,
+            gear = VehicleGear.Drive,
         )
-        assertFalse(fixture.viewModel.endJourney())
+        runCurrent()
+        assertEquals(MainPhase.BeforeDriving, fixture.ready.phase)
+        assertFalse(fixture.ready.canUseTabs)
     }
 
     @Test
     fun `commands check the latest restrictions before the UI has collected them`() = runTest {
         val fixture = fixture()
-        assertTrue(fixture.ready.canStartJourney)
+        assertTrue(fixture.ready.canOpenBadges)
 
         fixture.repository.emit(policy = CarUxPolicy())
 
-        assertFalse(fixture.viewModel.startJourney())
         assertFalse(fixture.viewModel.canOpenBadges())
         runCurrent()
         assertFalse(fixture.ready.canOpenBadges)
@@ -136,10 +132,8 @@ class MainViewModelTest {
         for (gear in listOf(VehicleGear.Drive, VehicleGear.Reverse, VehicleGear.Neutral, VehicleGear.Unknown)) {
             fixture.repository.emit(gear = gear)
             assertFalse(fixture.viewModel.canUseTabs())
-            assertFalse(fixture.viewModel.startJourney())
             runCurrent()
             assertFalse(fixture.ready.canUseTabs)
-            assertFalse(fixture.ready.canStartJourney)
         }
         fixture.repository.emit(gear = VehicleGear.Park, motion = VehicleMotion.Moving)
         assertFalse(fixture.viewModel.canUseTabs())
@@ -151,25 +145,34 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `finish command checks the latest speed before the UI has collected it`() = runTest {
-        val fixture = fixture()
-        fixture.viewModel.startJourney()
+    fun `vehicle transitions update the journey when no UI observes it`() = runTest {
+        val savedState = SavedStateHandle()
+        val fixture = fixture(savedState = savedState)
+        advanceTimeBy(6_000)
+        fixture.repository.emit(motion = VehicleMotion.Moving, gear = VehicleGear.Drive)
         runCurrent()
-        assertTrue(fixture.ready.canEndJourney)
+        assertEquals("Active", savedState.get<String>("journey_progress"))
 
-        fixture.repository.emit(motion = VehicleMotion.Moving)
-
-        assertFalse(fixture.viewModel.endJourney())
+        advanceTimeBy(6_000)
+        fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
+        runCurrent()
+        assertEquals("Finished", savedState.get<String>("journey_progress"))
+        assertTrue(fixture.ready.canReturnHome)
+        assertTrue(checkNotNull(fixture.ready.summary).durationMillis >= 0)
     }
 
     @Test
     fun `restored active progress uses current vehicle motion`() = runTest {
+        val startedAt = 3_000L
         val fixture = fixture(
             initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive),
-            savedState = SavedStateHandle(mapOf("journey_progress" to "Active")),
+            savedState = SavedStateHandle(
+                mapOf("journey_progress" to "Active", "journey_start_millis" to startedAt),
+            ),
         )
 
         assertEquals(MainPhase.DrivingMoving, fixture.ready.phase)
+        assertEquals(startedAt, fixture.ready.journeyStartedAtMillis)
         fixture.repository.emit(motion = VehicleMotion.Stopped)
         runCurrent()
         assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
@@ -279,24 +282,20 @@ class MainViewModelTest {
         assertEquals(MainPhase.DrivingMoving, fixture.ready.phase)
         assertEquals("Active", savedState.get<String>("journey_progress"))
         assertFalse(fixture.ready.canOpenBadges)
-        assertFalse(fixture.ready.canEndJourney)
     }
 
     @Test
-    fun `manual start while parked waits for departure instead of immediately finishing`() = runTest {
+    fun `shifting into drive at standstill does not start a journey`() = runTest {
         val fixture = fixture()
-        assertTrue(fixture.viewModel.startJourney())
+        fixture.repository.emit(gear = VehicleGear.Drive)
         runCurrent()
-        fixture.repository.emit()
-        runCurrent()
+        assertEquals(MainPhase.BeforeDriving, fixture.ready.phase)
+        assertFalse(fixture.ready.canUseTabs)
 
-        assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
-        assertTrue(fixture.ready.canEndJourney)
-        fixture.repository.emit(motion = VehicleMotion.Moving, gear = VehicleGear.Drive)
+        fixture.repository.emit(gear = VehicleGear.Park)
         runCurrent()
-        fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
-        runCurrent()
-        assertEquals(MainPhase.Finished, fixture.ready.phase)
+        assertEquals(MainPhase.BeforeDriving, fixture.ready.phase)
+        assertNull(fixture.ready.summary)
     }
 
     @Test
@@ -307,7 +306,7 @@ class MainViewModelTest {
             fixture.repository.emit(motion = VehicleMotion.Stopped, gear = gear)
             runCurrent()
             assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
-            assertFalse(fixture.viewModel.endJourney())
+            assertFalse(fixture.ready.canReturnHome)
         }
     }
 
@@ -329,11 +328,12 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `restored preparation can wait in park and finish explicitly`() = runTest {
-        val fixture =
-            fixture(savedState = SavedStateHandle(mapOf("journey_progress" to "Prepared")))
-        assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
-        assertTrue(fixture.viewModel.endJourney())
+    fun `restored manual preparation is migrated to before driving`() = runTest {
+        val savedState = SavedStateHandle(mapOf("journey_progress" to "Prepared"))
+        val fixture = fixture(savedState = savedState)
+        assertEquals(MainPhase.BeforeDriving, fixture.ready.phase)
+        assertEquals("Before", savedState.get<String>("journey_progress"))
+        assertNull(fixture.ready.summary)
     }
 
     @Test
@@ -351,9 +351,7 @@ class MainViewModelTest {
     ): Fixture {
         val repository = FakeVehicleRepository(initial)
         val viewModel = MainViewModel(repository, savedState)
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.uiState.collect { }
-        }
+        viewModels += viewModel
         runCurrent()
         return Fixture(repository, viewModel)
     }

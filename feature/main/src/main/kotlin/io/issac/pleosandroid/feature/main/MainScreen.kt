@@ -9,12 +9,11 @@ import io.issac.pleosandroid.core.designsystem.component.PleosButton
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
+import io.issac.pleosandroid.core.domain.model.VehicleMotion
 
 @Composable
 fun MainScreen(
     uiState: MainUiState,
-    onStartJourney: () -> Unit,
-    onEndJourney: () -> Unit,
     onReturnHome: () -> Unit,
     onOpenBadges: () -> Unit,
     onRequestSpeedPermission: () -> Unit,
@@ -27,7 +26,7 @@ fun MainScreen(
     if (restriction != null) {
         val recommendation = when (restriction) {
             JourneyRestriction.Moving, JourneyRestriction.Stopped -> drivingRecommendation
-            JourneyRestriction.Arrived, JourneyRestriction.Unconfirmed -> null
+            JourneyRestriction.ReadyToDrive, JourneyRestriction.Arrived, JourneyRestriction.Unconfirmed -> null
         }
         JourneyRestrictionScreen(restriction, modifier, recommendation)
         return
@@ -37,7 +36,6 @@ fun MainScreen(
             ParkedJourneySummary(
                 summary = uiState.summary,
                 onReturnHome = onReturnHome,
-                onStartJourney = onStartJourney,
                 onOpenBadges = onOpenBadges,
                 modifier = modifier,
             )
@@ -45,7 +43,6 @@ fun MainScreen(
         }
         if (uiState.phase == MainPhase.BeforeDriving && uiState.canUseTabs) {
             ParkedTravelHome(
-                onStartJourney = onStartJourney,
                 onOpenBadges = onOpenBadges,
                 modifier = modifier,
                 onOpenMap = onOpenMap,
@@ -91,16 +88,6 @@ fun MainScreen(
                     }
                     return@PleosScreen
                 }
-                if (uiState.phase == MainPhase.DrivingStopped ||
-                    uiState.phase == MainPhase.DrivingMoving ||
-                    uiState.phase == null
-                ) {
-                    PleosButton(
-                        text = "여정 종료",
-                        onClick = onEndJourney,
-                        enabled = uiState.canEndJourney,
-                    )
-                }
                 PleosButton(text = "컬렉션 보기", onClick = onOpenBadges, enabled = uiState.canOpenBadges)
                 Text("출발하면 주행을 시작하고, 멈추면 주행 중 멈춤으로 표시하며, 정지 후 P 기어에서 종료합니다.")
             }
@@ -120,6 +107,10 @@ private val MainUiState.Ready.restriction: JourneyRestriction?
         } else {
             JourneyRestriction.Stopped
         }
+
+        phase == MainPhase.BeforeDriving && vehicle.gear == VehicleGear.Drive &&
+            vehicle.motion.availability == MotionAvailability.Available &&
+            vehicle.motion.motion == VehicleMotion.Stopped -> JourneyRestriction.ReadyToDrive
 
         vehicle.uxPolicy.restrictionsRequired -> JourneyRestriction.Unconfirmed
 

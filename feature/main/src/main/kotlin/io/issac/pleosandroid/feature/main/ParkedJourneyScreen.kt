@@ -39,7 +39,6 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
 @Composable
 internal fun ParkedTravelHome(
-    onStartJourney: () -> Unit,
     onOpenBadges: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenMap: (() -> Unit)? = null,
@@ -83,7 +82,6 @@ internal fun ParkedTravelHome(
                             showArrow = true,
                         )
                     }
-                    PleosTextLink(stringResource(R.string.journey_start), onStartJourney)
                 }
             },
             side = { wide ->
@@ -117,7 +115,6 @@ internal fun ParkedTravelHome(
 internal fun ParkedJourneySummary(
     summary: JourneySummary?,
     onReturnHome: () -> Unit,
-    onStartJourney: () -> Unit,
     onOpenBadges: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -171,7 +168,6 @@ internal fun ParkedJourneySummary(
                         modifier = Modifier.fillMaxWidth(),
                         showArrow = true,
                     )
-                    PleosTextLink(stringResource(R.string.journey_start_another), onStartJourney)
                     PleosTextLink(stringResource(R.string.journey_collection), onOpenBadges)
                 }
             },

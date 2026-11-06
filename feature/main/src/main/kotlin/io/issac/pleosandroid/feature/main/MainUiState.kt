@@ -22,16 +22,11 @@ sealed interface MainUiState {
         val vehicle: VehicleState,
         val summary: JourneySummary? = null,
         val arrivedBeforeParking: Boolean = false,
+        val journeyStartedAtMillis: Long? = null,
     ) : MainUiState {
         val canUseTabs: Boolean get() = vehicle.allowsTabNavigation
 
         val canOpenBadges: Boolean get() = canUseTabs
-
-        val canStartJourney: Boolean
-            get() = canUseTabs && (phase == MainPhase.BeforeDriving || phase == MainPhase.Finished)
-
-        val canEndJourney: Boolean
-            get() = canUseTabs && phase == MainPhase.DrivingStopped
 
         val canReturnHome: Boolean
             get() = canUseTabs && phase == MainPhase.Finished
