@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.R
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
@@ -39,6 +41,7 @@ fun PleosTextField(
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
+    val scale = PleosTextStyles.scale
     val colors = PleosTheme.colors
     BasicTextField(
         value = value,
@@ -55,16 +58,18 @@ fun PleosTextField(
                 Modifier
                     .background(if (enabled) colors.actionSecondary else colors.actionDisabled, PleosShape.button)
                     .border(1.dp, colors.borderControl, PleosShape.button)
-                    .heightIn(min = PleosSpacing.space56)
-                    .padding(horizontal = PleosSpacing.space16),
+                    .heightIn(min = PleosSpacing.space56 * scale)
+                    .padding(horizontal = PleosSpacing.space16 * scale, vertical = PleosSpacing.space8 * scale),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space16),
+                horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space12 * scale),
             ) {
                 leadingIcon?.invoke()
                 Box(Modifier.weight(1f)) {
                     if (value.isEmpty()) {
                         Text(
                             placeholder,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             style = PleosTextStyles.body,
                             color = if (enabled) colors.textSecondary else colors.textDisabled,
                         )
@@ -97,7 +102,11 @@ fun PleosSearchField(
         imeAction = ImeAction.Search,
         onSubmit = onSearch,
         leadingIcon = {
-            PleosGlyph(PleosSymbol.Search, if (enabled) colors.actionPrimary else colors.textDisabled)
+            PleosGlyph(
+                PleosSymbol.Search,
+                if (enabled) colors.actionPrimary else colors.textDisabled,
+                Modifier.size(PleosSpacing.space24 * PleosTextStyles.scale),
+            )
         },
         trailingIcon = {
             if (value.isNotEmpty()) {

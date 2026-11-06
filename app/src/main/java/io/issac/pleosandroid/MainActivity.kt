@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
-import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
+import io.issac.pleosandroid.core.designsystem.theme.PleosWindowTheme
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.navigation.PleosAppNavigation
 import javax.inject.Inject
@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         val darkBars = SystemBarStyle.dark(Color.TRANSPARENT)
         enableEdgeToEdge(statusBarStyle = darkBars, navigationBarStyle = darkBars)
         setContent {
-            PleosTheme {
+            PleosWindowTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     PleosAppNavigation(factories = navEntryFactories, contentPadding = innerPadding)
                 }

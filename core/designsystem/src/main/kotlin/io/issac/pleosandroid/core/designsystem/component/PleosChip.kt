@@ -29,6 +29,7 @@ fun PleosChip(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
+    val scale = PleosTextStyles.scale
     val colors = PleosTheme.colors
     val interactions = remember { MutableInteractionSource() }
     val foreground = when {
@@ -50,8 +51,8 @@ fun PleosChip(
             .shapedRipple(interactions, PleosShape.chip, foreground, enabled)
             .background(if (selected) colors.chipSelected else colors.chipDefault)
             .border(.8.dp, if (selected && enabled) colors.actionPrimary else colors.borderDefault, PleosShape.chip)
-            .sizeIn(minWidth = PleosSpacing.space64, minHeight = PleosSpacing.space40)
-            .padding(horizontal = PleosSpacing.space16, vertical = PleosSpacing.space4),
+            .sizeIn(minWidth = PleosSpacing.space64 * scale, minHeight = PleosSpacing.space40 * scale)
+            .padding(horizontal = PleosSpacing.space16 * scale, vertical = PleosSpacing.space4 * scale),
         contentAlignment = Alignment.Center,
     ) {
         Text(label, color = foreground, style = PleosTextStyles.meta)

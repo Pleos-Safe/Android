@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.modifier.customClickable
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
@@ -36,6 +38,7 @@ fun PleosButton(
     style: PleosButtonStyle = PleosButtonStyle.Primary,
     showArrow: Boolean = false,
 ) {
+    val scale = PleosTextStyles.scale
     val colors = PleosTheme.colors
     val secondary = style == PleosButtonStyle.Secondary
     val container = when (style) {
@@ -52,13 +55,13 @@ fun PleosButton(
 
     Row(
         modifier = modifier
-            .heightIn(min = if (secondary) PleosSpacing.space48 else PleosSpacing.space56)
+            .heightIn(min = (if (secondary) PleosSpacing.space48 else PleosSpacing.space56) * scale)
             .width(IntrinsicSize.Max)
             .customClickable(enabled = enabled, role = Role.Button, rippleColor = content, onClick = onClick)
             .background(if (enabled) container else colors.actionDisabled, PleosShape.button)
             .then(border)
             .defaultMinSize(minWidth = ButtonDefaults.MinWidth)
-            .padding(horizontal = PleosSpacing.space24, vertical = PleosSpacing.space8),
+            .padding(horizontal = PleosSpacing.space24 * scale, vertical = PleosSpacing.space8 * scale),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -67,27 +70,31 @@ fun PleosButton(
             modifier = if (showArrow) Modifier.weight(1f) else Modifier,
             style = PleosTextStyles.body.copy(fontWeight = FontWeight.Medium),
             color = content,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = if (showArrow) TextAlign.Start else TextAlign.Center,
         )
         if (enabled && showArrow) {
-            Spacer(Modifier.width(PleosSpacing.space16))
-            PleosGlyph(PleosSymbol.Arrow, content, Modifier.size(20.dp))
+            Spacer(Modifier.width(PleosSpacing.space16 * scale))
+            PleosGlyph(PleosSymbol.Arrow, content, Modifier.size(20.dp * scale))
         }
     }
 }
 
 @Composable
 fun PleosTextLink(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    val scale = PleosTextStyles.scale
     val colors = PleosTheme.colors
     val content = if (enabled) colors.actionPrimary else colors.textDisabled
     Row(
-        modifier = modifier.heightIn(min = PleosSpacing.space48)
+        modifier = modifier.heightIn(min = PleosSpacing.space48 * scale)
             .customClickable(enabled = enabled, role = Role.Button, rippleColor = content, onClick = onClick)
             .defaultMinSize(minWidth = ButtonDefaults.MinWidth)
             .padding(horizontal = PleosSpacing.space4),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space12, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space8 * scale, Alignment.CenterHorizontally),
     ) {
         Text(text, style = PleosTextStyles.meta, color = content)
-        if (enabled) PleosGlyph(PleosSymbol.Arrow, content, Modifier.size(PleosSpacing.space16))
+        if (enabled) PleosGlyph(PleosSymbol.Arrow, content, Modifier.size(PleosSpacing.space16 * scale))
     }
 }
