@@ -1,5 +1,7 @@
 package io.issac.pleosandroid.core.designsystem.component
 
+import android.os.Build
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -17,22 +19,30 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.boundingRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -47,127 +57,174 @@ import androidx.compose.ui.unit.sp
 import io.issac.pleosandroid.core.designsystem.R
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
-enum class MilestoneCardAppearance(
-    internal val level: Int,
-    internal val isSafety: Boolean,
-    internal val base: Int?,
-    internal val overlay: Int,
-) {
-    PlaceLevel1(1, false, R.drawable.milestone_place_1_base, R.drawable.milestone_place_1_overlay),
-    PlaceLevel2(2, false, R.drawable.milestone_place_2_base, R.drawable.milestone_place_2_overlay),
-    PlaceLevel3(3, false, R.drawable.milestone_place_4_base, R.drawable.milestone_place_2_overlay),
-    PlaceLevel4(4, false, R.drawable.milestone_place_4_base, R.drawable.milestone_place_4_overlay),
-    PlaceLevel5(5, false, R.drawable.milestone_place_5_base, R.drawable.milestone_place_5_overlay),
-    SafetyLevel1(1, true, null, R.drawable.milestone_safety_detail_overlay),
-    SafetyLevel2(
-        2,
-        true,
-        R.drawable.milestone_safety_5_base,
-        R.drawable.milestone_safety_detail_overlay,
-    ),
-    SafetyLevel3(
-        3,
-        true,
-        R.drawable.milestone_safety_5_base,
-        R.drawable.milestone_safety_detail_overlay,
-    ),
-    SafetyLevel4(
-        4,
-        true,
-        R.drawable.milestone_safety_5_base,
-        R.drawable.milestone_safety_detail_overlay,
-    ),
-    SafetyLevel5(
-        5,
-        true,
-        R.drawable.milestone_safety_5_base,
-        R.drawable.milestone_safety_5_overlay,
-    ),
+enum class MilestoneCardAppearance(internal val level: Int, internal val isSafety: Boolean) {
+    PlaceLevel1(1, false),
+    PlaceLevel2(2, false),
+    PlaceLevel3(3, false),
+    PlaceLevel4(4, false),
+    PlaceLevel5(5, false),
+    SafetyLevel1(1, true),
+    SafetyLevel2(2, true),
+    SafetyLevel3(3, true),
+    SafetyLevel4(4, true),
+    SafetyLevel5(5, true),
+    ;
+
+    companion object {
+        fun forLevel(level: Int, safety: Boolean): MilestoneCardAppearance =
+            entries.first { it.level == level && it.isSafety == safety }
+    }
 }
 
 sealed interface MilestoneCardFace {
+    sealed interface Printed : MilestoneCardFace {
+        val level: Int
+        val seriesLabel: String
+
+        @get:DrawableRes val glossMask: Int?
+
+        @get:DrawableRes val engravingMask: Int?
+    }
+
     data class Front(
         val appearance: MilestoneCardAppearance,
         val artwork: Painter,
         val contextLabel: String,
         val title: String,
         val subtitle: String,
-        val seriesLabel: String,
+        override val seriesLabel: String,
         val categoryLabel: String? = null,
-    ) : MilestoneCardFace
+        @param:DrawableRes override val glossMask: Int? = null,
+        @param:DrawableRes override val engravingMask: Int? = null,
+    ) : Printed {
+        override val level get() = appearance.level
+    }
+
+    /** Illustrated 360 × 520 postcard from the expanded collection. */
+    data class Postcard(
+        val artwork: Painter,
+        val title: String,
+        val subtitle: String,
+        val contextLabel: String,
+        val categoryLabel: String,
+        override val seriesLabel: String,
+        override val level: Int,
+        @param:DrawableRes override val glossMask: Int? = null,
+        @param:DrawableRes override val engravingMask: Int? = null,
+    ) : Printed
 
     data object CommonBack : MilestoneCardFace
 }
 
 /** Draws a face at its design aspect ratio. Size and interaction are supplied by the caller. */
 @Composable
-fun MilestoneCard(face: MilestoneCardFace, modifier: Modifier = Modifier) {
+fun MilestoneCard(face: MilestoneCardFace, modifier: Modifier = Modifier, lightAngle: (() -> Float)? = null) {
+    val ambient = if (lightAngle == null && face is MilestoneCardFace.Printed && face.level >= 4) {
+        rememberMilestoneCardLight(ambient = true, initialAngle = -17.5f)
+    } else {
+        null
+    }
+    MilestoneCardPrint(face, modifier) { lightAngle?.invoke() ?: ambient?.value ?: RESTING_LIGHT_ANGLE }
+}
+
+@Composable
+internal fun MilestoneCardPrint(face: MilestoneCardFace, modifier: Modifier, lightAngle: () -> Float) {
+    val printed = face as? MilestoneCardFace.Printed
+    val material = printed?.let { BlackLabel.fromLevel(it.level) }
+    val stock = when (face) {
+        is MilestoneCardFace.Front -> if (face.appearance.isSafety) CardStock.Safety else CardStock.Place
+        else -> CardStock.Postcard
+    }
+    val plate = material?.plate(stock)
+    val frame = when {
+        printed != null && material != null && plate != null -> {
+            val maskId = when (material) {
+                BlackLabel.Silver -> printed.glossMask
+                BlackLabel.Onyx -> printed.engravingMask ?: printed.glossMask
+                BlackLabel.Sapphire -> printed.glossMask
+            }
+            val spot = maskId?.let { ImageBitmap.imageResource(it).asAndroidBitmap() }
+            val relief = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                plate.relief?.let { ImageBitmap.imageResource(it).asAndroidBitmap() }
+            } else {
+                null
+            }
+            Modifier.blackLabelFinish(material, stock, relief, spot, lightAngle)
+        }
+
+        printed?.level == 2 -> Modifier.blueFoilFrame(stock)
+
+        else -> Modifier
+    }
     BoxWithConstraints(
         modifier = modifier
-            .aspectRatio(CARD_WIDTH / CARD_HEIGHT)
+            .aspectRatio(MILESTONE_CARD_ASPECT_RATIO)
             .clipToBounds()
+            .then(frame)
             .semantics(mergeDescendants = true) {},
         contentAlignment = AbsoluteAlignment.TopLeft,
     ) {
         val scale = maxWidth.value / CARD_WIDTH
         when (face) {
-            is MilestoneCardFace.Front -> FrontFace(face, scale)
+            is MilestoneCardFace.Front -> FrontFace(face, scale, stock, material, plate)
+            is MilestoneCardFace.Postcard -> PostcardFace(face, scale, material, plate)
             MilestoneCardFace.CommonBack -> CommonBackFace(scale)
         }
     }
 }
 
 @Composable
-private fun FrontFace(face: MilestoneCardFace.Front, scale: Float) {
-    val appearance = face.appearance
-    val base = appearance.base
-    if (base != null) CardPlane(base) else SafetyBase()
-
-    if (appearance.isSafety) {
-        SafetyArtwork(face.artwork, appearance)
-    } else {
-        PlaceArtwork(face.artwork, appearance == MilestoneCardAppearance.PlaceLevel3)
-    }
-
-    CardPlane(appearance.overlay)
-    if (appearance.isSafety) SafetyLabels(face, scale) else PlaceLabels(face, scale)
+private fun PostcardFace(face: MilestoneCardFace.Postcard, scale: Float, material: BlackLabel?, plate: PrintPlate?) {
+    val muted = material?.secondaryInk ?: Color(0xFF7A949F)
+    CardPlane(plate?.paper ?: R.drawable.milestone_postcard_plain)
+    CardArtwork(face.artwork, CardStock.Postcard)
+    CardText(face.contextLabel, scale, 26, 25, 128, 20, 12, muted)
+    CardText(face.categoryLabel, scale, 204, 25, 130, 20, 12, muted, alignment = TextAlign.Right)
+    CardText(face.title, scale, 26, 406, 308, 36, 24, material?.titleInk ?: Color(0xFF173D4E), weight = FontWeight.Bold)
+    CardText(face.subtitle, scale, 26, 445, 308, 22, 13, muted)
+    CardText(stringResource(R.string.milestone_card_level, face.level), scale, 26, 488, 82, 23, 11, muted)
+    CardText(face.seriesLabel, scale, 110, 490, 224, 20, 9, muted, alignment = TextAlign.Right)
 }
 
 @Composable
-private fun PlaceArtwork(artwork: Painter, partialReflection: Boolean) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val scale = size.width / CARD_WIDTH
-        val mask = Path().apply {
-            addRoundRect(
-                RoundRect(
-                    rect = Rect(30f * scale, 76f * scale, 330f * scale, 384f * scale),
-                    cornerRadius = CornerRadius(6f * scale),
-                ),
-            )
+private fun FrontFace(
+    face: MilestoneCardFace.Front,
+    scale: Float,
+    stock: CardStock,
+    material: BlackLabel?,
+    plate: PrintPlate?,
+) {
+    when {
+        plate != null -> CardPlane(plate.paper)
+
+        stock == CardStock.Safety -> {
+            if (face.level == 1) SafetyBase() else CardPlane(R.drawable.milestone_safety_5_base)
+            CardPlane(R.drawable.milestone_safety_detail_overlay)
         }
-        clipPath(mask) {
-            translate(left = 24f * scale, top = 62f * scale) {
-                with(artwork) {
-                    draw(size = Size(312f * scale, 448.5f * scale))
+
+        face.level == 1 -> {
+            CardPlane(R.drawable.milestone_place_1_base)
+            CardPlane(R.drawable.milestone_place_1_overlay)
+        }
+
+        else -> {
+            CardPlane(R.drawable.milestone_place_2_base)
+            CardPlane(R.drawable.milestone_place_2_overlay)
+        }
+    }
+    CardArtwork(face.artwork, stock)
+    if (stock == CardStock.Safety) SafetyLabels(face, scale, material) else PlaceLabels(face, scale, material)
+}
+
+@Composable
+private fun CardArtwork(artwork: Painter, stock: CardStock) {
+    val window = remember(stock) { Path().apply { addRoundRect(stock.artwork) } }
+    Canvas(Modifier.fillMaxSize()) {
+        scale(size.width / CARD_WIDTH, size.height / CARD_HEIGHT, pivot = Offset.Zero) {
+            clipPath(window) {
+                translate(stock.ink.left, stock.ink.top) {
+                    with(artwork) { draw(size = stock.ink.size) }
                 }
-            }
-            // The atelier reference places the Level 3 reflection on the water.
-            if (partialReflection) {
-                val water = Path().apply {
-                    moveTo(30f * scale, 274f * scale)
-                    quadraticTo(138f * scale, 250f * scale, 330f * scale, 268f * scale)
-                    lineTo(330f * scale, 384f * scale)
-                    lineTo(30f * scale, 384f * scale)
-                    close()
-                }
-                drawPath(
-                    path = water,
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(Color(0xA6BB56E6), Color(0x5FF6C879), Color(0x8065EBD0)),
-                        startX = 30f * scale,
-                        endX = 330f * scale,
-                    ),
-                )
             }
         }
     }
@@ -192,70 +249,19 @@ private fun SafetyBase() {
 }
 
 @Composable
-private fun SafetyArtwork(artwork: Painter, appearance: MilestoneCardAppearance) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val scale = size.width / CARD_WIDTH
-        val corner = CornerRadius(10f * scale)
-        val mask = Path().apply {
-            addRoundRect(
-                RoundRect(
-                    rect = Rect(20f * scale, 62f * scale, 340f * scale, 362f * scale),
-                    topLeft = corner,
-                    topRight = corner,
-                    bottomRight = CornerRadius.Zero,
-                    bottomLeft = CornerRadius.Zero,
-                ),
-            )
-        }
-        clipPath(mask) {
-            translate(left = 20f * scale, top = 62f * scale) {
-                with(artwork) {
-                    draw(size = Size(320f * scale, 300f * scale))
-                }
-            }
-            // The atelier references show a narrow reflection at Level 3 and a wider sheen at Level 4.
-            if (appearance == MilestoneCardAppearance.SafetyLevel4) {
-                drawRect(
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color(0x233D6B9C), Color(0x2F8A72B8), Color(0x274DB9A2)),
-                        start = Offset(20f * scale, 62f * scale),
-                        end = Offset(340f * scale, 362f * scale),
-                    ),
-                    topLeft = Offset(20f * scale, 62f * scale),
-                    size = Size(320f * scale, 300f * scale),
-                )
-            }
-            if (appearance == MilestoneCardAppearance.SafetyLevel3 ||
-                appearance == MilestoneCardAppearance.SafetyLevel4
-            ) {
-                val reflection = Path().apply {
-                    moveTo(216f * scale, 62f * scale)
-                    lineTo(249f * scale, 62f * scale)
-                    lineTo(147f * scale, 362f * scale)
-                    lineTo(115f * scale, 362f * scale)
-                    close()
-                }
-                drawPath(
-                    path = reflection,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(Color(0x4AA9A0CF), Color(0x369ED6D0)),
-                        startY = 62f * scale,
-                        endY = 362f * scale,
-                    ),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PlaceLabels(face: MilestoneCardFace.Front, scale: Float) {
-    CardText(face.contextLabel, scale, 28, 30, 127, 20, 12, Color(0xFF65778A))
+private fun PlaceLabels(face: MilestoneCardFace.Front, scale: Float, material: BlackLabel?) {
+    CardText(face.contextLabel, scale, 28, 30, 127, 20, 12, material?.secondaryInk ?: Color(0xFF65778A))
     face.categoryLabel?.let {
-        CardText(it, scale, 205, 30, 127, 20, 12, Color(0xFF65778A), alignment = TextAlign.Right)
+        CardText(
+            it, scale, 205, 30, 127, 20, 12,
+            material?.secondaryInk ?: Color(
+                0xFF65778A,
+            ),
+            alignment = TextAlign.Right,
+        )
     }
-    CardText(face.title, scale, 28, 414, 304, 37, 28, Color(0xFF132C40), weight = FontWeight.Bold)
-    CardText(face.subtitle, scale, 29, 453, 303, 26, 14, Color(0xFF687B8B))
+    CardText(face.title, scale, 28, 414, 304, 37, 28, material?.titleInk ?: Color(0xFF132C40), weight = FontWeight.Bold)
+    CardText(face.subtitle, scale, 29, 453, 303, 26, 14, material?.secondaryInk ?: Color(0xFF687B8B))
     CardText(
         text = stringResource(R.string.milestone_card_level, face.appearance.level),
         scale = scale,
@@ -264,7 +270,7 @@ private fun PlaceLabels(face: MilestoneCardFace.Front, scale: Float) {
         width = 100,
         height = 25,
         fontSize = 12,
-        color = Color(0xFF425F73),
+        color = material?.secondaryInk ?: Color(0xFF425F73),
     )
     CardText(
         text = face.seriesLabel,
@@ -274,16 +280,16 @@ private fun PlaceLabels(face: MilestoneCardFace.Front, scale: Float) {
         width = 194,
         height = 24,
         fontSize = 10,
-        color = Color(0xFF7A8D9A),
+        color = material?.secondaryInk ?: Color(0xFF7A8D9A),
         alignment = TextAlign.Right,
     )
 }
 
 @Composable
-private fun SafetyLabels(face: MilestoneCardFace.Front, scale: Float) {
-    CardText(face.contextLabel, scale, 22, 20, 250, 26, 15, Color(0xFF466778))
-    CardText(face.title, scale, 22, 384, 316, 38, 27, Color(0xFF17384A), weight = FontWeight.Bold)
-    CardText(face.subtitle, scale, 22, 424, 316, 37, 16, Color(0xFF527084))
+private fun SafetyLabels(face: MilestoneCardFace.Front, scale: Float, material: BlackLabel?) {
+    CardText(face.contextLabel, scale, 22, 20, 250, 26, 15, material?.secondaryInk ?: Color(0xFF466778))
+    CardText(face.title, scale, 22, 384, 316, 38, 27, material?.titleInk ?: Color(0xFF17384A), weight = FontWeight.Bold)
+    CardText(face.subtitle, scale, 22, 424, 316, 37, 16, material?.secondaryInk ?: Color(0xFF527084))
     CardText(
         text = stringResource(R.string.milestone_card_level, face.appearance.level),
         scale = scale,
@@ -292,7 +298,7 @@ private fun SafetyLabels(face: MilestoneCardFace.Front, scale: Float) {
         width = 110,
         height = 31,
         fontSize = 16,
-        color = Color(0xFF527084),
+        color = material?.secondaryInk ?: Color(0xFF527084),
     )
     CardText(
         text = face.seriesLabel,
@@ -302,7 +308,7 @@ private fun SafetyLabels(face: MilestoneCardFace.Front, scale: Float) {
         width = 190,
         height = 24,
         fontSize = 10,
-        color = Color(0xFF708E9C),
+        color = material?.secondaryInk ?: Color(0xFF708E9C),
         alignment = TextAlign.Right,
     )
 }
@@ -382,8 +388,108 @@ private fun CardText(
     )
 }
 
-private const val CARD_WIDTH = 360f
-private const val CARD_HEIGHT = 520f
+internal const val CARD_WIDTH = 360f
+internal const val CARD_HEIGHT = 520f
+internal const val FOIL_RIM_INSET = 5f
+internal const val FOIL_RIM_WIDTH = 4f
+const val MILESTONE_CARD_ASPECT_RATIO = CARD_WIDTH / CARD_HEIGHT
+
+internal enum class CardStock(
+    val paper: Color,
+    val corner: Float,
+    val trim: Float,
+    val artwork: RoundRect,
+    val ink: Rect = artwork.boundingRect,
+    val picture: Rect? = null,
+    val pictureCorner: Float = 0f,
+) {
+    Place(
+        Color(0xFFEDEEEA),
+        24f,
+        9.5f,
+        artwork = RoundRect(Rect(30f, 76f, 330f, 384f), CornerRadius(6f)),
+        ink = Rect(24f, 62f, 336f, 510.5f),
+        picture = Rect(25f, 71f, 335f, 389f),
+        pictureCorner = 8f,
+    ),
+    Postcard(
+        Color(0xFFF1F2EB),
+        18f,
+        7f,
+        artwork = RoundRect(Rect(26f, 68f, 334f, 386f), CornerRadius(7f)),
+        picture = Rect(23f, 65f, 337f, 389f),
+        pictureCorner = 9f,
+    ),
+    Safety(
+        Color(0xFFE8F1F2),
+        20f,
+        7f,
+        artwork = RoundRect(
+            Rect(20f, 62f, 340f, 362f),
+            topLeft = CornerRadius(10f),
+            topRight = CornerRadius(10f),
+            bottomRight = CornerRadius.Zero,
+            bottomLeft = CornerRadius.Zero,
+        ),
+    ),
+}
+
+private val blueFoil = listOf(
+    Color(0xFF0752B9),
+    Color(0xFF39D9FF),
+    Color(0xFFE9FDFF),
+    Color(0xFF1582CE),
+    Color(0xFF6CE6FF),
+)
+private fun Modifier.blueFoilFrame(stock: CardStock): Modifier = drawWithCache {
+    val widthScale = size.width / CARD_WIDTH
+    val heightScale = size.height / CARD_HEIGHT
+    val paperCorner = CornerRadius(stock.corner * widthScale, stock.corner * heightScale)
+    // Keep the printed interior and trim off the different rims baked into the original exports.
+    val trimX = stock.trim * widthScale
+    val trimY = stock.trim * heightScale
+    val trimCorner = stock.corner - stock.trim
+    val interior = Path().apply {
+        addRoundRect(
+            RoundRect(
+                Rect(trimX, trimY, size.width - trimX, size.height - trimY),
+                CornerRadius(trimCorner * widthScale, trimCorner * heightScale),
+            ),
+        )
+    }
+    // The print gradient traverses the same number of stops along the top and left edges.
+    val diagonal = Offset(CARD_HEIGHT, CARD_WIDTH)
+    val foil = Brush.linearGradient(
+        colors = blueFoil,
+        end = diagonal * (2f * CARD_WIDTH * CARD_HEIGHT / diagonal.getDistanceSquared()),
+    )
+    // The Level 2 master places a 4-unit stroke 5 units inside its 360 × 520 print.
+    val rimBounds = Rect(0f, 0f, CARD_WIDTH, CARD_HEIGHT).deflate(FOIL_RIM_INSET)
+    val rim = Stroke(width = FOIL_RIM_WIDTH)
+    val keyline = Stroke(width = 3f)
+    onDrawWithContent {
+        drawRoundRect(stock.paper, cornerRadius = paperCorner)
+        clipPath(interior) { this@onDrawWithContent.drawContent() }
+        scale(widthScale, heightScale, pivot = Offset.Zero) {
+            drawRoundRect(
+                brush = foil,
+                topLeft = rimBounds.topLeft,
+                size = rimBounds.size,
+                cornerRadius = CornerRadius(stock.corner - FOIL_RIM_INSET),
+                style = rim,
+            )
+            stock.picture?.let { picture ->
+                drawRoundRect(
+                    brush = foil,
+                    topLeft = picture.topLeft,
+                    size = picture.size,
+                    cornerRadius = CornerRadius(stock.pictureCorner),
+                    style = keyline,
+                )
+            }
+        }
+    }
+}
 
 @Preview(name = "Milestone card • place front", group = "Basic faces")
 @Composable
@@ -455,6 +561,8 @@ private fun previewFace(appearance: MilestoneCardAppearance): MilestoneCardFace.
     MilestoneCardFace.Front(
         appearance = appearance,
         artwork = painterResource(R.drawable.milestone_art_safety),
+        glossMask = R.drawable.milestone_gloss_safety,
+        engravingMask = R.drawable.milestone_engraving_safety,
         contextLabel = "운전습관 · 귀가",
         title = "안전한 귀가",
         subtitle = "여정을 차분히 마친 기록",
@@ -464,6 +572,8 @@ private fun previewFace(appearance: MilestoneCardAppearance): MilestoneCardFace.
     MilestoneCardFace.Front(
         appearance = appearance,
         artwork = painterResource(R.drawable.milestone_art_haeundae),
+        glossMask = R.drawable.milestone_gloss_haeundae,
+        engravingMask = R.drawable.milestone_engraving_haeundae,
         contextLabel = "부산 · 해운대",
         title = "해운대의 파도",
         subtitle = "부산의 여름을 간직하다",
