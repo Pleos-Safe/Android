@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.issac.pleosandroid.core.designsystem.component.PleosInfoPanel
 import io.issac.pleosandroid.core.designsystem.component.pleosShellBackground
 import io.issac.pleosandroid.core.designsystem.theme.PleosLayout
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
@@ -40,6 +41,8 @@ internal fun DrivingOverviewScreen(
     isMoving: Boolean,
     modifier: Modifier = Modifier,
     safetyMessage: DrivingSafetyMessage? = null,
+    progress: JourneyProgressDisplay? = null,
+    destination: String? = null,
     map: @Composable (Modifier) -> Unit,
     recommendation: @Composable () -> Unit,
 ) {
@@ -52,7 +55,10 @@ internal fun DrivingOverviewScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(PleosLayout.sectionGap),
         ) {
-            DrivingOverviewHeading(isMoving, wide)
+            DrivingOverviewHeading(isMoving, wide, recording = progress != null)
+            if (!wide) {
+                DrivingOverviewMetrics(progress, destination)
+            }
             if (wide) {
                 Row(
                     Modifier.fillMaxSize(),
@@ -63,6 +69,7 @@ internal fun DrivingOverviewScreen(
                         Modifier.width(OverviewSidePanelWidth * PleosTextStyles.scale),
                         verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap),
                     ) {
+                        DrivingOverviewMetrics(progress, destination)
                         DrivingOverviewRecommendation(recommendation)
                         safetyMessage?.let { DrivingSafetyBanner(it) }
                     }
@@ -78,7 +85,7 @@ internal fun DrivingOverviewScreen(
 }
 
 @Composable
-private fun DrivingOverviewHeading(isMoving: Boolean, wide: Boolean) {
+private fun DrivingOverviewHeading(isMoving: Boolean, wide: Boolean, recording: Boolean) {
     val colors = PleosTheme.colors
     val statusColor = if (isMoving) colors.actionPrimary else colors.statusPending
     Row(
@@ -87,9 +94,11 @@ private fun DrivingOverviewHeading(isMoving: Boolean, wide: Boolean) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(
-                if (isMoving) R.string.journey_restriction_moving_title else R.string.journey_restriction_stopped_title,
-            ),
+            text = when {
+                isMoving && recording -> "주행 기록 중"
+                isMoving -> stringResource(R.string.journey_restriction_moving_title)
+                else -> stringResource(R.string.journey_restriction_stopped_title)
+            },
             modifier = Modifier.weight(1f).semantics { heading() },
             color = colors.textPrimary,
             style = if (wide) PleosTextStyles.titleFull else PleosTextStyles.titleSplit,
@@ -114,6 +123,23 @@ private fun DrivingOverviewHeading(isMoving: Boolean, wide: Boolean) {
                 maxLines = 1,
             )
         }
+    }
+}
+
+@Composable
+private fun DrivingOverviewMetrics(progress: JourneyProgressDisplay?, destination: String?) {
+    if (progress == null && destination == null) return
+    PleosInfoPanel(Modifier.fillMaxWidth()) {
+        destination?.let {
+            Text(
+                it,
+                style = PleosTextStyles.section,
+                color = PleosTheme.colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        progress?.let { JourneyProgressRows(it) }
     }
 }
 

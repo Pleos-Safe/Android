@@ -30,6 +30,9 @@ fun MainScreen(
     onOpenReport: (String) -> Unit = {},
     drivingRecommendation: @Composable (() -> Unit)? = null,
     drivingContent: @Composable ((Boolean, Modifier) -> Unit)? = null,
+    onFinishJourney: () -> Unit = {},
+    onContinueJourney: () -> Unit = {},
+    visitReward: @Composable () -> Unit = {},
 ) {
     val restriction = (uiState as? MainUiState.Ready)?.restriction
     if (restriction != null) {
@@ -40,6 +43,7 @@ fun MainScreen(
             } else {
                 DrivingOverviewScreen(
                     isMoving = isMoving,
+                    progress = (uiState as MainUiState.Ready).progress,
                     modifier = modifier,
                     map = { DrivingRegionMap(null, emptySet(), isMoving, it) },
                     recommendation = { drivingRecommendation?.invoke() ?: NoDrivingRecommendation() },
@@ -51,6 +55,20 @@ fun MainScreen(
         return
     }
     if (uiState is MainUiState.Ready) {
+        if (uiState.canManagePausedJourney) {
+            ParkedJourneyPause(
+                progress = uiState.progress,
+                recovering = uiState.recoveryRequired,
+                pausedAtNanos = uiState.pausedAtNanos,
+                busy = uiState.journeyActionPending,
+                error = uiState.journeyActionError,
+                onContinueJourney = onContinueJourney,
+                onFinishJourney = onFinishJourney,
+                visitReward = visitReward,
+                modifier = modifier,
+            )
+            return
+        }
         if (uiState.canReturnHome) {
             ParkedJourneySummary(
                 summary = uiState.summary,
@@ -65,6 +83,7 @@ fun MainScreen(
         if (uiState.phase == MainPhase.BeforeDriving && uiState.canUseTabs) {
             ParkedTravelHome(
                 place = homePlace,
+                pointBalance = uiState.pointBalance,
                 onOpenBadges = onOpenBadges,
                 modifier = modifier,
                 onOpenMap = onOpenMap,
@@ -115,7 +134,7 @@ fun MainScreen(
                     return@PleosScreen
                 }
                 PleosButton(text = "컬렉션 보기", onClick = onOpenBadges, enabled = uiState.canOpenBadges)
-                Text("출발하면 주행을 시작하고, 멈추면 주행 중 멈춤으로 표시하며, 정지 후 P 기어에서 종료합니다.")
+                Text("출발하면 여정이 시작됩니다. P단에서 쉬어가거나 여정을 마칠 수 있어요.")
             }
         }
     }
