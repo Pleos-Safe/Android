@@ -4,6 +4,7 @@ import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
 import io.issac.pleosandroid.core.domain.model.VehicleState
+import java.time.Instant
 
 enum class MainPhase {
     BeforeDriving,
@@ -19,7 +20,15 @@ data class JourneySummary(
     val reportId: String? = null,
     val recordingPhase: RecordingPhase =
         RecordingPhase.Disabled,
+    val distanceMeters: Long? = null,
+    val safetyScore: Int? = null,
+    val earnedPoints: Long? = null,
+    val recognizedDistanceMeters: Long? = null,
+    val settlementReason: String? = null,
+    val endedAt: Instant? = null,
 )
+
+data class JourneyProgressDisplay(val distanceMeters: Long, val movingMillis: Long)
 
 sealed interface MainUiState {
     data object Loading : MainUiState
@@ -30,8 +39,18 @@ sealed interface MainUiState {
         val summary: JourneySummary? = null,
         val arrivedBeforeParking: Boolean = false,
         val journeyStartedAtMillis: Long? = null,
+        val progress: JourneyProgressDisplay? = null,
+        val journeyPaused: Boolean = false,
+        val pausedAtNanos: Long? = null,
+        val recoveryRequired: Boolean = false,
+        val journeyActionPending: Boolean = false,
+        val journeyActionError: Boolean = false,
+        val pointBalance: Long? = null,
     ) : MainUiState {
         val canUseTabs: Boolean get() = vehicle.allowsTabNavigation
+
+        val canManagePausedJourney: Boolean
+            get() = canUseTabs && (journeyPaused || recoveryRequired)
 
         val canOpenBadges: Boolean get() = canUseTabs
 

@@ -39,4 +39,5 @@
     <string name="journey_duration_hours_minutes">%1$d시간 %2$d분</string>
     <string name="driving_recommendation_empty">주변에 새로 추천할 여행지가 없어요.</string>
     <string name="driving_recommendation_distance">현재 위치에서 직선거리 %1$.1f km</string>
+    <string name="journey_distance_km">%1$.1f km</string>
 </resources>

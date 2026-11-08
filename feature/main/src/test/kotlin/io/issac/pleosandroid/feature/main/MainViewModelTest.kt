@@ -13,6 +13,7 @@ import io.issac.pleosandroid.core.domain.driving.repository.JourneyRepository
 import io.issac.pleosandroid.core.domain.driving.repository.JourneyState
 import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
 import io.issac.pleosandroid.core.domain.driving.repository.RecordingState
+import io.issac.pleosandroid.core.domain.driving.repository.finishPausedJourney
 import io.issac.pleosandroid.core.domain.driving.repository.withVehicle
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
@@ -40,6 +41,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -62,7 +64,7 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `departure starts automatically and parking after stopping finishes the journey`() = runTest {
+    fun `departure starts automatically and parking pauses until explicit finish`() = runTest {
         val fixture = fixture()
         assertEquals(MainPhase.BeforeDriving, fixture.ready.phase)
 
@@ -75,13 +77,24 @@ class MainViewModelTest {
         runCurrent()
         assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
         assertFalse(fixture.ready.canReturnHome)
-        assertEquals(
-            fixture.journeys.state.value.session?.startedAt?.toEpochMilli(),
-            fixture.ready.journeyStartedAtMillis,
-        )
+        assertEquals(startedAt, fixture.ready.journeyStartedAtMillis)
 
         fixture.repository.emit(gear = VehicleGear.Park)
         runCurrent()
+        assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
+        assertTrue(fixture.ready.journeyPaused)
+        assertTrue(fixture.ready.canManagePausedJourney)
+        assertFalse(fixture.ready.canReturnHome)
+        assertNull(fixture.ready.summary)
+
+        fixture.repository.emit(motion = VehicleMotion.Moving, gear = VehicleGear.Drive)
+        runCurrent()
+        assertEquals(startedAt, fixture.ready.journeyStartedAtMillis)
+        assertFalse(fixture.ready.journeyPaused)
+
+        fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
+        runCurrent()
+        finishJourney(fixture.viewModel)
         assertEquals(MainPhase.Finished, fixture.ready.phase)
         assertNull(fixture.ready.journeyStartedAtMillis)
     }
@@ -106,13 +119,16 @@ class MainViewModelTest {
     @Test
     fun `a new departure after finishing automatically starts another journey`() = runTest {
         val fixture = fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
+        val firstId = checkNotNull(fixture.journeys.state.value.session).id
         fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
         runCurrent()
+        finishJourney(fixture.viewModel)
         assertEquals(MainPhase.Finished, fixture.ready.phase)
 
         fixture.repository.emit(motion = VehicleMotion.Moving, gear = VehicleGear.Drive)
         runCurrent()
         assertEquals(MainPhase.DrivingMoving, fixture.ready.phase)
+        assertNotEquals(firstId, fixture.journeys.state.value.session?.id)
         assertNull(fixture.ready.summary)
 
         fixture.repository.emit(motion = VehicleMotion.Stopped)
@@ -176,6 +192,9 @@ class MainViewModelTest {
         advanceTimeBy(6_000)
         fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
         runCurrent()
+        assertTrue(checkNotNull(fixture.journeys.state.value.session).paused)
+        assertFalse(checkNotNull(fixture.journeys.state.value.session).finished)
+        finishJourney(fixture.viewModel)
         assertTrue(checkNotNull(fixture.journeys.state.value.session).finished)
         assertTrue(fixture.ready.canReturnHome)
         assertTrue(checkNotNull(fixture.ready.summary).durationMillis >= 0)
@@ -218,6 +237,7 @@ class MainViewModelTest {
         )
         first.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
         runCurrent()
+        finishJourney(first.viewModel)
 
         assertEquals(MainPhase.Finished, first.ready.phase)
         assertTrue(first.ready.canReturnHome)
@@ -236,6 +256,7 @@ class MainViewModelTest {
         runCurrent()
         restored.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
         runCurrent()
+        finishJourney(restored.viewModel)
 
         assertEquals(MainPhase.Finished, restored.ready.phase)
         assertTrue(restored.ready.canReturnHome)
@@ -262,6 +283,7 @@ class MainViewModelTest {
 
         fixture.repository.emit(gear = VehicleGear.Park)
         runCurrent()
+        finishJourney(fixture.viewModel)
         assertEquals(MainPhase.Finished, fixture.ready.phase)
         assertTrue(checkNotNull(fixture.ready.summary).durationMillis >= 0)
         assertTrue(fixture.viewModel.returnHome())
@@ -274,6 +296,7 @@ class MainViewModelTest {
         val fixture = fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
         fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
         runCurrent()
+        finishJourney(fixture.viewModel)
         assertTrue(fixture.ready.canReturnHome)
 
         fixture.repository.emit(gear = VehicleGear.Drive)
@@ -330,13 +353,15 @@ class MainViewModelTest {
         for (gear in listOf(VehicleGear.Drive, VehicleGear.Neutral, VehicleGear.Unknown)) {
             fixture.repository.emit(motion = VehicleMotion.Stopped, gear = gear)
             runCurrent()
+            finishJourney(fixture.viewModel)
             assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
+            assertFalse(fixture.ready.journeyPaused)
             assertFalse(fixture.ready.canReturnHome)
         }
     }
 
     @Test
-    fun `parking with unknown speed does not finish until valid stop is received`() = runTest {
+    fun `parking with unknown speed requires a valid stop and explicit finish`() = runTest {
         val fixture =
             fixture(initial = vehicle(motion = VehicleMotion.Moving, gear = VehicleGear.Drive))
         fixture.repository.emit(
@@ -346,9 +371,16 @@ class MainViewModelTest {
         )
         runCurrent()
         assertNull(fixture.ready.phase)
+        finishJourney(fixture.viewModel)
+        assertNull(fixture.ready.summary)
+        assertFalse(fixture.ready.journeyPaused)
 
         fixture.repository.emit(motion = VehicleMotion.Stopped)
         runCurrent()
+        assertEquals(MainPhase.DrivingStopped, fixture.ready.phase)
+        assertTrue(fixture.ready.journeyPaused)
+        assertFalse(fixture.ready.canReturnHome)
+        finishJourney(fixture.viewModel)
         assertEquals(MainPhase.Finished, fixture.ready.phase)
     }
 
@@ -380,6 +412,7 @@ class MainViewModelTest {
         fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
         fixture.recorder.state.value = RecordingState(RecordingPhase.Saving, session.id)
         runCurrent()
+        finishJourney(fixture.viewModel)
         assertNull(fixture.ready.summary?.reportId)
         assertEquals(RecordingPhase.Saving, fixture.ready.summary?.recordingPhase)
         fixture.history.record.value =
@@ -411,10 +444,16 @@ class MainViewModelTest {
         assertEquals(fixture.ready, recreated.uiState.value)
         fixture.repository.emit(motion = VehicleMotion.Stopped, gear = VehicleGear.Park)
         runCurrent()
+        finishJourney(recreated)
         assertTrue(recreated.returnHome())
         runCurrent()
         assertEquals(id, fixture.journeys.state.value.lastFinished?.id)
         assertEquals(MainPhase.BeforeDriving, fixture.ready.phase)
+    }
+
+    private fun TestScope.finishJourney(viewModel: MainViewModel) {
+        viewModel.finishJourney()
+        runCurrent()
     }
 
     private fun TestScope.fixture(
@@ -424,7 +463,7 @@ class MainViewModelTest {
         val repository = FakeVehicleRepository(initial)
         val journeys = FakeJourneys(repository)
         backgroundScope.launch { repository.state.collect { journeys.update(it) } }
-        val recorder = FakeRecorder()
+        val recorder = FakeRecorder(journeys)
         val history = FakeHistory()
         val viewModel = MainViewModel(repository, savedState, journeys, recorder, history)
         viewModels += viewModel
@@ -452,6 +491,16 @@ class MainViewModelTest {
                     UUID.randomUUID().toString()
                 }
         }
+
+        override fun finish(): Boolean {
+            if (!vehicle.state.value.allowsTabNavigation) return false
+            val current = state.value
+            val next = current.finishPausedJourney(tick, Instant.ofEpochMilli(tick / 1_000_000))
+            if (next == current) return false
+            state.value = next
+            return true
+        }
+
         override fun returnHome(): Boolean {
             if (!vehicle.state.value.allowsTabNavigation || state.value.session?.finished != true) return false
             state.value = state.value.copy(session = null)
@@ -459,12 +508,12 @@ class MainViewModelTest {
         }
     }
 
-    private class FakeRecorder : DrivingRecorder {
+    private class FakeRecorder(private val journeys: JourneyRepository) : DrivingRecorder {
         override val enabled = MutableStateFlow(false)
         override val state = MutableStateFlow(RecordingState())
         override suspend fun setEnabled(enabled: Boolean) = MutationResult.Success
         override suspend fun monitor() = Unit
-        override suspend fun finish() = MutationResult.Success
+        override suspend fun finish() = if (journeys.finish()) MutationResult.Success else MutationResult.NotFound
         override suspend fun retrySave() = MutationResult.Success
         override fun monitoringUnavailable() = Unit
     }

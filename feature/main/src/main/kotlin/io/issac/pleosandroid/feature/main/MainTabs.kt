@@ -50,7 +50,8 @@ fun PleosMain(
             restricted = (uiState as? MainUiState.Ready)?.canUseTabs != true,
             canNavigate = viewModel::canUseTabs,
             modifier = modifier,
-            showJourneyResult = (uiState as? MainUiState.Ready)?.canReturnHome == true,
+            showJourneyResult =
+                (uiState as? MainUiState.Ready)?.let { it.canReturnHome || it.canManagePausedJourney } == true,
             restrictedContent = { JourneyContent(uiState, viewModel, onOpenBadges = {}) },
         )
     }
