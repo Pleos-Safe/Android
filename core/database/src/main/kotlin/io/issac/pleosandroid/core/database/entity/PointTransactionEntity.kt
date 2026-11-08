@@ -19,4 +19,5 @@ data class PointTransactionEntity(
     val basePointsHundredths: Long,
     val multiplierThousandths: Int?,
     val ruleVersion: Int,
+    @ColumnInfo(defaultValue = "0") val membershipBonusHalfPoints: Long = 0,
 )

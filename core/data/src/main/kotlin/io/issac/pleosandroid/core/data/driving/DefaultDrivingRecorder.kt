@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
 import io.issac.pleosandroid.core.data.collection.repository.storageResult
+import io.issac.pleosandroid.core.data.membership.toDomain
 import io.issac.pleosandroid.core.database.entity.DrivingDraftEntity
 import io.issac.pleosandroid.core.domain.collection.model.AssessmentStatus
 import io.issac.pleosandroid.core.domain.collection.model.JourneyRecord
@@ -24,6 +25,7 @@ import io.issac.pleosandroid.core.domain.driving.repository.JourneySession
 import io.issac.pleosandroid.core.domain.driving.repository.JourneyState
 import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
 import io.issac.pleosandroid.core.domain.driving.repository.RecordingState
+import io.issac.pleosandroid.core.domain.membership.MembershipTerm
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
@@ -144,7 +146,10 @@ internal class DefaultDrivingRecorder @Inject constructor(
                             }
                         }
                     }
-                    journeys.state.collect { value -> mutex.withLock { safely { onJourney(value) } } }
+                    journeys.state.collect {
+                        // A parked command can finish or resume the journey while this collector waits for the lock.
+                        mutex.withLock { safely { onJourney(journeys.state.value) } }
+                    }
                 }
             }
         } finally {
@@ -201,6 +206,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
                 startedWhileMoving = session.startedWhileMoving,
                 restored = DrivingResult(record.distanceMeters, record.score, assessment),
             ),
+            membershipMeters = assessment.membershipDistanceMeters?.toDouble() ?: 0.0,
         )
         lastStartedJourneyId = session.id
         lastCheckpoint = now
@@ -254,8 +260,14 @@ internal class DefaultDrivingRecorder @Inject constructor(
         if (sample == null || previous.paused != session.paused || previous.pausedNanos != session.pausedNanos) {
             current.analyzer.breakContinuity()
         }
+        if (session.paused || previous.pausedNanos != session.pausedNanos) current.membershipLoaded = false
         if (!session.paused && sample != null) {
-            val kind = current.add(sample)
+            // Purchases and renewal changes can only be made in Park. A scheduled expiry can occur on the road.
+            if (!current.membershipLoaded) {
+                current.membership = store.realTransaction { latestMembership()?.toDomain() }
+                current.membershipLoaded = true
+            }
+            val kind = current.add(sample, clock.now().minusNanos(now - sample.timestampNanos))
             if (kind != null) {
                 mutableObservations.tryEmit(DrivingObservation(current.id, session.startedAt.toEpochMilli(), kind))
             }
@@ -440,14 +452,22 @@ private data class ActiveJourney(
     val generation: String,
     val zone: String,
     val analyzer: DrivingAnalyzer,
+    var membershipMeters: Double = 0.0,
+    var membership: MembershipTerm? = null,
+    var membershipLoaded: Boolean = false,
 ) {
     val id: String get() = session.id
 
-    fun add(sample: SpeedSample): DrivingObservationKind? {
+    fun add(sample: SpeedSample, sampledAt: Instant): DrivingObservationKind? {
         if (sample.timestampNanos < session.startedNanos) return null
         val acceleration = analyzer.accelerationCount
         val braking = analyzer.brakingCount
-        analyzer.add(sample.copy(timestampNanos = session.activeDurationNanos(sample.timestampNanos)))
+        analyzer.add(sample.copy(timestampNanos = session.activeDurationNanos(sample.timestampNanos))) {
+                nanos,
+                meters,
+            ->
+            membershipMeters += membership?.coveredMeters(sampledAt, nanos, meters) ?: 0.0
+        }
         return when {
             analyzer.accelerationCount > acceleration -> DrivingObservationKind.Acceleration
             analyzer.brakingCount > braking -> DrivingObservationKind.Braking
@@ -464,6 +484,7 @@ private data class ActiveJourney(
         )
         val assessment = result.assessment.copy(
             pausedMillis = Duration.between(startedAt, endedAt).toMillis() - result.assessment.elapsedMillis,
+            membershipDistanceMeters = membershipMeters.toLong().coerceIn(0, result.distanceMeters),
         )
         return JourneyRecord(
             id, startedAt, endedAt, zone,

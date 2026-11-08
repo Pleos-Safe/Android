@@ -39,6 +39,7 @@ class DrivingMigrationTest {
                 CollectionDatabase.migration2To3,
                 CollectionDatabase.migration3To4,
                 CardRewardsMigration.from4,
+                CollectionDatabase.migration6To7,
             ).build()
         try {
             val journey = db.collectionDao().journeys().single()

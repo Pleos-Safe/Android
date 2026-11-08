@@ -10,6 +10,7 @@ import io.issac.pleosandroid.core.database.entity.CardMemoryEntity
 import io.issac.pleosandroid.core.database.entity.CatalogStateEntity
 import io.issac.pleosandroid.core.database.entity.CollectionDisplayEntity
 import io.issac.pleosandroid.core.database.entity.JourneyEntity
+import io.issac.pleosandroid.core.database.entity.MembershipTermEntity
 import io.issac.pleosandroid.core.database.entity.OwnedCardEntity
 import io.issac.pleosandroid.core.database.entity.PlaceEntity
 import io.issac.pleosandroid.core.database.entity.PointTransactionEntity
@@ -71,6 +72,20 @@ interface CollectionDao {
     @Insert suspend fun insertVisit(value: VisitEntity)
 
     @Upsert suspend fun putJourney(value: JourneyEntity)
+
+    @Query("SELECT * FROM membership_term ORDER BY id DESC LIMIT 1")
+    suspend fun latestMembership(): MembershipTermEntity?
+
+    @Query("SELECT * FROM membership_term WHERE startedAt < :end AND (endsAt IS NULL OR endsAt > :start)")
+    suspend fun membershipsDuring(start: Long, end: Long): List<MembershipTermEntity>
+
+    @Insert suspend fun insertMembership(term: MembershipTermEntity)
+
+    @Query("UPDATE membership_term SET endsAt = :end, revision = revision + 1 WHERE id = :id")
+    suspend fun setMembershipEnd(id: Long, end: Long?)
+
+    @Query("DELETE FROM membership_term")
+    suspend fun clearMemberships()
 
     @Query("SELECT * FROM point_transaction ORDER BY occurredAt DESC, operationId DESC")
     suspend fun pointTransactions(): List<PointTransactionEntity>

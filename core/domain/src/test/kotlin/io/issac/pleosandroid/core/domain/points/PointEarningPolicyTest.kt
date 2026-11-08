@@ -33,6 +33,20 @@ class PointEarningPolicyTest {
         assertEquals(5_000L, zero.eligibleDistanceMeters)
     }
 
+    @Test fun `plus increases only the covered share after safety scoring and weekly cap`() {
+        val ride = trip(score = 79)
+        val ordinary = checkNotNull(PointEarningPolicy.settle(ride, 999_501))
+        assertEquals(22L, ordinary.deltaHalfPoints)
+        val full = checkNotNull(PointEarningPolicy.settle(ride, 999_501, ride.distanceMeters))
+        assertEquals(33L, full.deltaHalfPoints) // 11 P + 5.5 P
+        assertEquals(11L, full.membershipBonusHalfPoints)
+        val partial = checkNotNull(PointEarningPolicy.settle(ride, 999_501, ride.distanceMeters / 2))
+        assertEquals(27L, partial.deltaHalfPoints)
+        assertEquals(5L, partial.membershipBonusHalfPoints)
+        assertEquals(499L, partial.eligibleDistanceMeters)
+        assertNull(PointEarningPolicy.settle(ride, 1_000_000, ride.distanceMeters))
+    }
+
     @Test fun `dates Korea time and declines aggregates spanning two weeks`() {
         val localMonday = Instant.parse("2026-11-01T15:00:00Z")
         val date = PointEarningPolicy.drivingDate(localMonday)

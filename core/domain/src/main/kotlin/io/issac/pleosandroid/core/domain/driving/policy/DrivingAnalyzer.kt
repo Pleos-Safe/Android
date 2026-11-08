@@ -51,7 +51,7 @@ class DrivingAnalyzer(
     val distanceMeters: Long get() = distance.toLong()
     val movingMillis: Long get() = movingNanos / 1_000_000
 
-    fun add(sample: SpeedSample) {
+    fun add(sample: SpeedSample, onDistance: (durationNanos: Long, meters: Double) -> Unit = { _, _ -> }) {
         // A gear/UX update may re-emit the last speed value: it is not a new observation.
         if (sample.timestampNanos <= lastTimestamp) return
         lastTimestamp = sample.timestampNanos
@@ -84,7 +84,9 @@ class DrivingAnalyzer(
         accept(sample)
         observedNanos += interval
         val meanSpeed = (abs(old.metersPerSecond) + abs(sample.metersPerSecond)) / 2
-        distance += meanSpeed * dt
+        val meters = meanSpeed * dt
+        distance += meters
+        onDistance(interval, meters)
         if (meanSpeed >= .5 && sample.forward && old.forward) movingNanos += interval
         if (!sample.forward || !old.forward || sample.metersPerSecond < 0 || old.metersPerSecond < 0) {
             resetEvents()

@@ -113,7 +113,10 @@ internal class CollectionStore @Inject constructor(
             ready(db, useDemo)
             db.withTransaction {
                 val result = db.collectionDao().block()
-                if (useDemo) db.collectionDao().prepareDemoHistory()
+                if (useDemo) {
+                    db.collectionDao().clearMemberships()
+                    db.collectionDao().prepareDemoHistory()
+                }
                 db.resetCardAlbum(useDemo)
                 result
             }

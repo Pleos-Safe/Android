@@ -13,6 +13,7 @@ import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepos
 import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultVisitPackRepository
+import io.issac.pleosandroid.core.data.membership.DefaultMembershipRepository
 import io.issac.pleosandroid.core.data.points.DefaultPointRepository
 import io.issac.pleosandroid.core.database.CollectionDatabaseFactory
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
@@ -22,6 +23,7 @@ import io.issac.pleosandroid.core.domain.collection.repository.HistoryRepository
 import io.issac.pleosandroid.core.domain.collection.repository.PlaceRepository
 import io.issac.pleosandroid.core.domain.collection.repository.ProgressRepository
 import io.issac.pleosandroid.core.domain.collection.repository.VisitPackRepository
+import io.issac.pleosandroid.core.domain.membership.MembershipRepository
 import io.issac.pleosandroid.core.domain.points.PointRepository
 import io.issac.pleosandroid.core.domain.repository.BadgeRegionSource
 import javax.inject.Singleton
@@ -40,6 +42,9 @@ internal abstract class CollectionModule {
 
     @Binds @Singleton
     abstract fun progress(impl: DefaultProgressRepository): ProgressRepository
+
+    @Binds @Singleton
+    abstract fun membership(impl: DefaultMembershipRepository): MembershipRepository
 
     @Binds @Singleton
     abstract fun points(impl: DefaultPointRepository): PointRepository

@@ -16,6 +16,7 @@ import io.issac.pleosandroid.core.database.entity.CopyEntity
 import io.issac.pleosandroid.core.database.entity.DrivingDraftEntity
 import io.issac.pleosandroid.core.database.entity.ForgeEntity
 import io.issac.pleosandroid.core.database.entity.JourneyEntity
+import io.issac.pleosandroid.core.database.entity.MembershipTermEntity
 import io.issac.pleosandroid.core.database.entity.OwnedCardEntity
 import io.issac.pleosandroid.core.database.entity.PackEntity
 import io.issac.pleosandroid.core.database.entity.PlaceEntity
@@ -35,9 +36,9 @@ import io.issac.pleosandroid.core.database.entity.WalletEntity
         CardLevelRuleEntity::class, JourneyEntity::class, VisitEntity::class, ProgressOperationEntity::class,
         CardMemoryEntity::class, OwnedCardEntity::class, CardLevelStateEntity::class, RewardNoticeEntity::class,
         CollectionDisplayEntity::class, DrivingDraftEntity::class, PointTransactionEntity::class,
-        VisitPackEntity::class,
+        VisitPackEntity::class, MembershipTermEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 abstract class CollectionDatabase : RoomDatabase() {
@@ -45,6 +46,18 @@ abstract class CollectionDatabase : RoomDatabase() {
     abstract fun collectionDao(): CollectionDao
 
     companion object {
+        val migration6To7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE membership_term (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "startedAt INTEGER NOT NULL, endsAt INTEGER, revision INTEGER NOT NULL)",
+                )
+                db.execSQL(
+                    "ALTER TABLE point_transaction ADD COLUMN membershipBonusHalfPoints INTEGER NOT NULL DEFAULT 0",
+                )
+            }
+        }
+
         val migration3To4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
