@@ -68,7 +68,7 @@ internal fun AlbumDestination(route: AppRoute, modifier: Modifier, viewModel: Al
         router.replaceAll(BadgesRoute)
     }
     val missing: @Composable () -> Unit = {
-        CollectionStatusScreen("이 보관 항목을 찾을 수 없어요.", modifier, onBack = back)
+        CollectionStatusScreen("요청한 카드나 팩을 찾을 수 없어요.", modifier, onBack = back)
     }
     if (album == null) {
         CollectionStatusScreen(
@@ -80,7 +80,7 @@ internal fun AlbumDestination(route: AppRoute, modifier: Modifier, viewModel: Al
     }
     val modeControl: @Composable () -> Unit = {
         PleosTextLink(
-            if (album.demo) "데모 모드 · 실제 모드로" else "실제 모드 · 데모 체험",
+            if (album.demo) "체험 모드 종료" else "체험 모드 시작",
             { send(AlbumIntent.Demo(!album.demo)) },
             enabled = !state.busy,
         )

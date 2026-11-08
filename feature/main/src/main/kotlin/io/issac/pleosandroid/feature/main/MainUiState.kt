@@ -26,6 +26,7 @@ data class JourneySummary(
     val recognizedDistanceMeters: Long? = null,
     val settlementReason: String? = null,
     val endedAt: Instant? = null,
+    val membershipBonusHalfPoints: Long = 0,
 )
 
 data class JourneyProgressDisplay(val distanceMeters: Long, val movingMillis: Long)

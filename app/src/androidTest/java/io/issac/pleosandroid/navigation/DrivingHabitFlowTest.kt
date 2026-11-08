@@ -23,6 +23,7 @@ import io.issac.pleosandroid.core.domain.driving.model.DrivingAssessment
 import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
 import io.issac.pleosandroid.debug.CollectionDebugEntryPoint
 import java.time.Instant
+import java.util.UUID
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -47,12 +48,13 @@ class DrivingHabitFlowTest {
         compose.activity.applicationContext,
         CollectionDebugEntryPoint::class.java,
     )
+    private val reportId = "driving-ui-${UUID.randomUUID()}"
     private var generation: String? = null
     private var previousDemo: Boolean? = null
     private var previousEnabled: Boolean? = null
 
     @After fun restore() = runBlocking<Unit> {
-        generation?.let { entry.progress().deleteHistory(DeleteHistoryRequest(HistoryKind.Journey, ID, it)) }
+        generation?.let { entry.progress().deleteHistory(DeleteHistoryRequest(HistoryKind.Journey, reportId, it)) }
         previousEnabled?.let { entry.recorder().setEnabled(it) }
         previousDemo?.let { entry.demo().setEnabled(it) }
     }
@@ -62,8 +64,9 @@ class DrivingHabitFlowTest {
             previousDemo = entry.demo().enabled.first()
             entry.demo().setEnabled(true)
             generation = entry.progress().getDataGeneration()
+            val end = Instant.ofEpochMilli(System.currentTimeMillis())
             val record = JourneyRecord(
-                ID, Instant.parse("2026-11-06T10:00:00Z"), Instant.parse("2026-11-06T10:10:00Z"),
+                reportId, end.minusSeconds(600), end,
                 "Asia/Seoul", 5000, AssessmentStatus.Complete, 88, 0,
                 driving = DrivingAssessment(
                     elapsedMillis = 600_000,
@@ -77,8 +80,10 @@ class DrivingHabitFlowTest {
                     longestGapMillis = 200,
                 ),
             )
-            val result = entry.progress().recordProgress(ProgressEvent.JourneyCompleted(ID, generation!!, record, true))
-            assertTrue(result is RecordProgressResult.Applied)
+            val result = entry.progress().recordProgress(
+                ProgressEvent.JourneyCompleted(reportId, generation!!, record, true),
+            )
+            assertTrue(result.toString(), result is RecordProgressResult.Applied)
         }
         waitFor("기록")
         compose.onNodeWithText("기록").performClick()
@@ -88,7 +93,7 @@ class DrivingHabitFlowTest {
         waitFor("88")
         compose.activityRule.scenario.recreate()
         waitFor("88")
-        compose.onNodeWithText("데이터 상태").performScrollTo().performClick()
+        compose.onNodeWithText("측정 상세").performScrollTo().performClick()
         waitFor("운전습관 기록 상태")
         compose.onNodeWithText("리포트 보기").performScrollTo().performClick()
         waitFor("이번 여정의 운전습관")
@@ -110,7 +115,7 @@ class DrivingHabitFlowTest {
         compose.onNodeWithContentDescription("설정").performClick()
         waitFor("여정 기록 저장")
         compose.onNodeWithText("여정 기록 저장").performClick()
-        waitFor("나의 기록 방식")
+        waitFor("저장할 정보")
         compose.waitUntil(15_000) {
             runCatching { compose.onNodeWithContentDescription("여정 기록 저장").assertIsEnabled() }.isSuccess &&
                 entry.vehicle().state.value.allowsTabNavigation
@@ -137,9 +142,5 @@ class DrivingHabitFlowTest {
 
     private fun waitFor(text: String) {
         compose.waitUntil(20_000) { compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
-    }
-
-    private companion object {
-        const val ID = "driving-ui-test"
     }
 }

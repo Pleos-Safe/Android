@@ -104,7 +104,7 @@ internal fun ParkedTravelHome(
                     )
                     if (pointBalance != null) {
                         Text(
-                            if (demoWallet) "데모 강화 포인트" else "보유 강화 포인트",
+                            if (demoWallet) "체험용 강화 포인트" else "보유 강화 포인트",
                             style = PleosTextStyles.meta,
                             color = colors.textSecondary,
                         )
@@ -115,11 +115,6 @@ internal fun ParkedTravelHome(
                         )
                     }
                     LocalHomeCard.current()
-                    Text(
-                        text = stringResource(R.string.journey_home_collection_body),
-                        style = PleosTextStyles.meta,
-                        color = colors.textSecondary,
-                    )
                     PleosButton(
                         stringResource(R.string.journey_collection),
                         onOpenBadges,
@@ -228,8 +223,8 @@ internal fun JourneyProgressRows(progress: JourneyProgressDisplay) {
 
 @Composable
 private fun JourneyMetricRow(label: String, value: String) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = PleosTextStyles.meta, color = PleosTheme.colors.textSecondary)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PleosLayout.itemGap)) {
+        Text(label, Modifier.weight(1f), style = PleosTextStyles.meta, color = PleosTheme.colors.textSecondary)
         Text(value, style = PleosTextStyles.body, color = PleosTheme.colors.textPrimary)
     }
 }
@@ -279,6 +274,9 @@ internal fun ParkedJourneySummary(
                             style = PleosTextStyles.titleSplit,
                             color = colors.actionPrimary,
                         )
+                        if (summary.membershipBonusHalfPoints > 0) {
+                            JourneyMetricRow("PLUS 추가 적립", "+" + pointsLabel(summary.membershipBonusHalfPoints))
+                        }
                         summary.settlementReason?.let {
                             Text(it, style = PleosTextStyles.meta, color = colors.textSecondary)
                         }
@@ -315,11 +313,6 @@ internal fun ParkedJourneySummary(
                         modifier = Modifier.fillMaxWidth(),
                         showArrow = true,
                     )
-                    Text(
-                        text = stringResource(R.string.journey_summary_next),
-                        style = PleosTextStyles.body,
-                        color = colors.textSecondary,
-                    )
                     val reportId = summary?.reportId
                     if (reportId != null) {
                         PleosTextLink("이번 여정 운전습관 보기", { onOpenReport(reportId) })
@@ -334,7 +327,7 @@ internal fun ParkedJourneySummary(
 
                                 RecordingPhase.Disabled -> "주행 기록 저장이 꺼져 있어요."
 
-                                else -> "저장된 주행 기록은 운전습관 탭에서 확인할 수 있어요."
+                                else -> "저장한 여정은 기록 탭에서 볼 수 있어요."
                             },
                             style = PleosTextStyles.meta,
                             color = colors.textSecondary,

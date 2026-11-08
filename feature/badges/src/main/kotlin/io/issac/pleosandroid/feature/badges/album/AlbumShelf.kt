@@ -268,14 +268,14 @@ internal fun PackShelf(
                         ) {
                             PackStage(pack, drawn, Modifier.weight(1f).height(340.dp * PleosTextStyles.scale))
                             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(gap)) {
-                                Caption(if (drawn) "개봉 완료 · 앞면 미확인" else "내게 도착한 한 팩", accent = true)
+                                Caption(if (drawn) "개봉 완료 · 앞면 미확인" else "미개봉", accent = true)
                                 SectionTitle(pack.title)
                                 Caption("${dateOf(pack.receivedAt)} · ${pack.source}")
                                 BodyText(
                                     if (drawn) {
-                                        "봉투는 이미 열었어요. 카드를 뒤집어 앞면을 확인하세요."
+                                        "카드를 뒤집으면 컬렉션에 담겨요."
                                     } else {
-                                        "카드 한 장이 들어 있어요. 개봉한 뒤에도 앞면은 나중에 확인할 수 있어요."
+                                        "여행 카드 한 장이 들어 있어요."
                                     },
                                 )
                                 PackAction(pack, drawn, open)

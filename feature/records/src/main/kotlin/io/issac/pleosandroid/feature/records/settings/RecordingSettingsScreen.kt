@@ -46,8 +46,9 @@ internal fun RecordingSettingsScreen(
             leading = {
                 Column(verticalArrangement = Arrangement.spacedBy(24.dp * PleosTextStyles.scale)) {
                     RecordIcon(RecordSymbol.Bookmark)
-                    RecordHeading("나의 기록 방식")
-                    RecordBody("일상의 여정을 남기고,\n주차 후 운전습관을 돌아봐요.")
+                    RecordHeading("저장할 정보")
+                    RecordBody("주행 시간과 거리, 급가속·급감속 횟수를 이 기기에 암호화해 보관해요.")
+                    RecordCaption("속도 이력과 이동 경로는 저장하지 않아요.")
                 }
             },
             trailing = {
@@ -78,13 +79,9 @@ internal fun RecordingSettingsScreen(
                         }
                     }
                     RecordDivider()
-                    RecordBody("차량의 속도·기어 정보로 운전습관을 기록해요. 위치를 허용하면 주차 후 장소 체류를 확인해 카드도 모을 수 있어요.")
-                    RecordCaption(
-                        "여정 시간, 관찰 거리, 가속·감속 횟수와 데이터 상태를 이 기기에 암호화해 보관해요. 확인된 장소와 방문 시간을 함께 보관하며, 원본 속도 이력과 위치 궤적은 저장하지 않아요.",
-                    )
-                    RecordCaption("위치를 허용하지 않아도 운전습관은 기록해요. 위치 정확도나 체류 시간이 부족하면 방문 카드를 지급하지 않아요.")
-                    RecordCaption("끄면 진행 중인 기록은 남기지 않아요. 이미 저장한 기록과 카드는 유지돼요. 다시 켜도 이전 여정은 가져오지 않아요.")
-                    if (state.demo) RecordCaption("데모 모드에서는 실제 주행을 기록하지 않아요. 컬렉션에서 데모를 끈 뒤 설정할 수 있어요.", accent = true)
+                    RecordBody("위치 권한 없이도 운전습관을 기록해요. 위치를 허용하면 목적지나 경유지로 등록한 여행지에 주차한 뒤 방문팩을 받을 수 있어요.")
+                    RecordCaption("방문을 확인한 장소와 시각을 함께 저장해요. 기록을 끄면 진행 중인 여정의 저장이 중단돼요.")
+                    if (state.demo) RecordCaption("실제 주행을 기록하려면 컬렉션에서 체험 모드를 종료해 주세요.", accent = true)
                 }
             },
         )

@@ -98,7 +98,6 @@ internal fun CardWorkshop(
                         else -> "+${receipt.before} · 강화 중"
                     }
                     SectionTitle(message)
-                    Caption("잠시 후 결과를 확인할 수 있어요.")
                 }
 
                 receipt != null -> {
@@ -134,7 +133,7 @@ internal fun CardWorkshop(
                 trace -> {
                     val materials = album.materialsFor(card)
                     SectionTitle("복구 수치  +${card.level}")
-                    BodyText("같은 색상의 동일 카드 +0 한 장을 사용하면 원래 카드를 확정 복구해요.")
+                    BodyText("같은 카드의 같은 색상 +0 한 장으로 복구할 수 있어요.")
                     Caption("최고 강화 +${card.highest} · 복구 비용 0 P")
                     PleosButton(
                         "복구 재료 선택 · ${materials.size}장",
@@ -143,7 +142,7 @@ internal fun CardWorkshop(
                         enabled =
                             !busy && materials.isNotEmpty(),
                     )
-                    if (materials.isEmpty()) Caption("사용할 수 있는 +0 사본이 없어요.")
+                    if (materials.isEmpty()) Caption("같은 색상의 +0 카드가 필요해요.")
                 }
 
                 else -> {
@@ -163,7 +162,7 @@ internal fun CardWorkshop(
                         enabled = !busy && album.balanceHalfPoints >= cost,
                         showArrow = true,
                     )
-                    Caption(if (album.balanceHalfPoints < cost) "강화 포인트가 부족해요." else "모든 결과에서 포인트를 한 번 소모해요.")
+                    if (album.balanceHalfPoints < cost) Caption("강화 포인트가 부족해요.")
                 }
             }
         }

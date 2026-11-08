@@ -30,6 +30,11 @@ import io.issac.pleosandroid.core.domain.collection.model.AssessmentStatus
 import io.issac.pleosandroid.core.domain.collection.model.JourneyRecord
 import io.issac.pleosandroid.core.domain.driving.model.DrivingAssessment
 import io.issac.pleosandroid.core.domain.driving.model.InsufficientReason
+import io.issac.pleosandroid.core.domain.points.PointTransaction
+import io.issac.pleosandroid.core.domain.points.PointTransactionKind
+import io.issac.pleosandroid.core.domain.points.PointWallet
+import io.issac.pleosandroid.feature.records.points.JourneyPointsCard
+import io.issac.pleosandroid.feature.records.points.RecordPoints
 import io.issac.pleosandroid.feature.records.report.DrivingDataStatusScreen
 import io.issac.pleosandroid.feature.records.report.DrivingReportScreen
 import java.io.File
@@ -40,6 +45,29 @@ import org.junit.Test
 
 class DrivingReportUiTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun pointsReceiptSeparatesNormalPointsAndTheHalfPointPlusBonus() {
+        val journey = record()
+        val credit = PointTransaction(
+            "journey:${journey.id}",
+            journey.id,
+            PointTransactionKind.JourneyEarned,
+            867,
+            journey.endedAt,
+            membershipBonusHalfPoints = 289,
+        )
+        val points = RecordPoints.Ready(PointWallet(867, listOf(credit)))
+        compose.setContent {
+            PleosWindowTheme(Modifier.requiredSize(600.dp, 760.dp)) {
+                JourneyPointsCard(journey, points, false) {}
+            }
+        }
+        compose.onNodeWithText("주행 적립").assertIsDisplayed()
+        compose.onNodeWithText("289 P").assertIsDisplayed()
+        compose.onNodeWithText("PLUS 추가 적립").assertIsDisplayed()
+        compose.onNodeWithText("+144.5 P").assertIsDisplayed()
+        compose.onNodeWithText("433.5 P").assertIsDisplayed()
+    }
 
     @Test fun reportAdaptsToFullAndSplitWithoutLosingResultOrActions() {
         var width by mutableStateOf(1682.dp)
@@ -59,13 +87,13 @@ class DrivingReportUiTest {
             }
         }
         compose.onNodeWithText("88").assertIsDisplayed()
-        compose.onNodeWithText("데이터 상태").performScrollTo().performClick()
+        compose.onNodeWithText("측정 상세").performScrollTo().performClick()
         compose.onNodeWithText("카드 컬렉션").performClick()
         capture("driving-report-full")
         compose.runOnIdle { width = 841.dp }
         compose.onNodeWithText("88").performScrollTo().assertIsDisplayed()
         capture("driving-report-split")
-        compose.onNodeWithText("데이터 상태").performScrollTo().performClick()
+        compose.onNodeWithText("측정 상세").performScrollTo().performClick()
         compose.runOnIdle {
             width = 520.dp
             height = 760.dp

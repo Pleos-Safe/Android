@@ -63,7 +63,7 @@ internal fun DrivingReportScreen(
         return
     }
     val scale = PleosTextStyles.scale
-    val subtitle = "${journey.dateLabel()} · " + if (demo) "POC · 데모 리포트" else "여정을 마친 뒤"
+    val subtitle = journey.dateLabel() + if (demo) " · 체험 기록" else ""
     RecordsPage("이번 여정의 운전습관", modifier, subtitle, onBack) { wide ->
         RecordColumns(
             wide,
@@ -74,7 +74,7 @@ internal fun DrivingReportScreen(
                             RecordIcon(RecordSymbol.Shield)
                             ReportIntroduction(journey)
                             RecordDivider()
-                            Score(journey, demo)
+                            Score(journey)
                             RecordCaption("점수는 가속 흐름을 돌아보는 참고 정보예요.\n안전 인증이나 사고 위험을 뜻하지 않아요.")
                         }
                     } else {
@@ -85,7 +85,7 @@ internal fun DrivingReportScreen(
                             RecordIcon(RecordSymbol.Shield)
                             RecordHeading(reportTitle(journey))
                         }
-                        QuietPlate(contentPadding = 16.dp) { Score(journey, demo, compact = true) }
+                        QuietPlate(contentPadding = 16.dp) { Score(journey, compact = true) }
                     }
                     JourneyPointsCard(journey, points, demo, onPointsRetry)
                 }
@@ -115,7 +115,7 @@ internal fun DrivingReportScreen(
                     )
                     if (wide) {
                         ObservationRow(
-                            "기록의 충분함",
+                            "측정 구간",
                             if (data != null) {
                                 "여정의 ${(data.coverage * 100).toInt()}%를 관찰했어요."
                             } else {
@@ -130,7 +130,7 @@ internal fun DrivingReportScreen(
                         horizontalArrangement = Arrangement.spacedBy(24.dp * scale),
                         verticalArrangement = Arrangement.spacedBy(8.dp * scale),
                     ) {
-                        PleosTextLink("데이터 상태", onDataStatus)
+                        PleosTextLink("측정 상세", onDataStatus)
                         PleosTextLink("카드 컬렉션", onCollection)
                     }
                 }
@@ -159,7 +159,7 @@ private fun ReportIntroduction(journey: JourneyRecord) {
 }
 
 @Composable
-private fun Score(journey: JourneyRecord, demo: Boolean, compact: Boolean = false) {
+private fun Score(journey: JourneyRecord, compact: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         RecordCaption("참고 점수 · 가속 흐름")
         Row(
@@ -177,8 +177,6 @@ private fun Score(journey: JourneyRecord, demo: Boolean, compact: Boolean = fals
                 color = PleosTheme.colors.textPrimary,
             )
             RecordCaption("점", Modifier.padding(bottom = 6.dp))
-            Spacer(Modifier.weight(1f))
-            RecordCaption(if (demo) "POC · 데모" else "관찰 기반", Modifier.padding(bottom = 6.dp), accent = true)
         }
         if (!compact) RecordCaption("점수는 기록된 주행 구간을 기준으로 계산해요.")
     }
