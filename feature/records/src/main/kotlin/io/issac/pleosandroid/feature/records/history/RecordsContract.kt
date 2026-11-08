@@ -7,6 +7,7 @@ import io.issac.pleosandroid.core.navigation.AppRoute
 import io.issac.pleosandroid.core.ui.mvi.UiEffect
 import io.issac.pleosandroid.core.ui.mvi.UiIntent
 import io.issac.pleosandroid.core.ui.mvi.UiState
+import io.issac.pleosandroid.feature.records.points.RecordPoints
 
 internal data class RecordsState(
     val loading: Boolean = true,
@@ -19,12 +20,15 @@ internal data class RecordsState(
     val busy: Boolean = false,
     val error: Boolean = false,
     val message: String? = null,
+    val visitedPlaceCount: Int = 0,
+    val points: RecordPoints = RecordPoints.Loading,
 ) : UiState
 
 internal sealed interface RecordsIntent : UiIntent {
     data class OpenJourney(val id: String) : RecordsIntent
     data class SetEnabled(val enabled: Boolean) : RecordsIntent
     data object Settings : RecordsIntent
+    data object OpenPointsWeek : RecordsIntent
     data object Retry : RecordsIntent
     data object RetrySave : RecordsIntent
     data object Finish : RecordsIntent

@@ -40,6 +40,7 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 import io.issac.pleosandroid.core.domain.collection.model.JourneyRecord
+import java.time.Duration
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -197,7 +198,14 @@ internal fun JourneyRecord.timeLabel(): String {
 }
 
 internal fun JourneyRecord.distanceLabel(): String = String.format(Locale.KOREAN, "%.1f km", distanceMeters / 1_000.0)
-internal fun JourneyRecord.durationLabel(): String {
-    val minutes = java.time.Duration.between(startedAt, endedAt).toMinutes().coerceAtLeast(1)
-    return "${minutes}분"
+internal fun JourneyRecord.durationLabel(): String =
+    (driving?.elapsedMillis ?: Duration.between(startedAt, endedAt).toMillis()).recordDurationLabel()
+
+internal fun Long.recordDurationLabel(): String {
+    val seconds = coerceAtLeast(0L) / 1_000
+    return when {
+        seconds >= 3_600 -> "${seconds / 3_600}시간 ${(seconds / 60) % 60}분"
+        seconds >= 60 -> "${seconds / 60}분 ${seconds % 60}초"
+        else -> "${seconds}초"
+    }
 }

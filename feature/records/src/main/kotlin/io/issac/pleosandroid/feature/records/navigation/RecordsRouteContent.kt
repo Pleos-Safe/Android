@@ -20,6 +20,7 @@ import io.issac.pleosandroid.core.designsystem.component.PleosButton
 import io.issac.pleosandroid.core.navigation.AppRoute
 import io.issac.pleosandroid.core.navigation.BadgesRoute
 import io.issac.pleosandroid.core.navigation.DrivingDataStatusRoute
+import io.issac.pleosandroid.core.navigation.DrivingPointsWeekRoute
 import io.issac.pleosandroid.core.navigation.DrivingReportRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 import io.issac.pleosandroid.core.navigation.MainRoute
@@ -32,6 +33,7 @@ import io.issac.pleosandroid.feature.records.history.RecordsEffect
 import io.issac.pleosandroid.feature.records.history.RecordsIntent
 import io.issac.pleosandroid.feature.records.history.RecordsScreen
 import io.issac.pleosandroid.feature.records.history.RecordsViewModel
+import io.issac.pleosandroid.feature.records.points.DrivingPointsWeekScreen
 import io.issac.pleosandroid.feature.records.report.DrivingDataStatusScreen
 import io.issac.pleosandroid.feature.records.report.DrivingReportScreen
 import io.issac.pleosandroid.feature.records.report.DrivingReportViewModel
@@ -41,7 +43,7 @@ import io.issac.pleosandroid.feature.records.settings.RecordingSettingsScreen
 @Composable
 internal fun RecordsRouteContent(route: AppRoute, modifier: Modifier) {
     val router by rememberUpdatedState(LocalNavigationRouter.current)
-    if (route == RecordsRoute || route == RecordingSettingsRoute) {
+    if (route == RecordsRoute || route == RecordingSettingsRoute || route == DrivingPointsWeekRoute) {
         val viewModel: RecordsViewModel = hiltViewModel()
         val state by viewModel.state.collectAsStateWithLifecycle()
         val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -55,7 +57,9 @@ internal fun RecordsRouteContent(route: AppRoute, modifier: Modifier) {
                 }
             }
         }
-        if (route == RecordsRoute) {
+        if (route == DrivingPointsWeekRoute) {
+            DrivingPointsWeekScreen(state, { router.pop() }, { viewModel.handleIntent(RecordsIntent.Retry) }, modifier)
+        } else if (route == RecordsRoute) {
             RecordsScreen(state, viewModel::handleIntent, { router.navigate(MainRoute) }, modifier)
         } else {
             val context = LocalContext.current
@@ -107,9 +111,15 @@ internal fun RecordsRouteContent(route: AppRoute, modifier: Modifier) {
             if (state.error) PleosButton("다시 시도", { viewModel.handleIntent(ReportIntent.Retry) })
         }
     } else if (route is DrivingDataStatusRoute) {
-        DrivingDataStatusScreen(journey, state.demo, {
-            router.pop()
-        }, { router.navigate(DrivingReportRoute(id)) }, modifier)
+        DrivingDataStatusScreen(
+            journey,
+            state.demo,
+            { router.pop() },
+            { router.navigate(DrivingReportRoute(id)) },
+            modifier,
+            state.points,
+            { viewModel.handleIntent(ReportIntent.Retry) },
+        )
     } else {
         DrivingReportScreen(
             journey,
@@ -118,6 +128,8 @@ internal fun RecordsRouteContent(route: AppRoute, modifier: Modifier) {
             { router.navigate(DrivingDataStatusRoute(id)) },
             { router.replaceAll(BadgesRoute, SafetyCollectionRoute) },
             modifier,
+            state.points,
+            { viewModel.handleIntent(ReportIntent.Retry) },
         )
     }
 }

@@ -27,6 +27,9 @@ data class DrivingReportRoute(val journeyId: String) : AppRoute
 data class DrivingDataStatusRoute(val journeyId: String) : AppRoute
 
 @Serializable
+data object DrivingPointsWeekRoute : AppRoute
+
+@Serializable
 data object RecordingSettingsRoute : AppRoute
 
 @Serializable

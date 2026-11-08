@@ -34,7 +34,10 @@ import io.issac.pleosandroid.feature.records.component.RecordsPage
 import io.issac.pleosandroid.feature.records.component.dateLabel
 import io.issac.pleosandroid.feature.records.component.distanceLabel
 import io.issac.pleosandroid.feature.records.component.durationLabel
+import io.issac.pleosandroid.feature.records.component.recordDurationLabel
 import io.issac.pleosandroid.feature.records.component.timeLabel
+import io.issac.pleosandroid.feature.records.points.JourneyPointsCard
+import io.issac.pleosandroid.feature.records.points.RecordPoints
 
 @Composable
 internal fun DrivingReportScreen(
@@ -44,9 +47,19 @@ internal fun DrivingReportScreen(
     onDataStatus: () -> Unit,
     onCollection: () -> Unit,
     modifier: Modifier = Modifier,
+    points: RecordPoints = RecordPoints.Loading,
+    onPointsRetry: () -> Unit = {},
 ) {
     if (journey.assessment != AssessmentStatus.Complete || journey.score == null) {
-        DrivingDataStatusScreen(journey, demo, onBack, onReport = null, modifier = modifier)
+        DrivingDataStatusScreen(
+            journey,
+            demo,
+            onBack,
+            onReport = null,
+            modifier = modifier,
+            points = points,
+            onPointsRetry = onPointsRetry,
+        )
         return
     }
     val scale = PleosTextStyles.scale
@@ -55,18 +68,16 @@ internal fun DrivingReportScreen(
         RecordColumns(
             wide,
             leading = {
-                if (wide) {
-                    QuietPlate(Modifier.heightIn(min = 472.dp * scale)) {
-                        RecordIcon(RecordSymbol.Shield)
-                        Spacer(Modifier.height(12.dp * scale))
-                        ReportIntroduction(journey)
-                        Spacer(Modifier.height(12.dp * scale))
-                        RecordDivider()
-                        Score(journey, demo)
-                        RecordCaption("점수는 가속 흐름을 돌아보는 참고 정보예요.\n안전 인증이나 사고 위험을 뜻하지 않아요.")
-                    }
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp * scale)) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp * scale)) {
+                    if (wide) {
+                        QuietPlate(Modifier.heightIn(min = 390.dp * scale)) {
+                            RecordIcon(RecordSymbol.Shield)
+                            ReportIntroduction(journey)
+                            RecordDivider()
+                            Score(journey, demo)
+                            RecordCaption("점수는 가속 흐름을 돌아보는 참고 정보예요.\n안전 인증이나 사고 위험을 뜻하지 않아요.")
+                        }
+                    } else {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -74,13 +85,15 @@ internal fun DrivingReportScreen(
                             RecordIcon(RecordSymbol.Shield)
                             RecordHeading(reportTitle(journey))
                         }
-                        RecordBody("이번 기록에서 살펴본 운전습관이에요.")
+                        QuietPlate(contentPadding = 16.dp) { Score(journey, demo, compact = true) }
                     }
+                    JourneyPointsCard(journey, points, demo, onPointsRetry)
                 }
             },
             trailing = {
                 Column(verticalArrangement = Arrangement.spacedBy((if (wide) 12.dp else 8.dp) * scale)) {
-                    if (wide) RecordHeading("오늘의 운전습관")
+                    RecordHeading("오늘의 운전습관")
+                    JourneyTravelFacts(journey)
                     val data = journey.driving
                     ObservationRow(
                         "급한 가속",
@@ -111,10 +124,6 @@ internal fun DrivingReportScreen(
                             if (data != null) "확인됨" else "정보 없음",
                         )
                     }
-                    if (!wide) QuietPlate(contentPadding = 20.dp) { Score(journey, demo, compact = true) }
-                    RecordCaption(
-                        "${journey.durationLabel()} · 관찰 거리 ${journey.distanceLabel()} · ${journey.timeLabel()}",
-                    )
                     if (!wide) RecordCaption("가속 흐름의 참고 점수이며, 안전 인증이나 사고 위험을 뜻하지 않아요.")
                     FlowRow(
                         Modifier.fillMaxWidth(),
@@ -128,6 +137,13 @@ internal fun DrivingReportScreen(
             },
         )
     }
+}
+
+@Composable
+internal fun JourneyTravelFacts(journey: JourneyRecord) {
+    val activeTime = journey.driving?.movingMillis?.recordDurationLabel() ?: "정보 없음"
+    RecordCaption("${journey.timeLabel()} · 기록 시간 ${journey.durationLabel()}")
+    RecordCaption("관찰 거리 ${journey.distanceLabel()} · 이동 시간 $activeTime")
 }
 
 private fun reportTitle(journey: JourneyRecord): String = when {

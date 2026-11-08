@@ -24,8 +24,8 @@ import io.issac.pleosandroid.feature.records.component.RecordIcon
 import io.issac.pleosandroid.feature.records.component.RecordSymbol
 import io.issac.pleosandroid.feature.records.component.RecordsPage
 import io.issac.pleosandroid.feature.records.component.dateLabel
-import io.issac.pleosandroid.feature.records.component.distanceLabel
-import io.issac.pleosandroid.feature.records.component.durationLabel
+import io.issac.pleosandroid.feature.records.points.JourneyPointsCard
+import io.issac.pleosandroid.feature.records.points.RecordPoints
 
 @Composable
 internal fun DrivingDataStatusScreen(
@@ -34,6 +34,8 @@ internal fun DrivingDataStatusScreen(
     onBack: () -> Unit,
     onReport: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    points: RecordPoints = RecordPoints.Loading,
+    onPointsRetry: () -> Unit = {},
 ) {
     val complete = journey.assessment == AssessmentStatus.Complete && journey.score != null
     val data = journey.driving
@@ -60,7 +62,7 @@ internal fun DrivingDataStatusScreen(
             trailing = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp * scale)) {
                     RecordHeading("이번 기록")
-                    ObservationRow("여정", "${journey.durationLabel()} · 관찰 거리 ${journey.distanceLabel()}", "마침")
+                    JourneyTravelFacts(journey)
                     ObservationRow(
                         "운전 정보",
                         data?.let { "관찰 시간 ${it.observedMillis / 1_000}초 · 수신 ${it.sampleCount}회" }
@@ -90,6 +92,7 @@ internal fun DrivingDataStatusScreen(
                 }
             },
         )
+        if (!complete) JourneyPointsCard(journey, points, demo, onPointsRetry)
     }
 }
 
