@@ -12,10 +12,11 @@ internal fun StoredCollection.evaluate(
 ): CardProgress {
     val evaluator = AchievementEvaluator()
     val old = owned.find { it.cardId == card.id }
-    val evaluated = evaluator.evaluate(card, rules, visits, journeys, old?.revealedLevel)
+    val awardableVisits = visitsForCardAwards
+    val evaluated = evaluator.evaluate(card, rules, awardableVisits, journeys, old?.revealedLevel)
     val retained = if (allowReduction) {
         levels.filter { it.ownershipId == old?.ownershipId }.filter { grant ->
-            evaluator.evaluate(card.copy(ruleVersion = grant.ruleVersion), rules, visits, journeys)
+            evaluator.evaluate(card.copy(ruleVersion = grant.ruleVersion), rules, awardableVisits, journeys)
                 .earnedLevel >= grant.level
         }.maxOfOrNull { it.level } ?: 0
     } else {

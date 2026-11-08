@@ -27,7 +27,13 @@ internal class DefaultCollectionRepository @Inject constructor(private val store
     override fun observeCardProgress(cardId: String) = store.observe().map { state ->
         state.definitions.find { it.id == cardId }?.let { definition ->
             val owned = state.owned.find { it.cardId == cardId }
-            AchievementEvaluator().evaluate(definition, state.rules, state.visits, state.journeys, owned?.revealedLevel)
+            AchievementEvaluator().evaluate(
+                definition,
+                state.rules,
+                state.visitsForCardAwards,
+                state.journeys,
+                owned?.revealedLevel,
+            )
                 .copy(earnedLevel = owned?.earnedLevel ?: 0)
         }
     }.distinctUntilChanged()

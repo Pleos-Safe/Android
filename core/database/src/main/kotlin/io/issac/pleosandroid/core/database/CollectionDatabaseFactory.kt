@@ -28,7 +28,11 @@ class CollectionDatabaseFactory @Inject constructor(@param:ApplicationContext pr
         return Room.databaseBuilder(context, CollectionDatabase::class.java, name)
             .openHelperFactory(factory)
             .addCallback(CollectionDatabase.constraints)
-            .addMigrations(CollectionDatabase.migration1To2, CollectionDatabase.migration2To3)
+            .addMigrations(
+                CollectionDatabase.migration1To2,
+                CollectionDatabase.migration2To3,
+                CollectionDatabase.migration3To4,
+            )
             .build()
     }
 }

@@ -15,25 +15,59 @@ import io.issac.pleosandroid.core.database.entity.DrivingDraftEntity
 import io.issac.pleosandroid.core.database.entity.JourneyEntity
 import io.issac.pleosandroid.core.database.entity.OwnedCardEntity
 import io.issac.pleosandroid.core.database.entity.PlaceEntity
+import io.issac.pleosandroid.core.database.entity.PointTransactionEntity
 import io.issac.pleosandroid.core.database.entity.ProgressOperationEntity
 import io.issac.pleosandroid.core.database.entity.RewardNoticeEntity
 import io.issac.pleosandroid.core.database.entity.UserDataStateEntity
 import io.issac.pleosandroid.core.database.entity.VisitEntity
+import io.issac.pleosandroid.core.database.entity.VisitPackEntity
 
 @Database(
     entities = [
         CatalogStateEntity::class, UserDataStateEntity::class, PlaceEntity::class, CardDefinitionEntity::class,
         CardLevelRuleEntity::class, JourneyEntity::class, VisitEntity::class, ProgressOperationEntity::class,
         CardMemoryEntity::class, OwnedCardEntity::class, CardLevelStateEntity::class, RewardNoticeEntity::class,
-        CollectionDisplayEntity::class, DrivingDraftEntity::class,
+        CollectionDisplayEntity::class, DrivingDraftEntity::class, PointTransactionEntity::class,
+        VisitPackEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class CollectionDatabase : RoomDatabase() {
     abstract fun collectionDao(): CollectionDao
 
     companion object {
+        val migration3To4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS point_transaction (" +
+                        "operationId TEXT NOT NULL, sourceId TEXT NOT NULL, kind TEXT NOT NULL, " +
+                        "delta INTEGER NOT NULL, occurredAt INTEGER NOT NULL, " +
+                        "eligibleDistanceMeters INTEGER NOT NULL, " +
+                        "drivingEpochDay INTEGER, weekStartEpochDay INTEGER, assessedScore INTEGER, " +
+                        "basePointsHundredths INTEGER NOT NULL, multiplierThousandths INTEGER, " +
+                        "ruleVersion INTEGER NOT NULL, PRIMARY KEY(operationId))",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_point_transaction_weekStartEpochDay " +
+                        "ON point_transaction (weekStartEpochDay)",
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS visit_pack (id TEXT NOT NULL, journeyId TEXT NOT NULL, " +
+                        "placeId TEXT NOT NULL, placeTitle TEXT NOT NULL, category TEXT NOT NULL, " +
+                        "claimedAt INTEGER NOT NULL, claimEpochDay INTEGER NOT NULL, PRIMARY KEY(id))",
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_visit_pack_journeyId_placeId " +
+                        "ON visit_pack (journeyId, placeId)",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_visit_pack_placeId_claimedAt ON visit_pack (placeId, claimedAt)",
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_visit_pack_claimEpochDay ON visit_pack (claimEpochDay)")
+            }
+        }
+
         val migration2To3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE place ADD COLUMN regionId TEXT DEFAULT NULL")

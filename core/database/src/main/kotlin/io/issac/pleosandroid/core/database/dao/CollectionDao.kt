@@ -14,10 +14,12 @@ import io.issac.pleosandroid.core.database.entity.CollectionDisplayEntity
 import io.issac.pleosandroid.core.database.entity.JourneyEntity
 import io.issac.pleosandroid.core.database.entity.OwnedCardEntity
 import io.issac.pleosandroid.core.database.entity.PlaceEntity
+import io.issac.pleosandroid.core.database.entity.PointTransactionEntity
 import io.issac.pleosandroid.core.database.entity.ProgressOperationEntity
 import io.issac.pleosandroid.core.database.entity.RewardNoticeEntity
 import io.issac.pleosandroid.core.database.entity.UserDataStateEntity
 import io.issac.pleosandroid.core.database.entity.VisitEntity
+import io.issac.pleosandroid.core.database.entity.VisitPackEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -65,12 +67,54 @@ interface CollectionDao {
     @Query("SELECT * FROM visit ORDER BY confirmedAt, id")
     suspend fun visits(): List<VisitEntity>
 
+    @Query("SELECT EXISTS(SELECT 1 FROM visit WHERE journeyId = :journeyId AND placeId = :placeId)")
+    suspend fun hasRecordedVisit(journeyId: String, placeId: String): Boolean
+
     @Query("SELECT * FROM journey ORDER BY endedAt, id")
     suspend fun journeys(): List<JourneyEntity>
 
     @Insert suspend fun insertVisit(value: VisitEntity)
 
     @Upsert suspend fun putJourney(value: JourneyEntity)
+
+    @Query("SELECT * FROM point_transaction ORDER BY occurredAt DESC, operationId DESC")
+    suspend fun pointTransactions(): List<PointTransactionEntity>
+
+    @Query("SELECT * FROM point_transaction WHERE operationId = :operationId")
+    suspend fun pointTransaction(operationId: String): PointTransactionEntity?
+
+    @Query("SELECT COALESCE(SUM(delta), 0) FROM point_transaction")
+    suspend fun pointBalance(): Long
+
+    @Query("SELECT COALESCE(SUM(eligibleDistanceMeters), 0) FROM point_transaction WHERE weekStartEpochDay = :week")
+    suspend fun recognizedDistanceForWeek(week: Long): Long
+
+    @Insert suspend fun insertPointTransaction(value: PointTransactionEntity)
+
+    @Query(
+        "UPDATE point_transaction SET assessedScore = NULL, multiplierThousandths = NULL WHERE operationId = :operationId",
+    )
+    suspend fun redactPointAssessment(operationId: String)
+
+    @Query("DELETE FROM point_transaction")
+    suspend fun clearPointTransactions()
+
+    @Query("SELECT * FROM visit_pack ORDER BY claimedAt DESC, id DESC")
+    suspend fun visitPacks(): List<VisitPackEntity>
+
+    @Query("SELECT * FROM visit_pack WHERE journeyId = :journeyId AND placeId = :placeId")
+    suspend fun visitPack(journeyId: String, placeId: String): VisitPackEntity?
+
+    @Query("SELECT COUNT(*) FROM visit_pack WHERE claimEpochDay = :day")
+    suspend fun visitPacksClaimedOn(day: Long): Int
+
+    @Query("SELECT EXISTS(SELECT 1 FROM visit_pack WHERE placeId = :placeId AND claimedAt > :cutoff)")
+    suspend fun wasVisitPackClaimedAfter(placeId: String, cutoff: Long): Boolean
+
+    @Insert suspend fun insertVisitPack(value: VisitPackEntity)
+
+    @Query("DELETE FROM visit_pack")
+    suspend fun clearVisitPacks()
 
     @Query("SELECT * FROM progress_operation WHERE id = :id")
     suspend fun operation(id: String): ProgressOperationEntity?

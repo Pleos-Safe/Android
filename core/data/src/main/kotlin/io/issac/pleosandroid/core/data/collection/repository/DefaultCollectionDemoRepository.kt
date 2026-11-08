@@ -43,6 +43,8 @@ internal class DefaultCollectionDemoRepository @Inject constructor(
             clearJourneys()
             clearOperations()
             clearDrivingDraft()
+            clearPointTransactions()
+            clearVisitPacks()
             putUserState(
                 UserDataStateEntity(
                     generation = UUID.randomUUID().toString(),
