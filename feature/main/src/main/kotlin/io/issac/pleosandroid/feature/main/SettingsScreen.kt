@@ -15,16 +15,21 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
 @Composable
-internal fun SettingsScreen(onRecordingSettings: () -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = PleosTheme.colors
+internal fun SettingsScreen(
+    onRecordingSettings: () -> Unit,
+    onMembershipSettings: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     PleosScreen("설정", modifier) {
         PleosBackLink("돌아가기", onBack)
         PleosInfoPanel(Modifier.widthIn(max = 760.dp * PleosTextStyles.scale).fillMaxWidth()) {
-            Text("나의 기록 방식", style = PleosTextStyles.section, color = colors.textPrimary)
-            Text(
-                "여정과 운전습관을 저장하는 방식을 선택해요.",
-                style = PleosTextStyles.body,
-                color = colors.textSecondary,
+            PleosButton(
+                "PLUS 구독 관리",
+                onMembershipSettings,
+                Modifier.fillMaxWidth(),
+                style = PleosButtonStyle.Secondary,
+                showArrow = true,
             )
             PleosButton(
                 "여정 기록 저장",
