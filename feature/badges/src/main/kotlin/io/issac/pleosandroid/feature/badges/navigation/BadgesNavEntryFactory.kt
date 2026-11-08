@@ -17,12 +17,14 @@ import io.issac.pleosandroid.core.navigation.PackShelfRoute
 import io.issac.pleosandroid.feature.badges.album.AlbumDetailRoute
 import io.issac.pleosandroid.feature.badges.album.PackOddsRoute
 import io.issac.pleosandroid.feature.badges.album.WorkshopRoute
+import io.issac.pleosandroid.feature.badges.album.gallery.CardMotion
+import io.issac.pleosandroid.feature.badges.album.gallery.MotionGalleryRoute
 import javax.inject.Inject
 
 internal class BadgesNavEntryFactory @Inject constructor() : NavEntryFactory {
     override fun create(route: AppRoute): NavEntryResult? = when (route) {
         BadgesRoute, EnhancementRoute, PackShelfRoute, PackOddsRoute,
-        is AlbumDetailRoute, is OpenPackRoute, is WorkshopRoute,
+        is AlbumDetailRoute, is OpenPackRoute, is WorkshopRoute, is MotionGalleryRoute, is CardMotion,
         ->
             NavEntryResult { padding -> BadgesRouteContent(route, Modifier.padding(padding)) }
 

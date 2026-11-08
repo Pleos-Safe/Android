@@ -63,6 +63,7 @@ internal fun AlbumShelf(
     focusId: String?,
     onFocused: (String) -> Unit,
     packShelf: () -> Unit,
+    onPreviewMotions: () -> Unit,
     modeControl: @Composable () -> Unit = {},
     onCard: (CardCopy) -> Unit,
     modifier: Modifier = Modifier,
@@ -113,6 +114,7 @@ internal fun AlbumShelf(
                 val previewLink: @Composable () -> Unit = {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(gap)) {
                         modeControl()
+                        PleosTextLink("연출 모아보기", onPreviewMotions, Modifier.testTag("open-motion-gallery"))
                     }
                 }
                 if (wide) {
