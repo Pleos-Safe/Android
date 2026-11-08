@@ -1,9 +1,6 @@
 package io.issac.pleosandroid.core.domain.collection.model
 
-import java.time.Instant
-
-enum class CardKind { Place, Safety }
-enum class CardTemplate { Standard, Postcard }
+import io.issac.pleosandroid.core.domain.cards.PackType
 
 data class Place(
     val id: String,
@@ -17,46 +14,11 @@ data class Place(
     val imageKey: String,
     val active: Boolean = true,
     val regionId: String? = null,
+    val rewardPack: PackType? = null,
+    val cardPrintId: String? = null,
 )
 
-data class CardFront(
-    val title: String,
-    val subtitle: String,
-    val context: String,
-    val series: String,
-    val artworkKey: String,
-    val glossKey: String,
-    val engravingKey: String,
-    val template: CardTemplate,
-)
-
-data class CardDefinition(
-    val id: String,
-    val kind: CardKind,
-    val placeId: String?,
-    val front: CardFront,
-    val ruleVersion: Int,
-    val active: Boolean = true,
-)
-
-/** A level needs this many distinct qualifying visits/journeys. Thresholds are product data. */
-data class CardLevelRule(
-    val cardId: String,
-    val level: Int,
-    val version: Int,
-    val requiredCount: Int,
-    val eligibleFrom: Instant,
-    val minimumScore: Int? = null,
-    val minimumDistanceMeters: Long = 0,
-    val maximumHarshStarts: Int? = null,
-)
-
-data class CatalogPack(
-    val version: Int,
-    val places: List<Place>,
-    val cards: List<CardDefinition>,
-    val rules: List<CardLevelRule>,
-)
+data class CatalogPack(val version: Int, val places: List<Place>)
 
 data class PlaceQuery(val text: String = "", val bounds: GeoBounds? = null)
 data class GeoBounds(val south: Double, val west: Double, val north: Double, val east: Double) {

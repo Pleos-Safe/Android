@@ -1,25 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="collection_finish_caption">%1$s · 좌우로 밀어 빛 보기</string>
-    <string name="collection_title">나의 컬렉션</string>
     <string name="collection_back">뒤로</string>
-    <string name="collection_go_back">뒤로가기</string>
-    <string name="collection_all">전체</string>
-    <string name="collection_places">장소</string>
-    <string name="collection_safety">운전습관</string>
-    <string name="collection_card_count">간직한 카드 %1$d장</string>
-    <string name="collection_featured">홈에 전시 중</string>
-    <string name="collection_open_card">카드 보기</string>
-    <string name="collection_open_named_card">%1$s 카드 보기</string>
-    <string name="collection_first_collected">처음 간직한 날</string>
-    <string name="collection_pending_count">열어볼 %1$d장</string>
-    <string name="collection_unopened">미개봉</string>
-    <string name="collection_evolution_levels">Lv.%1$d → Lv.%2$d</string>
-    <string name="collection_evolution_pending">%1$s 진화 대기</string>
-    <string name="collection_revisit_reveals">카드 연출 다시 보기</string>
-    <string name="collection_restore_samples">시연 카드 다시 준비</string>
-    <string name="collection_filter_sort">필터·정렬</string>
-    <string name="collection_filter_sort_count">필터·정렬 %1$d</string>
-    <string name="collection_restricted">지금은 컬렉션을 볼 수 없어요</string>
-    <string name="collection_restricted_message">차량에서 조작이 허용되면 다시 볼 수 있어요.</string>
 </resources>

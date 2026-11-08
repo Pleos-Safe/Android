@@ -84,6 +84,7 @@ fun MainScreen(
             ParkedTravelHome(
                 place = homePlace,
                 pointBalance = uiState.pointBalance,
+                demoWallet = uiState.demoWallet,
                 onOpenBadges = onOpenBadges,
                 modifier = modifier,
                 onOpenMap = onOpenMap,

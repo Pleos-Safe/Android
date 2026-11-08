@@ -6,12 +6,13 @@ import io.issac.pleosandroid.core.domain.points.PointRepository
 import io.issac.pleosandroid.core.domain.points.PointTransaction
 import io.issac.pleosandroid.core.domain.points.PointTransactionKind
 import io.issac.pleosandroid.core.domain.points.PointWallet
+import io.issac.pleosandroid.core.domain.points.formatHalfPoints
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Locale
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
@@ -21,14 +22,11 @@ internal sealed interface RecordPoints {
     data class Ready(val wallet: PointWallet) : RecordPoints
 }
 
-internal fun PointRepository.observeRecordPoints(demo: Boolean) = if (demo) {
-    flowOf(RecordPoints.Ready(PointWallet()))
-} else {
-    observeWallet()
-        .map<PointWallet, RecordPoints> { RecordPoints.Ready(it) }
-        .onStart { emit(RecordPoints.Loading) }
-        .catch { emit(RecordPoints.Unavailable) }
-}
+internal fun PointRepository.observeRecordPoints(demo: Boolean) = observeWallet()
+    .filter { it.demo == demo }
+    .map<PointWallet, RecordPoints> { RecordPoints.Ready(it) }
+    .onStart { emit(RecordPoints.Loading) }
+    .catch { emit(RecordPoints.Unavailable) }
 
 internal fun PointWallet.journeyCredit(id: String): PointTransaction? = transactions.firstOrNull {
     it.kind == PointTransactionKind.JourneyEarned && it.sourceId == id
@@ -52,10 +50,17 @@ internal fun weeklyPoints(journeys: List<JourneyRecord>, wallet: PointWallet, no
         val date = PointEarningPolicy.drivingDate(it.endedAt)
         date >= week && date < weekEnd
     }.sumOf { it.distanceMeters }
-    return WeeklyPoints(week, recorded, credits.sumOf { it.eligibleDistanceMeters }, credits.sumOf { it.delta })
+    return WeeklyPoints(
+        week,
+        recorded,
+        credits.sumOf {
+            it.eligibleDistanceMeters
+        },
+        credits.sumOf { it.deltaHalfPoints },
+    )
 }
 
-internal fun Long.pointLabel() = "${NumberFormat.getIntegerInstance(Locale.KOREAN).format(this)} P"
+internal fun Long.pointLabel() = formatHalfPoints(this)
 
 internal fun Double.decimalLabel(maxDigits: Int) = NumberFormat.getNumberInstance(Locale.KOREAN).apply {
     maximumFractionDigits = maxDigits

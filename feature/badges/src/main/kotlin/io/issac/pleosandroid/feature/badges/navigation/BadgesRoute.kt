@@ -10,14 +10,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.issac.pleosandroid.core.navigation.AppRoute
 import io.issac.pleosandroid.core.navigation.BadgesRoute
-import io.issac.pleosandroid.core.navigation.CardDetailRoute
-import io.issac.pleosandroid.core.navigation.SafetyCollectionRoute
-import io.issac.pleosandroid.feature.badges.collection.CollectionRoute
+import io.issac.pleosandroid.core.navigation.EnhancementRoute
+import io.issac.pleosandroid.core.navigation.OpenPackRoute
+import io.issac.pleosandroid.core.navigation.PackShelfRoute
+import io.issac.pleosandroid.feature.badges.album.AlbumDestination
+import io.issac.pleosandroid.feature.badges.album.AlbumDetailRoute
+import io.issac.pleosandroid.feature.badges.album.PackOddsRoute
+import io.issac.pleosandroid.feature.badges.album.WorkshopRoute
 import io.issac.pleosandroid.feature.badges.component.CollectionStatusScreen
-import io.issac.pleosandroid.feature.badges.detail.CardDetailDestination
-import io.issac.pleosandroid.feature.badges.guide.CollectionGuideDestination
-import io.issac.pleosandroid.feature.badges.representative.RepresentativeDestination
-import io.issac.pleosandroid.feature.badges.reveal.CardRevealDestination
 
 @Composable
 internal fun collectionNavigationViewModel(): CollectionNavigationViewModel =
@@ -34,11 +34,10 @@ internal fun BadgesRouteContent(route: AppRoute, modifier: Modifier = Modifier) 
     }
     parkedContent.SaveableStateProvider("parked") {
         when (route) {
-            BadgesRoute, SafetyCollectionRoute, UnopenedCardsRoute -> CollectionRoute(route, modifier)
-            is RevealCardRoute -> CardRevealDestination(route, modifier)
-            is RepresentativeCardRoute -> RepresentativeDestination(route, modifier)
-            is CardDetailRoute, is CardMemoriesRoute, is CollectionMemoryRoute -> CardDetailDestination(route, modifier)
-            is CollectionGuideRoute, is CollectedPlaceRoute -> CollectionGuideDestination(route, modifier)
+            BadgesRoute, EnhancementRoute, PackShelfRoute, PackOddsRoute,
+            is AlbumDetailRoute, is OpenPackRoute, is WorkshopRoute,
+            -> AlbumDestination(route, modifier)
+
             else -> error("Unsupported collection route $route")
         }
     }

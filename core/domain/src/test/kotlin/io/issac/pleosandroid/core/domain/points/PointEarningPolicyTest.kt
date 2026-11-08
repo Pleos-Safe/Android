@@ -12,7 +12,7 @@ import org.junit.Test
 class PointEarningPolicyTest {
     @Test fun `requires both measured thresholds and a completed score`() {
         val journey = trip()
-        assertEquals(120L, PointEarningPolicy.settle(journey, 0)?.delta)
+        assertEquals(240L, PointEarningPolicy.settle(journey, 0)?.deltaHalfPoints)
         assertNull(PointEarningPolicy.settle(journey.copy(distanceMeters = 4_999), 0))
         assertNull(PointEarningPolicy.settle(journey.copy(driving = journey.driving!!.copy(movingMillis = 599_999)), 0))
         assertNull(PointEarningPolicy.settle(journey.copy(driving = null), 0))
@@ -20,15 +20,16 @@ class PointEarningPolicyTest {
     }
 
     @Test fun `limits the final journey to remaining weekly meters and rounds once`() {
-        val credit = checkNotNull(PointEarningPolicy.settle(trip(score = 79), 499_501))
+        assertEquals(5_000L, PointEarningPolicy.settle(trip(), 500_000)?.eligibleDistanceMeters)
+        val credit = checkNotNull(PointEarningPolicy.settle(trip(score = 79), 999_501))
         assertEquals(499L, credit.eligibleDistanceMeters)
         assertEquals(998L, credit.basePointsHundredths)
         assertEquals(1_185, credit.multiplierThousandths)
-        assertEquals(11L, credit.delta)
-        assertNull(PointEarningPolicy.settle(trip(), 500_000))
+        assertEquals(22L, credit.deltaHalfPoints)
+        assertNull(PointEarningPolicy.settle(trip(), 1_000_000))
 
         val zero = checkNotNull(PointEarningPolicy.settle(trip(score = 0), 0))
-        assertEquals(0L, zero.delta)
+        assertEquals(0L, zero.deltaHalfPoints)
         assertEquals(5_000L, zero.eligibleDistanceMeters)
     }
 

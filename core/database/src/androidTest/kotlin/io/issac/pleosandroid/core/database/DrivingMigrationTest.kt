@@ -38,6 +38,7 @@ class DrivingMigrationTest {
                 CollectionDatabase.migration1To2,
                 CollectionDatabase.migration2To3,
                 CollectionDatabase.migration3To4,
+                CardRewardsMigration.from4,
             ).build()
         try {
             val journey = db.collectionDao().journeys().single()
@@ -47,7 +48,7 @@ class DrivingMigrationTest {
             assertNull(db.collectionDao().drivingDraft())
             assertEquals("기존 장소", db.collectionDao().places().single().name)
             assertNull(db.collectionDao().places().single().regionId)
-            assertEquals(0L, db.collectionDao().pointBalance())
+            assertEquals(0L, db.collectionDao().balanceHalfPoints())
             assertTrue(db.collectionDao().visitPacks().isEmpty())
         } finally {
             db.close()

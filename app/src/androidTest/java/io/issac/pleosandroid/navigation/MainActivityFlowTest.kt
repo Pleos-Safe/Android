@@ -1,8 +1,11 @@
 package io.issac.pleosandroid.navigation
 
+import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -10,13 +13,24 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.EntryPointAccessors
 import io.issac.pleosandroid.MainActivity
+import io.issac.pleosandroid.core.domain.cards.CardRules
+import io.issac.pleosandroid.core.domain.cards.CopyStatus
+import io.issac.pleosandroid.core.domain.cards.ForgeOutcome
+import io.issac.pleosandroid.core.domain.cards.PackType
 import io.issac.pleosandroid.debug.CollectionDebugEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -25,14 +39,21 @@ import org.junit.runner.RunWith
 /** Run with the Pleos emulator parked, without changing any vehicle properties. */
 @RunWith(AndroidJUnit4::class)
 class MainActivityFlowTest {
+    private val graph get() = EntryPointAccessors.fromApplication(
+        ApplicationProvider.getApplicationContext<Context>(),
+        CollectionDebugEntryPoint::class.java,
+    )
+    private var previousProfile: Boolean? = null
+
+    @After fun restoreProfile() = runBlocking<Unit> {
+        previousProfile?.let { graph.demo().setEnabled(it) }
+    }
+
     @Before
     fun prepareIsolatedDemoDatabase() = runBlocking {
-        val entryPoint = EntryPointAccessors.fromApplication(
-            compose.activity.applicationContext,
-            CollectionDebugEntryPoint::class.java,
-        )
-        entryPoint.demo().setEnabled(true)
-        entryPoint.demo().resetDemo()
+        previousProfile = graph.demo().enabled.first()
+        graph.demo().setEnabled(true)
+        graph.demo().resetDemo()
     }
 
     @get:Rule(order = 0)
@@ -48,8 +69,8 @@ class MainActivityFlowTest {
         waitFor("주행 기록")
         compose.onNodeWithContentDescription("설정").performClick()
         waitFor("돌아가기")
-        compose.onNodeWithText("컬렉션").performClick()
-        waitFor("나의 컬렉션")
+        compose.onNodeWithTag("main-tab-Collection").performClick()
+        waitTag("album-open-inbox")
         compose.onNodeWithText("기록").performClick()
         waitFor("돌아가기")
 
@@ -92,139 +113,185 @@ class MainActivityFlowTest {
         waitFor("주행 전")
     }
 
-    @Test
-    fun collectionFiltersCardsAndRestoresSelectedCategory() {
+    @Test fun regionFilterAndCardDetailsSurviveRecreation() {
         openCollection()
-        waitFor("해운대의 파도")
-        waitFor("광안대교의 밤")
-
-        compose.onNodeWithText("장소").performClick()
-        compose.onAllNodesWithText("안전한 귀가").assertCountEquals(0)
-
+        compose.onNodeWithText("제주").performClick()
+        waitFor("이 지역에서 모은 카드가 없어요.")
         compose.activityRule.scenario.recreate()
-
-        waitFor("나의 컬렉션")
-        compose.onNodeWithText("장소").assertIsOn()
-        waitFor("해운대의 파도")
-        compose.onAllNodesWithText("안전한 귀가").assertCountEquals(0)
-
-        compose.onNodeWithText("운전습관").performClick()
-        waitFor("안전한 귀가")
-        compose.onNodeWithText("전체").performClick()
-        waitFor("해운대의 파도")
-        waitFor("광안대교의 밤")
-    }
-
-    @Test
-    fun collectionOpensSelectedCardAndRestoresDetailAndCategory() {
-        openCollection()
-        compose.onNodeWithText("장소").performClick()
-        openCard("place-gwangalli-001")
-        waitFor("처음 간직한 날")
-        waitFor("10월 31일 · 가장 최근에 남긴 기억")
-
-        compose.activityRule.scenario.recreate()
-
-        waitFor("10월 31일 · 가장 최근에 남긴 기억")
-        waitFor("광안대교의 밤")
-        compose.onNodeWithContentDescription("뒤로").performClick()
-        waitFor("나의 컬렉션")
-        waitFor("해운대의 파도")
-        compose.onAllNodesWithText("안전한 귀가").assertCountEquals(0)
-
-        compose.onNodeWithText("운전습관").performClick()
-        openCard("safety-smooth-001")
-        waitFor("변화 만나보기")
-        compose.onNodeWithText("변화 만나보기").performClick()
-        waitFor("컬렉션에서 보기")
-        compose.onNodeWithText("컬렉션에서 보기").performClick()
-        waitFor("나의 컬렉션")
-        compose.onNodeWithText("운전습관").assertIsOn()
-        openCard("safety-smooth-001")
-        waitFor("운전습관의 기억")
-        waitFor("10월 30일 · 가장 최근에 남긴 여정")
-    }
-
-    @Test
-    fun revealResultReturnsToTheCardsCategoryAndPage() {
-        openCollection()
-        compose.onNodeWithText("장소").performClick()
-        compose.onNodeWithText("필터·정렬").performClick()
-        compose.onNodeWithText("해운대구").performClick()
-        compose.onNodeWithText("카드 2장 보기").performClick()
-        compose.onNodeWithText("운전습관").performClick()
-        compose.onNodeWithText("열어볼 5장").performClick()
-        waitFor("아직 열지 않은 기억")
-        compose.onNodeWithText("카드 열기").performClick()
-        waitFor("송도 해수욕장의 한 장이 도착했어요")
-        compose.onNodeWithContentDescription("뒤로").performClick()
-        waitFor("5장의 카드가 기다려요")
-        compose.onNodeWithText("카드 열기").performClick()
-        waitFor("나중에 열기")
-        compose.onNodeWithText("카드 열기").performClick()
-        waitFor("컬렉션에서 보기")
-        compose.onNodeWithText("컬렉션에서 보기").performClick()
-        waitFor("5–6 / 6")
-        compose.onNodeWithText("장소").assertIsOn()
-        compose.onNodeWithTag("collection-card-place-songdo-001").assertExists()
-        compose.activityRule.scenario.recreate()
-        waitFor("5–6 / 6")
-        compose.onNodeWithText("이전").performClick()
-        compose.onNodeWithTag("collection-card-place-songdo-001").assertDoesNotExist()
-        systemBack()
-        waitFor("주행 전")
-    }
-
-    @Test
-    fun filterDraftCanBeCancelledAndAnEmptyResultKeepsOwnership() {
-        openCollection()
-        compose.onNodeWithText("필터·정렬").performClick()
-        compose.onNodeWithText("전망·명소").performClick()
-        waitFor("카드 3장 보기")
-        compose.onNodeWithText("닫기").performClick()
-        waitFor("해운대의 파도")
-        compose.onNodeWithText("필터·정렬").performClick()
-        waitFor("카드 8장 보기")
-        compose.onNodeWithText("영도구").performClick()
-        compose.onNodeWithText("전망·명소").performClick()
-        compose.onNodeWithText("카드 0장 보기").performClick()
-        waitFor("아직 이 조건의 카드는 없어요")
-        waitFor("간직한 카드 8장")
-        compose.onNodeWithText("지역·유형 초기화").performClick()
-        waitFor("광안대교의 밤")
-    }
-
-    @Test
-    fun unopenedCardKeepsItsIdentityHiddenUntilOpenedAndCanThenBeDisplayed() {
-        openCollection()
-        compose.onNodeWithText("열어볼 5장").performClick()
-        waitFor("아직 열지 않은 기억")
-        compose.onNodeWithText("카드 열기").performClick()
-        waitFor("송도 해수욕장의 한 장이 도착했어요")
-        compose.onAllNodesWithText("송도의 푸른 길").assertCountEquals(0)
-        compose.onNodeWithText("나중에 열기").performClick()
-        waitFor("5장의 카드가 기다려요")
-        compose.onNodeWithText("카드 열기").performClick()
-        waitFor("나중에 열기")
-        compose.onNodeWithText("카드 열기").performClick()
-        waitFor("송도의 푸른 길")
-        compose.onNodeWithText("대표 카드로 설정").performClick()
-        waitFor("이 카드로 전시하기")
-        compose.onNodeWithText("이 카드로 전시하기").performClick()
-        waitFor("나의 대표 카드")
-        waitFor("송도의 푸른 길")
-        compose.activityRule.scenario.recreate()
-        waitFor("송도의 푸른 길")
-        openCollection()
-        waitFor("열어볼 4장")
-        waitFor("간직한 카드 8장")
-        compose.onNodeWithText("열어볼 4장").performClick()
-        compose.onNodeWithText("시연 카드 다시 준비").performScrollTo().performClick()
-        waitFor("5장의 카드가 기다려요")
-        for (level in 1..4) {
-            compose.onNodeWithText("Lv.$level → Lv.${level + 1} 진화 대기").assertExists()
+        compose.onNodeWithText("제주").assertIsOn()
+        compose.onNodeWithText("부산").performClick()
+        val card = runBlocking {
+            val album = graph.album().observe().first()
+            album.collection.first {
+                it.print.packType == PackType.Busan && it.status == CopyStatus.Owned &&
+                    it.id !in album.pending
+            }
         }
-        waitFor("미개봉")
+        openCard(card.id)
+        waitFor("카드 상세")
+        compose.activityRule.scenario.recreate()
+        waitFor("소장 번호  " + card.id.takeLast(8))
+        systemBack()
+        compose.onNodeWithText("부산").assertIsOn()
+    }
+
+    @Test fun openedPackHidesItsFrontUntilRevealedAndCanResumeAfterLeaving() {
+        waitTag("home-pack-shelf")
+        compose.onNodeWithTag("home-pack-shelf").performScrollTo().performClick()
+        openWelcome()
+        waitEnabled("album-open-seal")
+        compose.onNodeWithTag("album-flip").assertDoesNotExist()
+        compose.activityRule.scenario.recreate()
+        waitEnabled("album-open-seal")
+        systemBack()
+        openWelcome()
+        waitEnabled("album-open-seal")
+        assertTrue(runBlocking { graph.album().observe().first().byPack["welcome:seoul"] == null })
+        compose.onNodeWithTag("album-open-seal").performScrollTo().performClick()
+        waitEnabled("album-flip")
+        val drawn = runBlocking { graph.album().observe().first().byPack.getValue("welcome:seoul") }
+        assertFalse(drawn.seen)
+        compose.onAllNodesWithText(drawn.print.title).assertCountEquals(0)
+        compose.onNodeWithText("나중에 확인").performScrollTo().performClick()
+        openWelcome()
+        compose.activityRule.scenario.recreate()
+        waitEnabled("album-flip")
+        compose.onNodeWithTag("album-open-seal").assertDoesNotExist()
+        val resumed = runBlocking { graph.album().observe().first() }
+        assertEquals(drawn.id, resumed.copies.single { it.pack.id == "welcome:seoul" }.id)
+        assertFalse(resumed.byPack.getValue("welcome:seoul").seen)
+        compose.onNodeWithTag("album-flip").performScrollTo().performClick()
+        waitTag("album-show-copy")
+        compose.onNodeWithTag("album-show-copy").performScrollTo().performClick()
+        waitTag("album-copy-" + drawn.id)
+        openCard(drawn.id)
+        compose.onNodeWithText("대표 카드로 설정").performScrollTo().performClick()
+        waitFor("대표 카드로 설정됨")
+        compose.onNodeWithTag("main-tab-Travel").performClick()
+        waitFor("나의 대표 카드")
+        assertEquals(drawn.id, runBlocking { graph.album().observe().first().featuredId })
+    }
+
+    @Test fun enhancementFromCollectionPersistsReceiptAndDebitsOnlyOnce() {
+        // The test starts at an already received pack, through the same public contract as a future reward provider.
+        val card = runBlocking {
+            val album = graph.album()
+            val id = album.open(album.receivePack("test-visit", PackType.Jeju, "방문 보상"))
+            album.reveal(id)
+            album.observe().first().collection.single { it.id == id }
+        }
+        openCollection()
+        openCard(card.id)
+        waitTag("album-enhance")
+        compose.onNodeWithTag("album-enhance").performScrollTo().performClick()
+        waitEnabled("forge-attempt")
+        val balance = runBlocking { graph.album().observe().first().balanceHalfPoints }
+        val attempt = compose.onNodeWithTag("forge-attempt").performScrollTo()
+        compose.mainClock.autoAdvance = false
+        attempt.performClick()
+        compose.waitUntil(15_000) {
+            compose.mainClock.advanceTimeBy(32)
+            compose.onAllNodes(
+                hasTestTag("forge-theatre"),
+            ).fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
+        }
+        compose.mainClock.advanceTimeBy(6500)
+        compose.mainClock.autoAdvance = true
+        waitTag("forge-next")
+
+        systemBack()
+        waitTag("album-grid")
+        val cardTag = "album-copy-" + card.id
+        compose.onNodeWithTag("album-grid").performScrollToNode(hasTestTag(cardTag))
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag(cardTag).performClick()
+        compose.waitUntil(15_000) {
+            compose.mainClock.advanceTimeBy(32)
+            compose.onNodeWithTag("forge-theatre").assertDoesNotExist()
+            compose.onAllNodes(
+                hasTestTag("forge-next"),
+            ).fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
+        }
+        compose.mainClock.autoAdvance = true
+        compose.activityRule.scenario.recreate()
+        waitTag("forge-next")
+        val after = runBlocking { graph.album().observe().first() }
+        assertEquals(balance - CardRules.cost(card.grade, 0), after.balanceHalfPoints)
+        assertEquals(1, after.history.count { it.copyId == card.id })
+        compose.onNodeWithTag("forge-next").performScrollTo().performClick()
+        waitEnabled("forge-attempt")
+        assertTrue(runBlocking { graph.album().observe().first().pending[card.id] == null })
+    }
+
+    @Test fun aTraceIsRestoredWithOnlyTheSelectedMatchingCopy() {
+        openCollection()
+        compose.onNodeWithText("흔적 1").performClick()
+        openCard("demo:trace")
+        waitFor("흔적 복구")
+        val before = runBlocking { graph.album().observe().first() }
+        compose.onNodeWithText("복구 재료 선택 · 1장").performScrollTo().performClick()
+        compose.onNode(hasText("광안리의 물결 +0", substring = true)).performClick()
+        compose.onNodeWithText("이 사본으로 복구").performClick()
+        waitFor("복구 완료")
+        val after = runBlocking { graph.album().observe().first() }
+        assertEquals(before.balanceHalfPoints, after.balanceHalfPoints)
+        assertEquals(ForgeOutcome.Restored, after.pending.getValue("demo:trace").outcome)
+        assertEquals(7, after.collection.single { it.id == "demo:trace" }.level)
+        assertEquals(CopyStatus.Spent, after.copies.single { it.id == "demo:material" }.status)
+    }
+
+    @Test fun hyundaiCardsAndPackArePlayableInDemoAndSwitchingLeavesTheRealShelfAlone() {
+        openCollection()
+        compose.onNodeWithText("현대").performClick()
+        openCard("demo:studio")
+        waitFor("카드 상세")
+        compose.onNodeWithContentDescription("현대 모터스튜디오 고양, HH, +10").assertExists()
+        systemBack()
+        openCard("demo:epit")
+        waitFor("카드 상세")
+        compose.onNodeWithContentDescription("부산 동백공원 E-pit, H, +5").assertExists()
+        systemBack()
+        compose.onNodeWithTag("album-grid").performScrollToNode(hasText("데모 모드 · 실제 모드로"))
+        compose.onNodeWithText("데모 모드 · 실제 모드로").performClick()
+        waitFor("실제 모드 · 데모 체험")
+        val real = runBlocking { graph.album().observe().first { !it.demo } }
+        compose.onNodeWithText("실제 모드 · 데모 체험").performClick()
+        waitFor("데모 모드 · 실제 모드로")
+        compose.onNodeWithTag("album-open-inbox").performClick()
+        val tag = "album-pack-demo:Hyundai:0"
+        compose.onNodeWithTag("pack-shelf-grid").performScrollToNode(hasTestTag(tag))
+        compose.onNodeWithTag(tag).performClick()
+        waitEnabled("album-open-seal")
+        compose.onNodeWithTag("album-open-seal").performScrollTo().performClick()
+        waitEnabled("album-flip")
+        compose.onNodeWithTag("album-flip").performScrollTo().performClick()
+        waitTag("album-show-copy")
+        val card = runBlocking { graph.album().observe().first().byPack.getValue("demo:Hyundai:0") }
+        assertFalse(card.variant)
+        assertTrue(card.seen)
+        runBlocking {
+            graph.demo().setEnabled(false)
+            assertEquals(real, graph.album().observe().first { !it.demo })
+        }
+    }
+
+    @Test fun packOddsRemainAccessibleAndBackKeepsTheInventory() {
+        openCollection()
+        compose.onNodeWithTag("album-open-inbox").performClick()
+        waitTag("pack-shelf-grid")
+        compose.onNodeWithTag("pack-shelf-grid").performScrollToNode(hasText("카드팩 확률 보기"))
+        compose.onNodeWithText("카드팩 확률 보기").performClick()
+        waitFor("서울 컬렉션 팩")
+        systemBack()
+        waitTag("pack-shelf-grid")
+        assertTrue(runBlocking { graph.album().observe().first().byPack["welcome:seoul"] == null })
+    }
+
+    private fun openWelcome() {
+        waitTag("pack-shelf-grid")
+        val tag = "album-pack-welcome:seoul"
+        compose.onNodeWithTag("pack-shelf-grid").performScrollToNode(hasTestTag(tag))
+        compose.onNodeWithTag(tag).performClick()
     }
 
     private fun systemBack() {
@@ -232,15 +299,25 @@ class MainActivityFlowTest {
     }
 
     private fun openCollection() {
-        compose.waitUntil(timeoutMillis = 15_000) {
-            runCatching { compose.onNodeWithText("컬렉션 보기").assertIsEnabled() }.isSuccess
-        }
-        compose.onNodeWithText("컬렉션 보기").performClick()
-        waitFor("나의 컬렉션")
+        waitTag("main-tab-Collection")
+        compose.onNodeWithTag("main-tab-Collection").performClick()
+        waitTag("album-open-inbox")
     }
 
-    private fun openCard(cardId: String) {
-        compose.onNodeWithTag("collection-card-$cardId").performClick()
+    private fun openCard(id: String) {
+        val tag = "album-copy-" + id
+        compose.onNodeWithTag("album-grid").performScrollToNode(hasTestTag(tag))
+        compose.onNodeWithTag(tag).performClick()
+    }
+
+    private fun waitTag(tag: String) {
+        compose.waitUntil(15_000) {
+            compose.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
+        }
+    }
+
+    private fun waitEnabled(tag: String) {
+        compose.waitUntil(15_000) { runCatching { compose.onNodeWithTag(tag).assertIsEnabled() }.isSuccess }
     }
 
     private fun waitFor(text: String) {

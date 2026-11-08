@@ -131,7 +131,7 @@ internal fun DrivingReportScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp * scale),
                     ) {
                         PleosTextLink("데이터 상태", onDataStatus)
-                        PleosTextLink("안전운전 컬렉션", onCollection)
+                        PleosTextLink("카드 컬렉션", onCollection)
                     }
                 }
             },
@@ -180,6 +180,6 @@ private fun Score(journey: JourneyRecord, demo: Boolean, compact: Boolean = fals
             Spacer(Modifier.weight(1f))
             RecordCaption(if (demo) "POC · 데모" else "관찰 기반", Modifier.padding(bottom = 6.dp), accent = true)
         }
-        if (!compact) RecordCaption("카드는 여정·데이터 조건을 함께 확인해요.")
+        if (!compact) RecordCaption("점수는 기록된 주행 구간을 기준으로 계산해요.")
     }
 }

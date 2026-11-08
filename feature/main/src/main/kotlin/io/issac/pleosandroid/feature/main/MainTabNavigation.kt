@@ -12,6 +12,8 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import io.issac.pleosandroid.core.designsystem.component.PleosTab
 import io.issac.pleosandroid.core.navigation.BadgesRoute
+import io.issac.pleosandroid.core.navigation.EnhancementRoute
+import io.issac.pleosandroid.core.navigation.ExploreRoute
 import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.MainTabRoute
 import io.issac.pleosandroid.core.navigation.RecordsRoute
@@ -19,7 +21,9 @@ import io.issac.pleosandroid.core.navigation.RecordsRoute
 internal val PleosTab.route: MainTabRoute
     get() = when (this) {
         PleosTab.Travel -> MainRoute
+        PleosTab.Explore -> ExploreRoute
         PleosTab.Collection -> BadgesRoute
+        PleosTab.Enhance -> EnhancementRoute
         PleosTab.Records -> RecordsRoute
     }
 
@@ -63,7 +67,8 @@ internal class MainTabNavigation(
 internal fun rememberMainTabNavigation(): MainTabNavigation {
     val selected = rememberSaveable { mutableStateOf(PleosTab.Travel) }
     val stacks = PleosTab.entries.associateWith { tab ->
-        key(tab) { rememberNavBackStack(tab.route) }
+        // Older saved stacks can contain retired level-card routes with no serializer.
+        key(tab, "pack-album") { rememberNavBackStack(tab.route) }
     }
     return remember { MainTabNavigation(selected, stacks) }
 }

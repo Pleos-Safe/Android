@@ -49,12 +49,19 @@ class RecordsPointsCaptureTest {
         assumeTrue(InstrumentationRegistry.getArguments().getString("recordsPointsCapture") == "true")
         val earned = journey("earned", "2026-11-05T05:00:00Z", 12_000, 88, 1_800_000)
         val recordOnly = journey("record-only", "2026-11-05T06:00:00Z", 9_000, null, 480_000)
-        val earlier = journey("earlier", "2026-11-03T05:00:00Z", 488_000, 80, 19_800_000)
+        val earlier = journey("earlier", "2026-11-03T05:00:00Z", 988_000, 80, 39_600_000)
         val credits = listOf(
             checkNotNull(PointEarningPolicy.settle(earned, earlier.distanceMeters)),
             checkNotNull(PointEarningPolicy.settle(earlier, 0)),
         )
-        val points = RecordPoints.Ready(PointWallet(balance = credits.sumOf { it.delta }, transactions = credits))
+        val points = RecordPoints.Ready(
+            PointWallet(
+                balanceHalfPoints = credits.sumOf {
+                    it.deltaHalfPoints
+                },
+                transactions = credits,
+            ),
+        )
         val records = RecordsState(
             loading = false,
             journeys = listOf(recordOnly, earned, earlier),
@@ -152,9 +159,9 @@ class RecordsPointsCaptureTest {
         Records("e36-records", "주행 기록", "+316 P", "기록만 저장"),
         Earned("e37-earned", "이번 여정의 운전습관", "기본 포인트", "316 P"),
         RecordOnly("e37-record-only", "운전습관 기록 상태", "기록만 저장"),
-        Week("e38-week", "이번 주 포인트", "509 km", "500 km"),
-        WeekLoading("e38-loading", "이번 주 포인트", "509 km", "포인트를 확인하고 있어요."),
-        WeekError("e38-error", "이번 주 포인트", "509 km", "다시 시도"),
+        Week("e38-week", "이번 주 포인트", "1,009 km", "1,000 km"),
+        WeekLoading("e38-loading", "이번 주 포인트", "1,009 km", "포인트를 확인하고 있어요."),
+        WeekError("e38-error", "이번 주 포인트", "1,009 km", "다시 시도"),
     }
 
     private companion object {

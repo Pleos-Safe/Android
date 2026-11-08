@@ -4,13 +4,13 @@ import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 
-enum class PointTransactionKind { JourneyEarned, EnhancementSpent }
+enum class PointTransactionKind { JourneyEarned, EnhancementSpent, OpeningBalance }
 
 data class PointTransaction(
     val operationId: String,
     val sourceId: String,
     val kind: PointTransactionKind,
-    val delta: Long,
+    val deltaHalfPoints: Long,
     val occurredAt: Instant,
     val eligibleDistanceMeters: Long = 0,
     val drivingDate: LocalDate? = null,
@@ -21,9 +21,10 @@ data class PointTransaction(
 )
 
 data class PointWallet(
-    val balance: Long = 0,
+    val balanceHalfPoints: Long = 0,
     val transactions: List<PointTransaction> = emptyList(),
     val dataGeneration: String? = null,
+    val demo: Boolean = false,
 )
 
 sealed interface PointSpendResult {

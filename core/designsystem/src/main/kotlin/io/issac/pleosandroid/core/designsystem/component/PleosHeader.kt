@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +39,9 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
 enum class PleosTab(@param:StringRes internal val label: Int) {
     Travel(R.string.pleos_tab_travel),
+    Explore(R.string.pleos_tab_explore),
     Collection(R.string.pleos_tab_collection),
+    Enhance(R.string.pleos_tab_enhance),
     Records(R.string.pleos_tab_records),
 }
 
@@ -92,7 +95,7 @@ fun PleosHeader(
                 TabStrip(
                     selectedTab,
                     onTabSelected,
-                    Modifier.align(Alignment.Center).width(336.dp * scale),
+                    Modifier.align(Alignment.Center).width(560.dp * scale),
                     bottom = false,
                 )
             }
@@ -131,7 +134,7 @@ private fun TabStrip(selectedTab: PleosTab, onSelect: (PleosTab) -> Unit, modifi
             val foreground = if (selected) colors.actionPrimary else colors.textSecondary
             val select = { onSelect(tab) }
             Box(
-                Modifier.weight(1f).fillMaxHeight()
+                Modifier.weight(1f).fillMaxHeight().testTag("main-tab-${tab.name}")
                     .selectable(
                         selected = selected,
                         interactionSource = interactions,

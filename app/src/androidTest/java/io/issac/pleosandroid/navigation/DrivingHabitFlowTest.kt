@@ -57,7 +57,7 @@ class DrivingHabitFlowTest {
         previousDemo?.let { entry.demo().setEnabled(it) }
     }
 
-    @Test fun savedReportSurvivesRecreationAndOpensSafetyCollection() {
+    @Test fun savedReportSurvivesRecreationAndOpensCardCollection() {
         runBlocking {
             previousDemo = entry.demo().enabled.first()
             entry.demo().setEnabled(true)
@@ -79,9 +79,6 @@ class DrivingHabitFlowTest {
             )
             val result = entry.progress().recordProgress(ProgressEvent.JourneyCompleted(ID, generation!!, record, true))
             assertTrue(result is RecordProgressResult.Applied)
-            (result as RecordProgressResult.Applied).receipt.noticeIds.forEach {
-                entry.cards().acknowledgeRewardNotice(it)
-            }
         }
         waitFor("기록")
         compose.onNodeWithText("기록").performClick()
@@ -95,9 +92,9 @@ class DrivingHabitFlowTest {
         waitFor("운전습관 기록 상태")
         compose.onNodeWithText("리포트 보기").performScrollTo().performClick()
         waitFor("이번 여정의 운전습관")
-        compose.onNodeWithText("안전운전 컬렉션").performScrollTo().performClick()
-        waitFor("나의 컬렉션")
-        compose.onNodeWithText("운전습관").assertIsOn()
+        compose.onNodeWithText("카드 컬렉션").performScrollTo().performClick()
+        waitFor("전체")
+        compose.onNodeWithText("전체").assertIsOn()
         compose.onNodeWithText("기록").performClick()
         waitFor("이번 여정의 운전습관")
     }

@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import io.issac.pleosandroid.core.database.dao.AlbumDao
 import io.issac.pleosandroid.core.database.dao.CollectionDao
 import io.issac.pleosandroid.core.database.entity.CardDefinitionEntity
 import io.issac.pleosandroid.core.database.entity.CardLevelRuleEntity
@@ -11,29 +12,36 @@ import io.issac.pleosandroid.core.database.entity.CardLevelStateEntity
 import io.issac.pleosandroid.core.database.entity.CardMemoryEntity
 import io.issac.pleosandroid.core.database.entity.CatalogStateEntity
 import io.issac.pleosandroid.core.database.entity.CollectionDisplayEntity
+import io.issac.pleosandroid.core.database.entity.CopyEntity
 import io.issac.pleosandroid.core.database.entity.DrivingDraftEntity
+import io.issac.pleosandroid.core.database.entity.ForgeEntity
 import io.issac.pleosandroid.core.database.entity.JourneyEntity
 import io.issac.pleosandroid.core.database.entity.OwnedCardEntity
+import io.issac.pleosandroid.core.database.entity.PackEntity
 import io.issac.pleosandroid.core.database.entity.PlaceEntity
 import io.issac.pleosandroid.core.database.entity.PointTransactionEntity
+import io.issac.pleosandroid.core.database.entity.PrintEntity
 import io.issac.pleosandroid.core.database.entity.ProgressOperationEntity
 import io.issac.pleosandroid.core.database.entity.RewardNoticeEntity
 import io.issac.pleosandroid.core.database.entity.UserDataStateEntity
 import io.issac.pleosandroid.core.database.entity.VisitEntity
 import io.issac.pleosandroid.core.database.entity.VisitPackEntity
+import io.issac.pleosandroid.core.database.entity.WalletEntity
 
 @Database(
     entities = [
+        PrintEntity::class, PackEntity::class, CopyEntity::class, WalletEntity::class, ForgeEntity::class,
         CatalogStateEntity::class, UserDataStateEntity::class, PlaceEntity::class, CardDefinitionEntity::class,
         CardLevelRuleEntity::class, JourneyEntity::class, VisitEntity::class, ProgressOperationEntity::class,
         CardMemoryEntity::class, OwnedCardEntity::class, CardLevelStateEntity::class, RewardNoticeEntity::class,
         CollectionDisplayEntity::class, DrivingDraftEntity::class, PointTransactionEntity::class,
         VisitPackEntity::class,
     ],
-    version = 4,
+    version = 6,
     exportSchema = true,
 )
 abstract class CollectionDatabase : RoomDatabase() {
+    abstract fun albumDao(): AlbumDao
     abstract fun collectionDao(): CollectionDao
 
     companion object {

@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 5,
   "places": [
     {
       "id": "haeundae",
@@ -11,7 +11,9 @@
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
       "imageKey": "milestone_art_haeundae",
-      "regionId": "KR-26"
+      "regionId": "KR-26",
+      "rewardPack": "Busan",
+      "cardPrintId": "busan-haeundae"
     },
     {
       "id": "gwangalli",
@@ -23,7 +25,9 @@
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
       "imageKey": "collection_art_gwangalli",
-      "regionId": "KR-26"
+      "regionId": "KR-26",
+      "rewardPack": "Busan",
+      "cardPrintId": "busan-gwangalli"
     },
     {
       "id": "cheongsapo",
@@ -35,7 +39,8 @@
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
       "imageKey": "collection_art_cheongsapo",
-      "regionId": "KR-26"
+      "regionId": "KR-26",
+      "rewardPack": "Busan"
     },
     {
       "id": "huinnyeoul",
@@ -47,7 +52,8 @@
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
       "imageKey": "collection_art_huinnyeoul",
-      "regionId": "KR-26"
+      "regionId": "KR-26",
+      "rewardPack": "Busan"
     },
     {
       "id": "igidae",
@@ -59,7 +65,8 @@
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
       "imageKey": "collection_art_igidae",
-      "regionId": "KR-26"
+      "regionId": "KR-26",
+      "rewardPack": "Busan"
     },
     {
       "id": "songdo",
@@ -71,7 +78,8 @@
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
       "imageKey": "collection_art_songdo",
-      "regionId": "KR-26"
+      "regionId": "KR-26",
+      "rewardPack": "Busan"
     },
     {
       "id": "gyeongbokgung",
@@ -83,7 +91,9 @@
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
       "imageKey": "collection_map_pin",
-      "regionId": "KR-11"
+      "regionId": "KR-11",
+      "rewardPack": "Seoul",
+      "cardPrintId": "seoul-gyeongbokgung"
     },
     {
       "id": "hyeopjae",
@@ -95,7 +105,9 @@
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
       "imageKey": "collection_map_pin",
-      "regionId": "KR-49"
+      "regionId": "KR-49",
+      "rewardPack": "Jeju",
+      "cardPrintId": "jeju-hyeopjae"
     },
     {
       "id": "hyundai-motorstudio-goyang",
@@ -107,418 +119,9 @@
       "radiusMeters": 200,
       "minimumDwellSeconds": 60,
       "imageKey": "collection_map_pin",
-      "regionId": "KR-41"
-    }
-  ],
-  "cards": [
-    {
-      "id": "place-haeundae-001",
-      "title": "해운대의 파도",
-      "subtitle": "부산의 여름을 간직하다",
-      "context": "부산 · 해운대",
-      "series": "MILESTONE / 001",
-      "kind": "Place",
-      "placeId": "haeundae",
-      "artworkKey": "milestone_art_haeundae",
-      "glossKey": "milestone_gloss_haeundae",
-      "engravingKey": "milestone_engraving_haeundae",
-      "template": "Standard"
-    },
-    {
-      "id": "place-gwangalli-001",
-      "title": "광안대교의 밤",
-      "subtitle": "다녀온 풍경을 간직하다",
-      "context": "부산 · 수영구",
-      "series": "MILESTONE / GWANGALLI",
-      "kind": "Place",
-      "placeId": "gwangalli",
-      "artworkKey": "collection_art_gwangalli",
-      "glossKey": "collection_gloss_gwangalli",
-      "engravingKey": "collection_engraving_gwangalli",
-      "template": "Postcard"
-    },
-    {
-      "id": "place-cheongsapo-001",
-      "title": "청사포의 빛",
-      "subtitle": "다녀온 풍경을 간직하다",
-      "context": "부산 · 해운대구",
-      "series": "MILESTONE / CHEONGSAPO",
-      "kind": "Place",
-      "placeId": "cheongsapo",
-      "artworkKey": "collection_art_cheongsapo",
-      "glossKey": "collection_gloss_cheongsapo",
-      "engravingKey": "collection_engraving_cheongsapo",
-      "template": "Postcard"
-    },
-    {
-      "id": "place-huinnyeoul-001",
-      "title": "흰여울의 골목",
-      "subtitle": "다녀온 풍경을 간직하다",
-      "context": "부산 · 영도구",
-      "series": "MILESTONE / HUINNYEOUL",
-      "kind": "Place",
-      "placeId": "huinnyeoul",
-      "artworkKey": "collection_art_huinnyeoul",
-      "glossKey": "collection_gloss_huinnyeoul",
-      "engravingKey": "collection_engraving_huinnyeoul",
-      "template": "Postcard"
-    },
-    {
-      "id": "place-igidae-001",
-      "title": "이기대의 바람",
-      "subtitle": "다녀온 풍경을 간직하다",
-      "context": "부산 · 남구",
-      "series": "MILESTONE / IGIDAE",
-      "kind": "Place",
-      "placeId": "igidae",
-      "artworkKey": "collection_art_igidae",
-      "glossKey": "collection_gloss_igidae",
-      "engravingKey": "collection_engraving_igidae",
-      "template": "Postcard"
-    },
-    {
-      "id": "safety-smooth-001",
-      "title": "안전한 귀가",
-      "subtitle": "여정을 차분히 마친 기록",
-      "context": "운전습관 · 귀가",
-      "series": "SAFETY / SMOOTH / 001",
-      "kind": "Safety",
-      "artworkKey": "milestone_art_safety",
-      "glossKey": "milestone_gloss_safety",
-      "engravingKey": "milestone_engraving_safety",
-      "template": "Standard"
-    },
-    {
-      "id": "safety-gentle-start-001",
-      "title": "차분한 출발",
-      "subtitle": "일상에 남긴 작은 여유",
-      "context": "운전습관 · 출발",
-      "series": "MILESTONE / GENTLE START",
-      "kind": "Safety",
-      "artworkKey": "collection_art_gentle_start",
-      "glossKey": "collection_gloss_gentle_start",
-      "engravingKey": "collection_engraving_gentle_start",
-      "template": "Postcard"
-    },
-    {
-      "id": "place-songdo-001",
-      "title": "송도의 푸른 길",
-      "subtitle": "다녀온 풍경을 간직하다",
-      "context": "부산 · 서구",
-      "series": "MILESTONE / SONGDO",
-      "kind": "Place",
-      "placeId": "songdo",
-      "artworkKey": "collection_art_songdo",
-      "glossKey": "collection_gloss_songdo",
-      "engravingKey": "collection_engraving_songdo",
-      "template": "Postcard"
-    }
-  ],
-  "rules": [
-    {
-      "cardId": "place-haeundae-001",
-      "level": 1,
-      "version": 1,
-      "requiredCount": 1,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-haeundae-001",
-      "level": 2,
-      "version": 1,
-      "requiredCount": 2,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-haeundae-001",
-      "level": 3,
-      "version": 1,
-      "requiredCount": 3,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-haeundae-001",
-      "level": 4,
-      "version": 1,
-      "requiredCount": 4,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-haeundae-001",
-      "level": 5,
-      "version": 1,
-      "requiredCount": 5,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-gwangalli-001",
-      "level": 1,
-      "version": 1,
-      "requiredCount": 1,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-gwangalli-001",
-      "level": 2,
-      "version": 1,
-      "requiredCount": 2,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-gwangalli-001",
-      "level": 3,
-      "version": 1,
-      "requiredCount": 3,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-gwangalli-001",
-      "level": 4,
-      "version": 1,
-      "requiredCount": 4,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-gwangalli-001",
-      "level": 5,
-      "version": 1,
-      "requiredCount": 5,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-cheongsapo-001",
-      "level": 1,
-      "version": 1,
-      "requiredCount": 1,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-cheongsapo-001",
-      "level": 2,
-      "version": 1,
-      "requiredCount": 2,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-cheongsapo-001",
-      "level": 3,
-      "version": 1,
-      "requiredCount": 3,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-cheongsapo-001",
-      "level": 4,
-      "version": 1,
-      "requiredCount": 4,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-cheongsapo-001",
-      "level": 5,
-      "version": 1,
-      "requiredCount": 5,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-huinnyeoul-001",
-      "level": 1,
-      "version": 1,
-      "requiredCount": 1,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-huinnyeoul-001",
-      "level": 2,
-      "version": 1,
-      "requiredCount": 2,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-huinnyeoul-001",
-      "level": 3,
-      "version": 1,
-      "requiredCount": 3,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-huinnyeoul-001",
-      "level": 4,
-      "version": 1,
-      "requiredCount": 4,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-huinnyeoul-001",
-      "level": 5,
-      "version": 1,
-      "requiredCount": 5,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-igidae-001",
-      "level": 1,
-      "version": 1,
-      "requiredCount": 1,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-igidae-001",
-      "level": 2,
-      "version": 1,
-      "requiredCount": 2,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-igidae-001",
-      "level": 3,
-      "version": 1,
-      "requiredCount": 3,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-igidae-001",
-      "level": 4,
-      "version": 1,
-      "requiredCount": 4,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-igidae-001",
-      "level": 5,
-      "version": 1,
-      "requiredCount": 5,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "safety-smooth-001",
-      "level": 1,
-      "version": 1,
-      "requiredCount": 1,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 85,
-      "minimumDistanceMeters": 1000
-    },
-    {
-      "cardId": "safety-smooth-001",
-      "level": 2,
-      "version": 1,
-      "requiredCount": 2,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 85,
-      "minimumDistanceMeters": 1000
-    },
-    {
-      "cardId": "safety-smooth-001",
-      "level": 3,
-      "version": 1,
-      "requiredCount": 3,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 85,
-      "minimumDistanceMeters": 1000
-    },
-    {
-      "cardId": "safety-smooth-001",
-      "level": 4,
-      "version": 1,
-      "requiredCount": 4,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 85,
-      "minimumDistanceMeters": 1000
-    },
-    {
-      "cardId": "safety-smooth-001",
-      "level": 5,
-      "version": 1,
-      "requiredCount": 5,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 85,
-      "minimumDistanceMeters": 1000
-    },
-    {
-      "cardId": "safety-gentle-start-001",
-      "level": 1,
-      "version": 1,
-      "requiredCount": 1,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 70,
-      "minimumDistanceMeters": 1000,
-      "maximumHarshStarts": 0
-    },
-    {
-      "cardId": "safety-gentle-start-001",
-      "level": 2,
-      "version": 1,
-      "requiredCount": 2,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 70,
-      "minimumDistanceMeters": 1000,
-      "maximumHarshStarts": 0
-    },
-    {
-      "cardId": "safety-gentle-start-001",
-      "level": 3,
-      "version": 1,
-      "requiredCount": 3,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 70,
-      "minimumDistanceMeters": 1000,
-      "maximumHarshStarts": 0
-    },
-    {
-      "cardId": "safety-gentle-start-001",
-      "level": 4,
-      "version": 1,
-      "requiredCount": 4,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 70,
-      "minimumDistanceMeters": 1000,
-      "maximumHarshStarts": 0
-    },
-    {
-      "cardId": "safety-gentle-start-001",
-      "level": 5,
-      "version": 1,
-      "requiredCount": 5,
-      "eligibleFrom": "2026-01-01T00:00:00Z",
-      "minimumScore": 70,
-      "minimumDistanceMeters": 1000,
-      "maximumHarshStarts": 0
-    },
-    {
-      "cardId": "place-songdo-001",
-      "level": 1,
-      "version": 1,
-      "requiredCount": 1,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-songdo-001",
-      "level": 2,
-      "version": 1,
-      "requiredCount": 2,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-songdo-001",
-      "level": 3,
-      "version": 1,
-      "requiredCount": 3,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-songdo-001",
-      "level": 4,
-      "version": 1,
-      "requiredCount": 4,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
-    },
-    {
-      "cardId": "place-songdo-001",
-      "level": 5,
-      "version": 1,
-      "requiredCount": 5,
-      "eligibleFrom": "2026-01-01T00:00:00Z"
+      "regionId": "KR-41",
+      "rewardPack": "Hyundai",
+      "cardPrintId": "hyundai-motorstudio-goyang"
     }
   ]
 }

@@ -3,18 +3,22 @@ package io.issac.pleosandroid.core.data.collection.local
 import android.content.Context
 import androidx.room.withTransaction
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.issac.pleosandroid.core.data.BuildConfig
+import io.issac.pleosandroid.core.data.cards.prepareCardAlbum
+import io.issac.pleosandroid.core.data.cards.resetCardAlbum
 import io.issac.pleosandroid.core.database.CollectionDatabase
-import io.issac.pleosandroid.core.database.CollectionDatabaseFactory
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
+import io.issac.pleosandroid.core.database.dao.AlbumDao
 import io.issac.pleosandroid.core.database.dao.CollectionDao
 import io.issac.pleosandroid.core.database.entity.UserDataStateEntity
+import io.issac.pleosandroid.core.domain.cards.CardActionException
+import io.issac.pleosandroid.core.domain.cards.CardProblem
 import io.issac.pleosandroid.core.domain.collection.model.CatalogResult
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
@@ -33,13 +37,14 @@ internal class CollectionStore @Inject constructor(
     private val catalog: CatalogSource,
 ) {
     private val preferences = context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE)
-    val demoMode = MutableStateFlow(BuildConfig.DEBUG && preferences.getBoolean("enabled", false))
+    val demoMode = MutableStateFlow(preferences.getBoolean("enabled", false))
     private val real by lazy { factory.create() }
     private val demo by lazy { factory.create(demo = true) }
     private val initialization = Mutex()
+    private val modeChange = Mutex()
     private val initialized = mutableSetOf<CollectionDatabase>()
 
-    private suspend fun ready(db: CollectionDatabase) {
+    private suspend fun ready(db: CollectionDatabase, useDemo: Boolean) {
         initialization.withLock {
             if (db in initialized) return
             val pack = catalog.load()
@@ -56,47 +61,86 @@ internal class CollectionStore @Inject constructor(
                         "Invalid bundled catalog"
                     }
                 }
+                if (useDemo) dao.prepareDemoHistory()
+                db.prepareCardAlbum(useDemo)
             }
             initialized.add(db)
         }
     }
 
     suspend fun <T> transaction(block: suspend CollectionDao.() -> T): T = withContext(Dispatchers.IO) {
-        transactionOn(if (demoMode.value) demo else real, block)
+        val useDemo = demoMode.value
+        transactionOn(if (useDemo) demo else real, useDemo, block)
     }
 
     suspend fun <T> demoTransaction(block: suspend CollectionDao.() -> T): T = withContext(Dispatchers.IO) {
-        check(BuildConfig.DEBUG)
-        transactionOn(demo, block)
+        transactionOn(demo, true, block)
     }
 
     suspend fun <T> realTransaction(block: suspend CollectionDao.() -> T): T = withContext(Dispatchers.IO) {
-        transactionOn(real, block)
+        transactionOn(real, false, block)
     }
 
-    private suspend fun <T> transactionOn(db: CollectionDatabase, block: suspend CollectionDao.() -> T): T {
-        ready(db)
+    private suspend fun <T> transactionOn(
+        db: CollectionDatabase,
+        useDemo: Boolean,
+        block: suspend CollectionDao.() -> T,
+    ): T {
+        ready(db, useDemo)
         return db.withTransaction { db.collectionDao().block() }
     }
 
-    fun observe() = observeTransaction { snapshot() }
+    suspend fun <T> albumTransaction(generation: String? = null, block: suspend AlbumDao.() -> T): T =
+        databaseTransaction(generation) { albumDao().block() }
+
+    suspend fun <T> databaseTransaction(generation: String? = null, block: suspend CollectionDatabase.() -> T): T =
+        withContext(Dispatchers.IO) {
+            val useDemo = demoMode.value
+            val db = if (useDemo) demo else real
+            ready(db, useDemo)
+            db.withTransaction {
+                if (generation != null && db.collectionDao().userState()?.generation != generation) {
+                    throw CardActionException(CardProblem.Changed)
+                }
+                db.block()
+            }
+        }
+
+    suspend fun <T> resetProfile(demoOnly: Boolean = false, block: suspend CollectionDao.() -> T): T =
+        withContext(Dispatchers.IO) {
+            val useDemo = demoOnly || demoMode.value
+            val db = if (useDemo) demo else real
+            ready(db, useDemo)
+            db.withTransaction {
+                val result = db.collectionDao().block()
+                if (useDemo) db.collectionDao().prepareDemoHistory()
+                db.resetCardAlbum(useDemo)
+                result
+            }
+        }
+
+    fun <T> observeDatabase(observe: (CollectionDatabase) -> Flow<T>): Flow<T> = observeProfile { db, _ -> observe(db) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun <T> observeTransaction(block: suspend CollectionDao.() -> T) = demoMode.flatMapLatest { useDemo ->
-        flow {
-            val db = if (useDemo) demo else real
-            ready(db)
-            emitAll(
-                db.collectionDao().observeRevision().map {
-                    db.withTransaction { db.collectionDao().block() }
-                },
-            )
-        }
-    }.distinctUntilChanged().flowOn(Dispatchers.IO)
+    fun <T> observeProfile(observe: (CollectionDatabase, Boolean) -> Flow<T>): Flow<T> =
+        demoMode.flatMapLatest { useDemo ->
+            flow {
+                val db = if (useDemo) demo else real
+                ready(db, useDemo)
+                emitAll(observe(db, useDemo))
+            }
+        }.distinctUntilChanged().flowOn(Dispatchers.IO)
+
+    fun observe() = observeTransaction { snapshot() }
+
+    fun <T> observeTransaction(block: suspend CollectionDao.() -> T) = observeDatabase { db ->
+        db.collectionDao().observeRevision().map { db.withTransaction { db.collectionDao().block() } }
+    }
 
     suspend fun setDemoMode(enabled: Boolean) = withContext(Dispatchers.IO) {
-        require(!enabled || BuildConfig.DEBUG)
-        check(preferences.edit().putBoolean("enabled", enabled).commit())
-        demoMode.value = enabled
+        modeChange.withLock {
+            check(preferences.edit().putBoolean("enabled", enabled).commit())
+            demoMode.value = enabled
+        }
     }
 }

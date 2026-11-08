@@ -1,5 +1,6 @@
 package io.issac.pleosandroid.core.database.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -9,7 +10,7 @@ data class PointTransactionEntity(
     @PrimaryKey val operationId: String,
     val sourceId: String,
     val kind: String,
-    val delta: Long,
+    @ColumnInfo(name = "delta") val deltaHalfPoints: Long,
     val occurredAt: Long,
     val eligibleDistanceMeters: Long,
     val drivingEpochDay: Long?,

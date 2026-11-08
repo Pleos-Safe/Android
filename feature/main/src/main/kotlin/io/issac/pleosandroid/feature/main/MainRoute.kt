@@ -17,10 +17,13 @@ import io.issac.pleosandroid.core.designsystem.component.PleosInfoPanel
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimResult
+import io.issac.pleosandroid.core.domain.collection.model.VisitPackPolicy
 import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
 import io.issac.pleosandroid.core.navigation.BadgesRoute
 import io.issac.pleosandroid.core.navigation.DrivingReportRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
+import io.issac.pleosandroid.core.navigation.OpenPackRoute
+import io.issac.pleosandroid.core.navigation.PackShelfRoute
 import io.issac.pleosandroid.core.navigation.RecordsRoute
 import io.issac.pleosandroid.core.navigation.TravelMapRoute
 import io.issac.pleosandroid.feature.main.map.DrivingRegionMap
@@ -103,31 +106,47 @@ private fun ParkedVisitReward(viewModel: PlaceMapViewModel) {
         onStopOrDispose {}
     }
     val onClaim = candidate?.let { visit -> { viewModel.claimVisit(visit) } }
-    VisitPackRewardCard(candidate?.place?.name, result, onClaim)
+    val router = LocalNavigationRouter.current
+    VisitPackRewardCard(candidate?.place?.name, result, onClaim) { id ->
+        router.replaceAll(BadgesRoute, PackShelfRoute, OpenPackRoute(id))
+    }
 }
 
 @Composable
-fun VisitPackRewardCard(placeName: String?, result: VisitPackClaimResult?, onClaim: (() -> Unit)?) {
+fun VisitPackRewardCard(
+    placeName: String?,
+    result: VisitPackClaimResult?,
+    onClaim: (() -> Unit)?,
+    onOpenPack: ((String) -> Unit)? = null,
+) {
     if (placeName == null && result == null) return
     val message = when (result) {
         is VisitPackClaimResult.Applied, is VisitPackClaimResult.AlreadyClaimed -> "방문 카드팩 1개를 받았어요"
-        VisitPackClaimResult.DailyLimitReached -> "오늘 받을 수 있는 방문 카드팩을 모두 받았어요"
+        VisitPackClaimResult.DailyLimitReached -> "오늘 방문팩 ${VisitPackPolicy.DAILY_CLAIM_LIMIT}개를 모두 받았어요"
         VisitPackClaimResult.PlaceCooldown -> "이 장소의 방문 카드팩은 14일 뒤 다시 받을 수 있어요"
         VisitPackClaimResult.InvalidInput -> "주차와 현재 위치를 다시 확인해 주세요"
         VisitPackClaimResult.StaleGeneration, VisitPackClaimResult.StorageFailure -> "카드팩을 저장하지 못했어요. 다시 시도해 주세요"
         null -> "방문 보상을 받을 수 있어요"
     }
-    val displayName = placeName ?: when (result) {
-        is VisitPackClaimResult.Applied -> result.receipt.placeTitle
-        is VisitPackClaimResult.AlreadyClaimed -> result.receipt.placeTitle
+    val receipt = when (result) {
+        is VisitPackClaimResult.Applied -> result.receipt
+        is VisitPackClaimResult.AlreadyClaimed -> result.receipt
         else -> null
     }
+    val displayName = receipt?.placeTitle ?: placeName
     PleosInfoPanel(Modifier.fillMaxWidth()) {
         Text(message, style = PleosTextStyles.section, color = PleosTheme.colors.textPrimary)
         if (displayName != null) {
-            Text(displayName, style = PleosTextStyles.body, color = PleosTheme.colors.textSecondary)
+            val detail = if (result == null && onClaim != null) {
+                "$displayName · 하루 최대 ${VisitPackPolicy.DAILY_CLAIM_LIMIT}팩"
+            } else {
+                displayName
+            }
+            Text(detail, style = PleosTextStyles.body, color = PleosTheme.colors.textSecondary)
         }
-        if (onClaim != null && result !is VisitPackClaimResult.DailyLimitReached) {
+        if (receipt != null && onOpenPack != null) {
+            PleosButton("받은 팩 열어보기", { onOpenPack(receipt.albumPackId) }, Modifier.fillMaxWidth(), showArrow = true)
+        } else if (onClaim != null && result !is VisitPackClaimResult.DailyLimitReached) {
             PleosButton("카드팩 받기", onClaim, modifier = Modifier.fillMaxWidth(), showArrow = true)
         }
     }

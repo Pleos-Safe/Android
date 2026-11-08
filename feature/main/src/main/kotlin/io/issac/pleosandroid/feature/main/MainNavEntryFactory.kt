@@ -3,6 +3,7 @@ package io.issac.pleosandroid.feature.main
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import io.issac.pleosandroid.core.navigation.AppRoute
+import io.issac.pleosandroid.core.navigation.ExploreRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
@@ -17,7 +18,7 @@ class MainNavEntryFactory @Inject constructor() : NavEntryFactory {
     override fun create(route: AppRoute): NavEntryResult? = when (route) {
         MainRoute -> NavEntryResult { padding -> MainRouteContent(contentPadding = padding) }
 
-        TravelMapRoute -> NavEntryResult { padding -> PlaceMapRouteContent(Modifier.padding(padding)) }
+        TravelMapRoute, ExploreRoute -> NavEntryResult { padding -> PlaceMapRouteContent(Modifier.padding(padding)) }
 
         SettingsRoute -> NavEntryResult { padding ->
             val router = LocalNavigationRouter.current
