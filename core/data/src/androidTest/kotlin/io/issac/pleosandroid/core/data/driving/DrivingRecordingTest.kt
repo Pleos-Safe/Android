@@ -4,11 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.issac.pleosandroid.core.data.collection.local.CardAwardWriter
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
 import io.issac.pleosandroid.core.data.collection.repository.DefaultBadgeRegionSource
-import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
@@ -16,11 +14,6 @@ import io.issac.pleosandroid.core.database.CollectionDatabase
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
 import io.issac.pleosandroid.core.database.entity.DrivingDraftEntity
 import io.issac.pleosandroid.core.domain.collection.model.AssessmentStatus
-import io.issac.pleosandroid.core.domain.collection.model.CardDefinition
-import io.issac.pleosandroid.core.domain.collection.model.CardFront
-import io.issac.pleosandroid.core.domain.collection.model.CardKind
-import io.issac.pleosandroid.core.domain.collection.model.CardLevelRule
-import io.issac.pleosandroid.core.domain.collection.model.CardTemplate
 import io.issac.pleosandroid.core.domain.collection.model.CatalogPack
 import io.issac.pleosandroid.core.domain.collection.model.DeleteHistoryRequest
 import io.issac.pleosandroid.core.domain.collection.model.HistoryKind
@@ -86,23 +79,8 @@ class DrivingRecordingTest {
                 context,
                 CollectionDatabase::class.java,
             ).addCallback(CollectionDatabase.constraints).build()
-        val card =
-            CardDefinition(
-                "safe",
-                CardKind.Safety,
-                null,
-                CardFront("기억", "", "", "", "art", "gloss", "engraving", CardTemplate.Standard),
-                1,
-            )
         val source = object : CatalogSource {
-            override fun load() = CatalogPack(
-                1,
-                listOf(place),
-                listOf(card, card.copy(id = "place-card", kind = CardKind.Place, placeId = place.id)),
-                (1..5).map {
-                    CardLevelRule(card.id, it, 1, it, Instant.EPOCH, minimumScore = 85, minimumDistanceMeters = 1_000)
-                } + (1..5).map { CardLevelRule("place-card", it, 1, it, Instant.EPOCH) },
-            )
+            override fun load() = CatalogPack(1, listOf(place))
             override fun hasAsset(key: String) = true
         }
         store = CollectionStore(
@@ -112,7 +90,7 @@ class DrivingRecordingTest {
             },
             source,
         )
-        progress = DefaultProgressRepository(store, CardAwardWriter())
+        progress = DefaultProgressRepository(store)
         generation = progress.getDataGeneration()
     }
 
@@ -125,10 +103,10 @@ class DrivingRecordingTest {
         val journey = complete()
         val event = ProgressEvent.JourneyCompleted("drive", generation, journey, true)
         val first = progress.recordProgress(event) as RecordProgressResult.Applied
-        assertEquals(listOf("safe"), first.receipt.newCards.map { it.cardId })
+        assertEquals("drive", first.receipt.operationId)
         assertEquals(journey, DefaultHistoryRepository(store).observeJourney(journey.id).first())
         assertTrue(progress.recordProgress(event) is RecordProgressResult.AlreadyProcessed)
-        assertEquals(1, DefaultCollectionRepository(store).observeCard("safe").first()?.earnedLevel)
+        assertTrue(db.collectionDao().ownedCards().isEmpty())
         assertEquals(1, db.collectionDao().journeys().size)
     }
 
@@ -141,7 +119,7 @@ class DrivingRecordingTest {
         val result = progress.recordProgress(
             ProgressEvent.JourneyCompleted("short", generation, record, true),
         ) as RecordProgressResult.Applied
-        assertTrue(result.receipt.changes.isEmpty())
+        assertEquals("short", result.receipt.operationId)
         assertNull(DefaultHistoryRepository(store).observeJourney(record.id).first()?.score)
     }
 
@@ -170,7 +148,7 @@ class DrivingRecordingTest {
         try {
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
             assertNull(db.collectionDao().drivingDraft())
-            assertEquals(1, DefaultCollectionRepository(store).observeCard("safe").first()?.earnedLevel)
+            assertTrue(db.collectionDao().ownedCards().isEmpty())
             assertEquals(1, db.collectionDao().journeys().size)
         } finally {
             job.cancelAndJoin()
@@ -354,7 +332,7 @@ class DrivingRecordingTest {
         }
     }
 
-    @Test fun parkedVisitAwardsAPlaceCardAndUpdatesMapRegionsWithoutDuplicatingTheVisit() = runBlocking {
+    @Test fun parkedVisitIsRecordedOnceAndCollectionAwaitsOpeningAPack() = runBlocking {
         val recorder = recorder()
         val fixes = MutableStateFlow<VisitLocation?>(null)
         val places = DefaultPlaceRepository(store)
@@ -392,13 +370,13 @@ class DrivingRecordingTest {
                 DefaultHistoryRepository(store).observeVisits().first { it.isNotEmpty() }.single()
             }
             assertEquals(active.journeyId, visit.journeyId)
-            assertEquals(setOf("place-card"), places.observePlace(place.id).first()?.ownedCardIds)
-            assertEquals(setOf("KR-26"), DefaultBadgeRegionSource(store).collectedRegionIds.first())
+            assertTrue(requireNotNull(places.observePlace(place.id).first()).ownedCardIds.isEmpty())
+            assertTrue(DefaultBadgeRegionSource(store).collectedRegionIds.first().isEmpty())
             store.realTransaction {
                 putPlaces(places().map { it.copy(active = false) })
                 touch()
             }
-            assertEquals(setOf("KR-26"), DefaultBadgeRegionSource(store).collectedRegionIds.first())
+            assertTrue(DefaultBadgeRegionSource(store).collectedRegionIds.first().isEmpty())
             clock.nanos += 10_000_000_000
             vehicle.park()
             fixes.value = fixes.value!!.copy(elapsedNanos = clock.nanos)

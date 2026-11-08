@@ -42,7 +42,7 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
-import java.text.NumberFormat
+import io.issac.pleosandroid.core.domain.points.formatHalfPoints
 
 @Composable
 internal fun ParkedTravelHome(
@@ -52,6 +52,7 @@ internal fun ParkedTravelHome(
     onOpenMap: (() -> Unit)? = null,
     onOpenRecords: () -> Unit = {},
     pointBalance: Long? = null,
+    demoWallet: Boolean = false,
 ) {
     val colors = PleosTheme.colors
     PleosScreen(title = stringResource(R.string.journey_home_title), modifier = modifier) {
@@ -102,7 +103,11 @@ internal fun ParkedTravelHome(
                         color = colors.textPrimary,
                     )
                     if (pointBalance != null) {
-                        Text("보유 강화 포인트", style = PleosTextStyles.meta, color = colors.textSecondary)
+                        Text(
+                            if (demoWallet) "데모 강화 포인트" else "보유 강화 포인트",
+                            style = PleosTextStyles.meta,
+                            color = colors.textSecondary,
+                        )
                         Text(
                             pointsLabel(pointBalance),
                             style = PleosTextStyles.titleSplit,
@@ -229,7 +234,7 @@ private fun JourneyMetricRow(label: String, value: String) {
     }
 }
 
-internal fun pointsLabel(points: Long): String = "${NumberFormat.getIntegerInstance().format(points)} P"
+internal fun pointsLabel(halfPoints: Long): String = formatHalfPoints(halfPoints)
 
 @Composable
 internal fun journeyDistance(meters: Long): String = stringResource(R.string.journey_distance_km, meters / 1_000.0)

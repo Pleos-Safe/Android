@@ -1,10 +1,12 @@
 package io.issac.pleosandroid.core.data.collection.repository
 
+import io.issac.pleosandroid.core.data.cards.grantVisitPack
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
 import io.issac.pleosandroid.core.data.driving.DrivingClock
 import io.issac.pleosandroid.core.database.entity.VisitPackEntity
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimRequest
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimResult
+import io.issac.pleosandroid.core.domain.collection.model.VisitPackPolicy
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackReceipt
 import io.issac.pleosandroid.core.domain.collection.repository.VisitPackRepository
 import java.time.Duration
@@ -26,40 +28,48 @@ internal class DefaultVisitPackRepository @Inject constructor(
             return VisitPackClaimResult.InvalidInput
         }
         return storageResult(VisitPackClaimResult.StorageFailure) {
-            store.transaction {
-                if (userState()?.generation != request.dataGeneration) {
-                    return@transaction VisitPackClaimResult.StaleGeneration
+            store.databaseTransaction {
+                val album = albumDao()
+                with(collectionDao()) {
+                    if (userState()?.generation != request.dataGeneration) {
+                        return@databaseTransaction VisitPackClaimResult.StaleGeneration
+                    }
+                    visitPack(request.journeyId, request.placeId)?.let {
+                        return@databaseTransaction VisitPackClaimResult.AlreadyClaimed(it.toReceipt())
+                    }
+                    if (hasRecordedVisit(request.journeyId, request.placeId)) {
+                        return@databaseTransaction VisitPackClaimResult.InvalidInput
+                    }
+                    val place = place(request.placeId) ?: return@databaseTransaction VisitPackClaimResult.InvalidInput
+                    val type = place.rewardPack ?: return@databaseTransaction VisitPackClaimResult.InvalidInput
+                    val now = clock.now()
+                    val day = now.atZone(claimZone).toLocalDate().toEpochDay()
+                    val claimedToday = visitPacksClaimedOn(day)
+                    if (claimedToday >= VisitPackPolicy.DAILY_CLAIM_LIMIT) {
+                        return@databaseTransaction VisitPackClaimResult.DailyLimitReached
+                    }
+                    if (wasVisitPackClaimedAfter(request.placeId, now.minus(placeCooldown).toEpochMilli())) {
+                        return@databaseTransaction VisitPackClaimResult.PlaceCooldown
+                    }
+                    val pack = VisitPackEntity(
+                        id = UUID.randomUUID().toString(),
+                        journeyId = request.journeyId,
+                        placeId = request.placeId,
+                        placeTitle = place.name,
+                        category = place.category,
+                        claimedAt = now.toEpochMilli(),
+                        claimEpochDay = day,
+                    )
+                    insertVisitPack(pack)
+                    album.grantVisitPack(pack, type)
+                    touch()
+                    VisitPackClaimResult.Applied(pack.toReceipt())
                 }
-                visitPack(request.journeyId, request.placeId)?.let {
-                    return@transaction VisitPackClaimResult.AlreadyClaimed(it.toReceipt())
-                }
-                if (hasRecordedVisit(request.journeyId, request.placeId)) {
-                    return@transaction VisitPackClaimResult.InvalidInput
-                }
-                val now = clock.now()
-                val day = now.atZone(claimZone).toLocalDate().toEpochDay()
-                if (visitPacksClaimedOn(day) >= DAILY_LIMIT) return@transaction VisitPackClaimResult.DailyLimitReached
-                if (wasVisitPackClaimedAfter(request.placeId, now.minus(placeCooldown).toEpochMilli())) {
-                    return@transaction VisitPackClaimResult.PlaceCooldown
-                }
-                val pack = VisitPackEntity(
-                    id = UUID.randomUUID().toString(),
-                    journeyId = request.journeyId,
-                    placeId = request.placeId,
-                    placeTitle = request.placeTitle,
-                    category = request.category,
-                    claimedAt = now.toEpochMilli(),
-                    claimEpochDay = day,
-                )
-                insertVisitPack(pack)
-                touch()
-                VisitPackClaimResult.Applied(pack.toReceipt())
             }
         }
     }
 
     private companion object {
-        const val DAILY_LIMIT = 3
         val claimZone: ZoneId = ZoneId.of("Asia/Seoul")
         val placeCooldown: Duration = Duration.ofDays(14)
     }

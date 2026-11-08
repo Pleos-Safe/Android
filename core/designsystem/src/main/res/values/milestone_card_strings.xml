@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="milestone_card_level">Lv.%1$d</string>
-    <string name="milestone_card_back_title">MILESTONE</string>
-    <string name="milestone_card_back_subtitle">여정이 남긴 한 장</string>
-    <string name="milestone_card_play_light">카드에 빛 비추기</string>
-</resources>

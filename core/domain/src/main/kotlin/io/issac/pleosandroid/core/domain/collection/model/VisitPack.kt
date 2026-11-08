@@ -2,6 +2,10 @@ package io.issac.pleosandroid.core.domain.collection.model
 
 import java.time.Instant
 
+object VisitPackPolicy {
+    const val DAILY_CLAIM_LIMIT = 10
+}
+
 data class VisitPackClaimRequest(
     val journeyId: String,
     val placeId: String,
@@ -17,7 +21,11 @@ data class VisitPackReceipt(
     val placeTitle: String,
     val category: String,
     val claimedAt: Instant,
-)
+) {
+    val albumPackId: String get() = visitAlbumPackId(id)
+}
+
+fun visitAlbumPackId(receiptId: String): String = "reward:visit:$receiptId"
 
 sealed interface VisitPackClaimResult {
     data class Applied(val receipt: VisitPackReceipt) : VisitPackClaimResult

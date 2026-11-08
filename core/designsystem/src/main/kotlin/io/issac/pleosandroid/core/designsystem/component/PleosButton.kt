@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.modifier.customClickable
 import io.issac.pleosandroid.core.designsystem.theme.PleosShape
@@ -70,8 +69,6 @@ fun PleosButton(
             modifier = if (showArrow) Modifier.weight(1f) else Modifier,
             style = PleosTextStyles.body.copy(fontWeight = FontWeight.Medium),
             color = content,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
             textAlign = if (showArrow) TextAlign.Start else TextAlign.Center,
         )
         if (enabled && showArrow) {
@@ -94,7 +91,7 @@ fun PleosTextLink(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space8 * scale, Alignment.CenterHorizontally),
     ) {
-        Text(text, style = PleosTextStyles.meta, color = content)
+        Text(text, Modifier.weight(1f, fill = false), style = PleosTextStyles.meta, color = content)
         if (enabled) PleosGlyph(PleosSymbol.Arrow, content, Modifier.size(PleosSpacing.space16 * scale))
     }
 }

@@ -28,25 +28,20 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-internal fun journeyPointsLabel(journey: JourneyRecord, points: RecordPoints, demo: Boolean): String {
-    if (demo) return "기록만 저장"
-    return when (points) {
-        RecordPoints.Loading -> "포인트 확인 중"
+internal fun journeyPointsLabel(journey: JourneyRecord, points: RecordPoints, demo: Boolean): String = when (points) {
+    RecordPoints.Loading -> "포인트 확인 중"
 
-        RecordPoints.Unavailable -> "포인트 확인 필요"
+    RecordPoints.Unavailable -> "포인트 확인 필요"
 
-        is RecordPoints.Ready -> points.wallet.journeyCredit(journey.id)?.delta
-            ?.takeIf { it > 0 }?.let { "+${it.pointLabel()}" } ?: "기록만 저장"
-    }
+    is RecordPoints.Ready -> points.wallet.journeyCredit(journey.id)?.deltaHalfPoints
+        ?.takeIf { it > 0 }?.let { if (demo) "데모 +${it.pointLabel()}" else "+${it.pointLabel()}" } ?: "기록만 저장"
 }
 
 @Composable
 internal fun JourneyPointsCard(journey: JourneyRecord, points: RecordPoints, demo: Boolean, onRetry: () -> Unit) {
     QuietPlate(contentPadding = 20.dp) {
-        RecordHeading("포인트 산정")
+        RecordHeading(if (demo) "데모 포인트 산정" else "포인트 산정")
         when {
-            demo -> RecordBody("데모 여정은 포인트를 받지 않아요.")
-
             points is RecordPoints.Loading -> RecordBody("포인트를 확인하고 있어요.")
 
             points is RecordPoints.Unavailable -> {
@@ -70,7 +65,7 @@ internal fun JourneyPointsCard(journey: JourneyRecord, points: RecordPoints, dem
                             PointsLine(title, "× ${(multiplier / 1_000.0).decimalLabel(3)}")
                         }
                         RecordDivider()
-                        PointsLine("획득 포인트", credit.delta.pointLabel())
+                        PointsLine("획득 포인트", credit.deltaHalfPoints.pointLabel())
                         RecordCaption("기본 포인트에 점수 배율을 곱한 뒤 소수점 아래를 버려요.")
                     }
                 }
@@ -109,7 +104,7 @@ internal fun DrivingPointsWeekScreen(
             }
 
             else -> {
-                val wallet = if (state.demo) PointWallet() else (state.points as? RecordPoints.Ready)?.wallet
+                val wallet = (state.points as? RecordPoints.Ready)?.wallet
                 val summary = weeklyPoints(state.journeys, wallet ?: PointWallet(), now)
                 val limit = PointEarningPolicy.WEEKLY_DISTANCE_LIMIT_METERS
                 val colors = PleosTheme.colors
@@ -117,7 +112,7 @@ internal fun DrivingPointsWeekScreen(
                     wide,
                     leading = {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp * PleosTextStyles.scale)) {
-                            if (state.demo) RecordCaption("POC · 데모 기록", accent = true)
+                            if (state.demo) RecordCaption("데모 모드 · 샘플 주행", accent = true)
                             RecordCaption(
                                 "${summary.start.format(
                                     WeekDateFormat,
@@ -127,8 +122,6 @@ internal fun DrivingPointsWeekScreen(
                             RecordHeading("이번 주의 주행 포인트")
                             RecordBody("주행 기록과 포인트 인정 거리를 따로 확인해요.")
                             when {
-                                state.demo -> RecordCaption("데모 기록은 포인트로 적립되지 않아요.")
-
                                 wallet != null -> RecordCaption("이번 주 받은 포인트 ${summary.earnedPoints.pointLabel()}")
 
                                 state.points is RecordPoints.Loading -> RecordCaption("포인트를 확인하고 있어요.")

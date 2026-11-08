@@ -135,7 +135,13 @@ class MainViewModel @Inject constructor(
                 }
             }
             summary.copy(
-                earnedPoints = if (summary.reportId != null && currentWallet != null) credit?.delta ?: 0 else null,
+                earnedPoints = if (summary.reportId != null &&
+                    currentWallet != null
+                ) {
+                    credit?.deltaHalfPoints ?: 0
+                } else {
+                    null
+                },
                 recognizedDistanceMeters = credit?.eligibleDistanceMeters,
                 settlementReason = when {
                     credit != null && credit.eligibleDistanceMeters < (summary.distanceMeters ?: 0) ->
@@ -158,7 +164,8 @@ class MainViewModel @Inject constructor(
         }
         ui.copy(
             summary = summary,
-            pointBalance = currentWallet?.balance,
+            pointBalance = currentWallet?.balanceHalfPoints,
+            demoWallet = currentWallet?.demo == true,
             journeyActionPending = currentAction.pending,
             journeyActionError = currentAction.error,
         )

@@ -26,7 +26,6 @@ import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.RecordingSettingsRoute
 import io.issac.pleosandroid.core.navigation.RecordsRoute
-import io.issac.pleosandroid.core.navigation.SafetyCollectionRoute
 import io.issac.pleosandroid.feature.records.component.RecordBody
 import io.issac.pleosandroid.feature.records.component.RecordsPage
 import io.issac.pleosandroid.feature.records.history.RecordsEffect
@@ -126,7 +125,7 @@ internal fun RecordsRouteContent(route: AppRoute, modifier: Modifier) {
             state.demo,
             { router.pop() },
             { router.navigate(DrivingDataStatusRoute(id)) },
-            { router.replaceAll(BadgesRoute, SafetyCollectionRoute) },
+            { router.replaceAll(BadgesRoute) },
             modifier,
             state.points,
             { viewModel.handleIntent(ReportIntent.Retry) },

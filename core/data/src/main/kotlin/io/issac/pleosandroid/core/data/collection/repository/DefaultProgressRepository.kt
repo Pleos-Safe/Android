@@ -1,11 +1,9 @@
 package io.issac.pleosandroid.core.data.collection.repository
 
-import io.issac.pleosandroid.core.data.collection.local.CardAwardWriter
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
 import io.issac.pleosandroid.core.data.collection.local.StoredCollection
 import io.issac.pleosandroid.core.data.collection.local.decodeReceipt
 import io.issac.pleosandroid.core.data.collection.local.encode
-import io.issac.pleosandroid.core.data.collection.local.evaluate
 import io.issac.pleosandroid.core.data.collection.local.fingerprint
 import io.issac.pleosandroid.core.data.collection.local.snapshot
 import io.issac.pleosandroid.core.data.collection.mapper.toEntity
@@ -13,8 +11,6 @@ import io.issac.pleosandroid.core.data.points.creditJourney
 import io.issac.pleosandroid.core.database.dao.CollectionDao
 import io.issac.pleosandroid.core.database.entity.ProgressOperationEntity
 import io.issac.pleosandroid.core.database.entity.UserDataStateEntity
-import io.issac.pleosandroid.core.domain.collection.model.CardChange
-import io.issac.pleosandroid.core.domain.collection.model.CardKind
 import io.issac.pleosandroid.core.domain.collection.model.DeleteHistoryRequest
 import io.issac.pleosandroid.core.domain.collection.model.HistoryKind
 import io.issac.pleosandroid.core.domain.collection.model.JourneyRecord
@@ -24,18 +20,14 @@ import io.issac.pleosandroid.core.domain.collection.model.ProgressPreview
 import io.issac.pleosandroid.core.domain.collection.model.ProgressReceipt
 import io.issac.pleosandroid.core.domain.collection.model.ProgressRejection
 import io.issac.pleosandroid.core.domain.collection.model.RecordProgressResult
-import io.issac.pleosandroid.core.domain.collection.policy.AchievementEvaluator
+import io.issac.pleosandroid.core.domain.collection.policy.qualifies
 import io.issac.pleosandroid.core.domain.collection.repository.ProgressRepository
 import java.time.ZoneId
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 
-internal class DefaultProgressRepository @Inject constructor(
-    private val store: CollectionStore,
-    private val awards: CardAwardWriter,
-) : ProgressRepository {
-    private val evaluator = AchievementEvaluator()
+internal class DefaultProgressRepository @Inject constructor(private val store: CollectionStore) : ProgressRepository {
 
     override suspend fun getDataGeneration(): String = store.transaction { checkNotNull(userState()).generation }
 
@@ -73,12 +65,7 @@ internal class DefaultProgressRepository @Inject constructor(
 
                 is ProgressEvent.JourneyAssessmentUpdated -> putJourney(event.journey.toEntity())
             }
-            val receipt = awards.reconcile(
-                this,
-                event.operationId,
-                allowReduction = event is ProgressEvent.JourneyAssessmentUpdated,
-                cardIds = state.affectedCards(event),
-            )
+            val receipt = ProgressReceipt(event.operationId)
             val source = event.source()
             insertOperation(
                 ProgressOperationEntity(
@@ -90,6 +77,7 @@ internal class DefaultProgressRepository @Inject constructor(
                     receipt.encode(),
                 ),
             )
+            touch()
             RecordProgressResult.Applied(receipt)
         }
     }
@@ -102,35 +90,11 @@ internal class DefaultProgressRepository @Inject constructor(
             validateInput(event, state)?.let { return@transaction ProgressPreview.Rejected(it) }
             when (val duplicate = duplicate(event)) {
                 is RecordProgressResult.Rejected -> return@transaction ProgressPreview.Rejected(duplicate.reason)
-
-                is RecordProgressResult.AlreadyProcessed -> return@transaction ProgressPreview.Eligible(
-                    emptyList(),
-                    duplicate.receipt.progress,
-                )
-
+                is RecordProgressResult.AlreadyProcessed -> return@transaction ProgressPreview.Eligible
                 else -> Unit
             }
             validateQualification(event, state)?.let { return@transaction ProgressPreview.Rejected(it) }
-            val visits = state.visits + listOfNotNull((event as? ProgressEvent.VisitConfirmed)?.visit)
-            val journey = event.journeyOrNull()
-            val journeys = if (journey ==
-                null
-            ) {
-                state.journeys
-            } else {
-                state.journeys.filterNot { it.id == journey.id } + journey
-            }
-            val hypothetical = state.copy(visits = visits, journeys = journeys)
-            val affected = state.affectedCards(event)
-            val allowReduction = event is ProgressEvent.JourneyAssessmentUpdated
-            val progress = state.definitions.filter { it.id in affected && (it.active || allowReduction) }.map {
-                hypothetical.evaluate(it, allowReduction)
-            }
-            val changes = progress.mapNotNull { p ->
-                val from = state.owned.find { it.cardId == p.cardId }?.earnedLevel ?: 0
-                if (from == p.earnedLevel) null else CardChange(p.cardId, from, p.earnedLevel)
-            }
-            ProgressPreview.Eligible(changes, progress)
+            ProgressPreview.Eligible
         }
     }
 
@@ -159,13 +123,13 @@ internal class DefaultProgressRepository @Inject constructor(
                     redactPointAssessment("journey:${request.id}")
                 }
                 redactReceipts()
-                awards.reconcile(this, UUID.randomUUID().toString(), allowReduction = true, allowGrowth = false)
+                touch()
                 MutationResult.Success
             }
         }
 
     override suspend fun clearUserData(): MutationResult = storageResult(MutationResult.StorageFailure) {
-        store.transaction {
+        store.resetProfile {
             clearOwned()
             clearVisits()
             clearJourneys()
@@ -221,17 +185,8 @@ internal class DefaultProgressRepository @Inject constructor(
         if (visit.journeyId != null && state.journeys.none { it.id == visit.journeyId }) {
             return ProgressRejection.UnknownJourney
         }
-        return if (evaluator.qualifies(place, visit)) null else ProgressRejection.VisitNotQualified
+        return if (place.qualifies(visit)) null else ProgressRejection.VisitNotQualified
     }
-
-    private fun StoredCollection.affectedCards(event: ProgressEvent): Set<String> = definitions.filter {
-        when (event) {
-            is ProgressEvent.VisitConfirmed ->
-                !hasVisitPack(event.visit) && it.kind == CardKind.Place && it.placeId == event.visit.placeId
-
-            else -> it.kind == CardKind.Safety
-        }
-    }.mapTo(mutableSetOf()) { it.id }
 
     private suspend fun CollectionDao.duplicate(event: ProgressEvent): RecordProgressResult? {
         val source = event.source()

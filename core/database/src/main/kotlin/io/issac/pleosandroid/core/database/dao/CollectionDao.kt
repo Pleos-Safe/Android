@@ -6,8 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import io.issac.pleosandroid.core.database.entity.CardDefinitionEntity
-import io.issac.pleosandroid.core.database.entity.CardLevelRuleEntity
-import io.issac.pleosandroid.core.database.entity.CardLevelStateEntity
 import io.issac.pleosandroid.core.database.entity.CardMemoryEntity
 import io.issac.pleosandroid.core.database.entity.CatalogStateEntity
 import io.issac.pleosandroid.core.database.entity.CollectionDisplayEntity
@@ -16,7 +14,6 @@ import io.issac.pleosandroid.core.database.entity.OwnedCardEntity
 import io.issac.pleosandroid.core.database.entity.PlaceEntity
 import io.issac.pleosandroid.core.database.entity.PointTransactionEntity
 import io.issac.pleosandroid.core.database.entity.ProgressOperationEntity
-import io.issac.pleosandroid.core.database.entity.RewardNoticeEntity
 import io.issac.pleosandroid.core.database.entity.UserDataStateEntity
 import io.issac.pleosandroid.core.database.entity.VisitEntity
 import io.issac.pleosandroid.core.database.entity.VisitPackEntity
@@ -52,17 +49,15 @@ interface CollectionDao {
     @Query("SELECT * FROM place ORDER BY id")
     suspend fun places(): List<PlaceEntity>
 
+    @Query("SELECT * FROM place WHERE id = :id")
+    suspend fun place(id: String): PlaceEntity?
+
     @Query("SELECT * FROM card_definition ORDER BY id")
     suspend fun definitions(): List<CardDefinitionEntity>
-
-    @Query("SELECT * FROM card_level_rule ORDER BY cardId, version, level")
-    suspend fun rules(): List<CardLevelRuleEntity>
 
     @Upsert suspend fun putPlaces(values: List<PlaceEntity>)
 
     @Upsert suspend fun putDefinitions(values: List<CardDefinitionEntity>)
-
-    @Insert suspend fun insertRules(values: List<CardLevelRuleEntity>)
 
     @Query("SELECT * FROM visit ORDER BY confirmedAt, id")
     suspend fun visits(): List<VisitEntity>
@@ -84,7 +79,7 @@ interface CollectionDao {
     suspend fun pointTransaction(operationId: String): PointTransactionEntity?
 
     @Query("SELECT COALESCE(SUM(delta), 0) FROM point_transaction")
-    suspend fun pointBalance(): Long
+    suspend fun balanceHalfPoints(): Long
 
     @Query("SELECT COALESCE(SUM(eligibleDistanceMeters), 0) FROM point_transaction WHERE weekStartEpochDay = :week")
     suspend fun recognizedDistanceForWeek(week: Long): Long
@@ -135,43 +130,15 @@ interface CollectionDao {
     @Query("SELECT * FROM owned_card ORDER BY acquiredAt, cardId")
     suspend fun ownedCards(): List<OwnedCardEntity>
 
-    @Query("SELECT * FROM card_level_state ORDER BY ownershipId, level")
-    suspend fun levels(): List<CardLevelStateEntity>
-
-    @Query("SELECT * FROM card_memory ORDER BY occurredAt, id")
-    suspend fun memories(): List<CardMemoryEntity>
-
     @Query("SELECT * FROM collection_display WHERE id = 1")
     suspend fun display(): CollectionDisplayEntity?
 
-    @Query("SELECT * FROM reward_notice WHERE acknowledgedAt IS NULL ORDER BY createdAt, id")
-    suspend fun notices(): List<RewardNoticeEntity>
-
     @Upsert suspend fun putOwned(value: OwnedCardEntity)
-
-    @Upsert suspend fun putLevels(values: List<CardLevelStateEntity>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun putMemories(values: List<CardMemoryEntity>)
 
-    @Insert suspend fun insertNotice(value: RewardNoticeEntity)
-
     @Upsert suspend fun putDisplay(value: CollectionDisplayEntity)
-
-    @Query("UPDATE reward_notice SET acknowledgedAt = :at WHERE id = :id AND acknowledgedAt IS NULL")
-    suspend fun acknowledgeNotice(id: String, at: Long): Int
-
-    @Query("DELETE FROM reward_notice WHERE ownershipId = :ownershipId AND toLevel > :level")
-    suspend fun removeInvalidNotices(ownershipId: String, level: Int)
-
-    @Query("DELETE FROM card_level_state WHERE ownershipId = :ownershipId AND level > :level")
-    suspend fun removeHigherLevels(ownershipId: String, level: Int)
-
-    @Query("DELETE FROM owned_card WHERE cardId = :cardId")
-    suspend fun deleteOwned(cardId: String)
-
-    @Query("DELETE FROM card_memory WHERE cardId = :cardId")
-    suspend fun deleteMemories(cardId: String)
 
     @Query("DELETE FROM visit WHERE id = :id")
     suspend fun deleteVisit(id: String): Int

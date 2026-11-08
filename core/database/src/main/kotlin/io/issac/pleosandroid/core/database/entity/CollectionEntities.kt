@@ -10,7 +10,12 @@ import androidx.room.PrimaryKey
 data class CatalogStateEntity(@PrimaryKey val id: Int = 1, val version: Int, val hash: String)
 
 @Entity(tableName = "user_data_state")
-data class UserDataStateEntity(@PrimaryKey val id: Int = 1, val generation: String, val revision: Long = 0)
+data class UserDataStateEntity(
+    @PrimaryKey val id: Int = 1,
+    val generation: String,
+    val revision: Long = 0,
+    @ColumnInfo(defaultValue = "0") val demoSeeded: Boolean = false,
+)
 
 @Entity(tableName = "place", indices = [Index("active")])
 data class PlaceEntity(
@@ -25,6 +30,8 @@ data class PlaceEntity(
     val imageKey: String,
     val active: Boolean,
     @ColumnInfo(defaultValue = "NULL") val regionId: String? = null,
+    @ColumnInfo(defaultValue = "NULL") val rewardPack: String? = null,
+    @ColumnInfo(defaultValue = "NULL") val cardPrintId: String? = null,
 )
 
 @Entity(

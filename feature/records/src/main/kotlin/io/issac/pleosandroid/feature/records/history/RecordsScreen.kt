@@ -142,9 +142,13 @@ private fun RecordStat(label: String, value: String, modifier: Modifier = Modifi
 @Composable
 private fun PointsOverview(state: RecordsState, onIntent: (RecordsIntent) -> Unit) {
     val label = when {
-        state.demo -> "데모 기록은 포인트를 받지 않아요."
-        state.points is RecordPoints.Ready -> "보유 포인트 ${state.points.wallet.balance.pointLabel()}"
+        state.points is RecordPoints.Ready -> {
+            val label = if (state.demo) "데모 포인트" else "보유 포인트"
+            "$label ${state.points.wallet.balanceHalfPoints.pointLabel()}"
+        }
+
         state.points is RecordPoints.Loading -> "포인트를 확인하고 있어요."
+
         else -> "포인트를 불러오지 못했어요."
     }
     Row(

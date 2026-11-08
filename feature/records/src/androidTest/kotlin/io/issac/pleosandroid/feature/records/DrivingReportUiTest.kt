@@ -60,7 +60,7 @@ class DrivingReportUiTest {
         }
         compose.onNodeWithText("88").assertIsDisplayed()
         compose.onNodeWithText("데이터 상태").performScrollTo().performClick()
-        compose.onNodeWithText("안전운전 컬렉션").performClick()
+        compose.onNodeWithText("카드 컬렉션").performClick()
         capture("driving-report-full")
         compose.runOnIdle { width = 841.dp }
         compose.onNodeWithText("88").performScrollTo().assertIsDisplayed()
@@ -70,7 +70,7 @@ class DrivingReportUiTest {
             width = 520.dp
             height = 760.dp
         }
-        compose.onNodeWithText("안전운전 컬렉션").performScrollTo().performClick()
+        compose.onNodeWithText("카드 컬렉션").performScrollTo().performClick()
         compose.onNodeWithContentDescription("뒤로가기").performScrollTo().performClick()
         assertEquals(2, dataClicks)
         assertEquals(2, collectionClicks)

@@ -25,6 +25,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 import io.issac.pleosandroid.core.navigation.BadgesRoute
+import io.issac.pleosandroid.core.navigation.EnhancementRoute
+import io.issac.pleosandroid.core.navigation.ExploreRoute
 import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavEntryResult
@@ -61,7 +63,7 @@ class MainTabsTest {
         assertTrue("Incoming tab offset: $forward", forward > 0.dp && forward <= 400.dp / 12)
 
         compose.mainClock.advanceTimeBy(400)
-        compose.onNodeWithText("여행").performClick()
+        compose.onNodeWithTag("main-tab-Travel").performClick()
         compose.mainClock.advanceTimeBy(96)
         val reverse = compose.onNodeWithTag(MainRoute.toString()).getUnclippedBoundsInRoot().left - origin
         assertTrue("Returning tab offset: $reverse", reverse < 0.dp && reverse >= -400.dp / 12)
@@ -87,6 +89,10 @@ class MainTabsTest {
             NavEntryFactory { route ->
                 when (route) {
                     MainRoute -> NavEntryResult { Text("여행 본문") }
+
+                    ExploreRoute -> NavEntryResult { Text("탐색 본문") }
+
+                    EnhancementRoute -> NavEntryResult { Text("강화 본문") }
 
                     BadgesRoute -> NavEntryResult { Text("컬렉션 본문") }
 
@@ -135,6 +141,10 @@ class MainTabsTest {
         val frame = compose.onNodeWithTag("main").getUnclippedBoundsInRoot()
         assertEquals("Split tab $splitTab, main frame $frame", frame.bottom, splitTab.bottom)
 
+        compose.onNodeWithTag("main-tab-Explore").performClick()
+        compose.onNodeWithText("탐색 본문").assertExists()
+        compose.onNodeWithTag("main-tab-Enhance").performClick()
+        compose.onNodeWithText("강화 본문").assertExists()
         compose.onNodeWithText("컬렉션").performClick()
         compose.onNodeWithContentDescription("설정").performClick()
         compose.onNodeWithText("설정 값 0").assertExists()

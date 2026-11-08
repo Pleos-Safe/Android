@@ -56,31 +56,7 @@ sealed interface ProgressEvent {
     ) : ProgressEvent
 }
 
-data class CardChange(val cardId: String, val fromLevel: Int, val toLevel: Int)
-data class LevelProgress(val level: Int, val current: Int, val required: Int, val pendingAssessment: Boolean) {
-    val remaining: Int get() = (required - current).coerceAtLeast(0)
-}
-data class CardProgress(
-    val cardId: String,
-    val earnedLevel: Int,
-    val revealedLevel: Int?,
-    val levels: List<LevelProgress>,
-) {
-    val isOwned get() = earnedLevel > 0
-    val nextLevel get() = levels.firstOrNull { it.level > earnedLevel }
-    val hasPendingReveal get() = earnedLevel > (revealedLevel ?: 0)
-}
-
-data class ProgressReceipt(
-    val operationId: String,
-    val changes: List<CardChange>,
-    val progress: List<CardProgress>,
-    val noticeIds: List<String>,
-) {
-    val newCards get() = changes.filter { it.fromLevel == 0 && it.toLevel > 0 }
-    val upgrades get() = changes.filter { it.fromLevel > 0 && it.toLevel > it.fromLevel }
-    val adjustments get() = changes.filter { it.toLevel < it.fromLevel }
-}
+data class ProgressReceipt(val operationId: String)
 
 enum class ProgressRejection {
     ConsentRequired,
@@ -102,7 +78,7 @@ sealed interface RecordProgressResult {
 }
 
 sealed interface ProgressPreview {
-    data class Eligible(val changes: List<CardChange>, val progress: List<CardProgress>) : ProgressPreview
+    data object Eligible : ProgressPreview
     data class Rejected(val reason: ProgressRejection) : ProgressPreview
     data object StorageFailure : ProgressPreview
 }
@@ -110,7 +86,6 @@ sealed interface ProgressPreview {
 data class HistoryQuery(val placeId: String? = null, val journeyId: String? = null)
 enum class HistoryKind { Visit, Journey }
 data class DeleteHistoryRequest(val kind: HistoryKind, val id: String, val dataGeneration: String)
-data class ReevaluateRulesRequest(val operationId: String, val cardIds: Set<String>, val dataGeneration: String)
 
 sealed interface MutationResult {
     data object Success : MutationResult
