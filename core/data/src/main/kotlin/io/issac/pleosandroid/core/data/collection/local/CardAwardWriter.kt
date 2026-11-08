@@ -47,7 +47,7 @@ internal class CardAwardWriter @Inject constructor() {
                     )
             }
             val memories = when (card.kind) {
-                CardKind.Place -> state.visits.filter { visit ->
+                CardKind.Place -> state.visitsForCardAwards.filter { visit ->
                     visit.placeId == card.placeId &&
                         applicableRules.any { !visit.confirmedAt.isBefore(it.eligibleFrom) }
                 }.map { visit ->

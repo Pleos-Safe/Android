@@ -28,7 +28,15 @@ internal data class StoredCollection(
     val memoryCards: Map<String, String>,
     val representativeId: String?,
     val notices: List<RewardNoticeEntity>,
+    private val visitPackSources: Set<Pair<String, String>>,
 ) {
+    val visitsForCardAwards by lazy { visits.filterNot(::hasVisitPack) }
+
+    fun hasVisitPack(visit: ConfirmedVisit): Boolean {
+        val journeyId = visit.journeyId ?: return false
+        return (journeyId to visit.placeId) in visitPackSources
+    }
+
     fun card(id: String, allowFront: Boolean = false): CollectedCard? {
         val owned = owned.find { it.cardId == id } ?: return null
         val definition = definitions.first { it.id == id }
@@ -50,6 +58,6 @@ internal suspend fun CollectionDao.snapshot(): StoredCollection {
         checkNotNull(userState()).generation, places().map { it.toDomain() }, definitions().map { it.toDomain() },
         rules().map { it.toDomain() }, visits().map { it.toDomain() }, journeys().map { it.toDomain() },
         ownedCards(), levels(), memories.map { it.toDomain() }, memories.associate { it.id to it.cardId },
-        display()?.cardId, notices(),
+        display()?.cardId, notices(), visitPacks().mapTo(mutableSetOf()) { it.journeyId to it.placeId },
     )
 }

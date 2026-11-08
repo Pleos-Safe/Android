@@ -14,6 +14,8 @@ import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionRe
 import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultVisitPackRepository
+import io.issac.pleosandroid.core.data.points.DefaultPointRepository
 import io.issac.pleosandroid.core.database.CollectionDatabaseFactory
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
 import io.issac.pleosandroid.core.domain.collection.repository.CatalogRepository
@@ -22,9 +24,11 @@ import io.issac.pleosandroid.core.domain.collection.repository.CollectionReposit
 import io.issac.pleosandroid.core.domain.collection.repository.HistoryRepository
 import io.issac.pleosandroid.core.domain.collection.repository.PlaceRepository
 import io.issac.pleosandroid.core.domain.collection.repository.ProgressRepository
+import io.issac.pleosandroid.core.domain.collection.repository.VisitPackRepository
 import io.issac.pleosandroid.core.domain.collection.usecase.BeginCardRevealUseCase
 import io.issac.pleosandroid.core.domain.collection.usecase.CompleteCardRevealUseCase
 import io.issac.pleosandroid.core.domain.collection.usecase.SetRepresentativeCardUseCase
+import io.issac.pleosandroid.core.domain.points.PointRepository
 import io.issac.pleosandroid.core.domain.repository.BadgeRegionSource
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import javax.inject.Singleton
@@ -43,6 +47,12 @@ internal abstract class CollectionModule {
 
     @Binds @Singleton
     abstract fun progress(impl: DefaultProgressRepository): ProgressRepository
+
+    @Binds @Singleton
+    abstract fun points(impl: DefaultPointRepository): PointRepository
+
+    @Binds @Singleton
+    abstract fun visitPacks(impl: DefaultVisitPackRepository): VisitPackRepository
 
     @Binds @Singleton
     abstract fun places(impl: DefaultPlaceRepository): PlaceRepository

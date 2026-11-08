@@ -79,14 +79,16 @@ internal class CollectionStore @Inject constructor(
         return db.withTransaction { db.collectionDao().block() }
     }
 
+    fun observe() = observeTransaction { snapshot() }
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun observe() = demoMode.flatMapLatest { useDemo ->
+    fun <T> observeTransaction(block: suspend CollectionDao.() -> T) = demoMode.flatMapLatest { useDemo ->
         flow {
             val db = if (useDemo) demo else real
             ready(db)
             emitAll(
                 db.collectionDao().observeRevision().map {
-                    db.withTransaction { db.collectionDao().snapshot() }
+                    db.withTransaction { db.collectionDao().block() }
                 },
             )
         }

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "places": [
     {
       "id": "haeundae",
@@ -72,6 +72,42 @@
       "minimumDwellSeconds": 60,
       "imageKey": "collection_art_songdo",
       "regionId": "KR-26"
+    },
+    {
+      "id": "gyeongbokgung",
+      "name": "경복궁",
+      "district": "종로구",
+      "category": "문화유적",
+      "latitude": 37.57761,
+      "longitude": 126.9769,
+      "radiusMeters": 250,
+      "minimumDwellSeconds": 60,
+      "imageKey": "collection_map_pin",
+      "regionId": "KR-11"
+    },
+    {
+      "id": "hyeopjae",
+      "name": "협재해수욕장",
+      "district": "한림읍",
+      "category": "자연·산책",
+      "latitude": 33.3924809,
+      "longitude": 126.2389861,
+      "radiusMeters": 250,
+      "minimumDwellSeconds": 60,
+      "imageKey": "collection_map_pin",
+      "regionId": "KR-49"
+    },
+    {
+      "id": "hyundai-motorstudio-goyang",
+      "name": "현대 모터스튜디오 고양",
+      "district": "일산서구",
+      "category": "현대 관련 장소",
+      "latitude": 37.66612,
+      "longitude": 126.7477,
+      "radiusMeters": 200,
+      "minimumDwellSeconds": 60,
+      "imageKey": "collection_map_pin",
+      "regionId": "KR-41"
     }
   ],
   "cards": [

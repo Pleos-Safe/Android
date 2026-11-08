@@ -9,6 +9,7 @@ import io.issac.pleosandroid.core.data.collection.local.evaluate
 import io.issac.pleosandroid.core.data.collection.local.fingerprint
 import io.issac.pleosandroid.core.data.collection.local.snapshot
 import io.issac.pleosandroid.core.data.collection.mapper.toEntity
+import io.issac.pleosandroid.core.data.points.creditJourney
 import io.issac.pleosandroid.core.database.dao.CollectionDao
 import io.issac.pleosandroid.core.database.entity.ProgressOperationEntity
 import io.issac.pleosandroid.core.database.entity.UserDataStateEntity
@@ -64,7 +65,12 @@ internal class DefaultProgressRepository @Inject constructor(
             validateQualification(event, state)?.let { return@transaction RecordProgressResult.Rejected(it) }
             when (event) {
                 is ProgressEvent.VisitConfirmed -> insertVisit(event.visit.toEntity())
-                is ProgressEvent.JourneyCompleted -> putJourney(event.journey.toEntity())
+
+                is ProgressEvent.JourneyCompleted -> {
+                    putJourney(event.journey.toEntity())
+                    creditJourney(event.journey)
+                }
+
                 is ProgressEvent.JourneyAssessmentUpdated -> putJourney(event.journey.toEntity())
             }
             val receipt = awards.reconcile(
@@ -147,7 +153,11 @@ internal class DefaultProgressRepository @Inject constructor(
                 }
                 if (removed == 0) return@transaction MutationResult.NotFound
                 visitIds.forEach { invalidateSource("visit", it) }
-                if (request.kind == HistoryKind.Journey) invalidateSource("journey", request.id)
+                if (request.kind == HistoryKind.Journey) {
+                    invalidateSource("journey", request.id)
+                    // Keep settled points and cap usage, but remove the deleted journey's assessment details.
+                    redactPointAssessment("journey:${request.id}")
+                }
                 redactReceipts()
                 awards.reconcile(this, UUID.randomUUID().toString(), allowReduction = true, allowGrowth = false)
                 MutationResult.Success
@@ -161,6 +171,8 @@ internal class DefaultProgressRepository @Inject constructor(
             clearJourneys()
             clearOperations()
             clearDrivingDraft()
+            clearPointTransactions()
+            clearVisitPacks()
             putUserState(
                 UserDataStateEntity(
                     generation = UUID.randomUUID().toString(),
@@ -214,7 +226,9 @@ internal class DefaultProgressRepository @Inject constructor(
 
     private fun StoredCollection.affectedCards(event: ProgressEvent): Set<String> = definitions.filter {
         when (event) {
-            is ProgressEvent.VisitConfirmed -> it.kind == CardKind.Place && it.placeId == event.visit.placeId
+            is ProgressEvent.VisitConfirmed ->
+                !hasVisitPack(event.visit) && it.kind == CardKind.Place && it.placeId == event.visit.placeId
+
             else -> it.kind == CardKind.Safety
         }
     }.mapTo(mutableSetOf()) { it.id }
