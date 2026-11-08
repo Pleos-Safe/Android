@@ -45,7 +45,7 @@ class MainActivityFlowTest {
     fun tabsKeepTheirDestinationAcrossSwitchesAndActivityRecreation() {
         waitFor("기록")
         compose.onNodeWithText("기록").performClick()
-        waitFor("여정 기록")
+        waitFor("주행 기록")
         compose.onNodeWithContentDescription("설정").performClick()
         waitFor("돌아가기")
         compose.onNodeWithText("컬렉션").performClick()
@@ -56,7 +56,7 @@ class MainActivityFlowTest {
         compose.activityRule.scenario.recreate()
         waitFor("돌아가기")
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
-        waitFor("여정 기록")
+        waitFor("주행 기록")
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
         waitFor("주행 전")
     }
@@ -82,7 +82,7 @@ class MainActivityFlowTest {
         waitFor("지도에서 찾기")
         compose.onNodeWithText("지도에서 찾기").performClick()
         waitFor("지도에서 여행지 찾기")
-        waitFor("여행지 · 6곳")
+        waitFor("여행지 · 9곳")
 
         compose.onNodeWithContentDescription("장소 검색").performTextInput("수영구")
         waitFor("여행지 · 1곳")
