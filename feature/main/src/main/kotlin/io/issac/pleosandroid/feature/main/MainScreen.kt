@@ -97,7 +97,6 @@ fun MainScreen(
         when (uiState) {
             MainUiState.Loading -> PleosInfoPanel(Modifier.fillMaxWidth()) {
                 Text("차량에 연결하고 있어요", style = PleosTextStyles.section, color = PleosTheme.colors.textPrimary)
-                Text("차량 상태를 확인하고 있습니다.", style = PleosTextStyles.body, color = PleosTheme.colors.textSecondary)
             }
 
             is MainUiState.Ready -> {
@@ -114,14 +113,14 @@ fun MainScreen(
                 Text(uiState.vehicle.motion.message)
                 uiState.vehicle.motion.speedMetersPerSecond?.let { speed ->
                     val locale = LocalConfiguration.current.locales[0]
-                    Text(String.format(locale, "현재 속도: %.1f km/h", speed * 3.6f))
+                    Text(String.format(locale, "현재 속도 %.1f km/h", speed * 3.6f))
                 }
                 if (!uiState.canUseTabs) {
                     Text(
                         if (uiState.vehicle.gear == VehicleGear.Unknown) {
-                            "주차 상태를 확인하고 있습니다."
+                            "주차 상태를 확인하고 있어요."
                         } else {
-                            "주차와 정지가 확인되면 탭을 이용할 수 있습니다."
+                            "P단에 주차하면 다른 탭을 이용할 수 있어요."
                         },
                     )
                     if (uiState.vehicle.allowsVehicleRecovery) {
@@ -135,7 +134,7 @@ fun MainScreen(
                     return@PleosScreen
                 }
                 PleosButton(text = "컬렉션 보기", onClick = onOpenBadges, enabled = uiState.canOpenBadges)
-                Text("출발하면 여정이 시작됩니다. P단에서 쉬어가거나 여정을 마칠 수 있어요.")
+                Text("출발하면 여정이 시작돼요. P단에 주차한 뒤 여정을 마칠 수 있어요.")
             }
         }
     }

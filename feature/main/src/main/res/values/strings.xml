@@ -27,13 +27,11 @@
     <string name="journey_home_place_category">해변 산책</string>
     <string name="journey_home_place_district">부산 해운대구</string>
     <string name="journey_home_collection_title">여정이 남긴 한 장</string>
-    <string name="journey_home_collection_body">여정의 기억을 카드로 간직해요.</string>
     <string name="journey_collection">컬렉션 보기</string>
     <string name="journey_finished">주행 종료</string>
     <string name="journey_summary_title">이번 여정</string>
     <string name="journey_summary_duration">주행 시간</string>
     <string name="journey_summary_duration_unavailable">확인할 수 있는 주행 시간이 없어요.</string>
-    <string name="journey_summary_next">여행 홈에서 다음 장소를 찾아보세요.</string>
     <string name="journey_duration_seconds">%1$d초</string>
     <string name="journey_duration_minutes_seconds">%1$d분 %2$d초</string>
     <string name="journey_duration_hours_minutes">%1$d시간 %2$d분</string>

@@ -32,6 +32,7 @@ import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavEntryResult
 import io.issac.pleosandroid.core.navigation.RecordsRoute
 import io.issac.pleosandroid.core.navigation.SettingsRoute
+import io.issac.pleosandroid.core.navigation.ShopRoute
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -98,6 +99,8 @@ class MainTabsTest {
 
                     RecordsRoute -> NavEntryResult { Text("기록 본문") }
 
+                    ShopRoute -> NavEntryResult { Text("상점 본문") }
+
                     SettingsRoute -> NavEntryResult {
                         var value by rememberSaveable { mutableIntStateOf(0) }
                         Button(onClick = { value++ }) { Text("설정 값 $value") }
@@ -145,6 +148,9 @@ class MainTabsTest {
         compose.onNodeWithText("탐색 본문").assertExists()
         compose.onNodeWithTag("main-tab-Enhance").performClick()
         compose.onNodeWithText("강화 본문").assertExists()
+        compose.onNodeWithTag("main-tab-Shop").performClick()
+        compose.onNodeWithText("상점 본문").assertExists()
+        compose.onNodeWithTag("main-tab-Shop").assertIsSelected()
         compose.onNodeWithText("컬렉션").performClick()
         compose.onNodeWithContentDescription("설정").performClick()
         compose.onNodeWithText("설정 값 0").assertExists()

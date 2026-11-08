@@ -39,6 +39,12 @@ data object RecordingSettingsRoute : AppRoute
 data object SettingsRoute : AppRoute
 
 @Serializable
+data object ShopRoute : MainTabRoute
+
+@Serializable
+data object MembershipSettingsRoute : AppRoute
+
+@Serializable
 data object PackShelfRoute : AppRoute
 
 @Serializable

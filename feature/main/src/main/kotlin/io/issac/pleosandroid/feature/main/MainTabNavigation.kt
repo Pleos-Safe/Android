@@ -17,6 +17,7 @@ import io.issac.pleosandroid.core.navigation.ExploreRoute
 import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.MainTabRoute
 import io.issac.pleosandroid.core.navigation.RecordsRoute
+import io.issac.pleosandroid.core.navigation.ShopRoute
 
 internal val PleosTab.route: MainTabRoute
     get() = when (this) {
@@ -25,6 +26,7 @@ internal val PleosTab.route: MainTabRoute
         PleosTab.Collection -> BadgesRoute
         PleosTab.Enhance -> EnhancementRoute
         PleosTab.Records -> RecordsRoute
+        PleosTab.Shop -> ShopRoute
     }
 
 @Stable
@@ -70,5 +72,26 @@ internal fun rememberMainTabNavigation(): MainTabNavigation {
         // Older saved stacks can contain retired level-card routes with no serializer.
         key(tab, "pack-album") { rememberNavBackStack(tab.route) }
     }
-    return remember { MainTabNavigation(selected, stacks) }
+    return remember {
+        selected.value = migrateShopStack(selected.value, stacks)
+        MainTabNavigation(selected, stacks)
+    }
+}
+
+internal fun migrateShopStack(selected: PleosTab, stacks: Map<PleosTab, NavBackStack<NavKey>>): PleosTab {
+    var restored = selected
+    val shop = stacks.getValue(PleosTab.Shop)
+    for ((tab, stack) in stacks) {
+        val index = stack.indexOf(ShopRoute)
+        if (index <= 0) continue
+        // Before the shop had its own tab, a purchase or management screen could be nested under home or settings.
+        if (tab == selected || (restored != PleosTab.Shop && shop.size == 1)) {
+            val children = stack.drop(index + 1)
+            while (shop.size > 1) shop.removeAt(shop.lastIndex)
+            shop.addAll(children)
+        }
+        while (stack.size > index) stack.removeAt(stack.lastIndex)
+        if (tab == selected) restored = PleosTab.Shop
+    }
+    return restored
 }

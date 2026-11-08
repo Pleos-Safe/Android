@@ -43,6 +43,7 @@ enum class PleosTab(@param:StringRes internal val label: Int) {
     Collection(R.string.pleos_tab_collection),
     Enhance(R.string.pleos_tab_enhance),
     Records(R.string.pleos_tab_records),
+    Shop(R.string.pleos_tab_shop),
 }
 
 /** Pair with [PleosBottomTabs]. Only one tab strip is shown for the available width. */

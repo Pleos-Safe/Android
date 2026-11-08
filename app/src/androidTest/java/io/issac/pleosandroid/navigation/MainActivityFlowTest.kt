@@ -4,8 +4,11 @@ import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -61,6 +64,30 @@ class MainActivityFlowTest {
 
     @get:Rule(order = 1)
     val compose = createAndroidComposeRule<MainActivity>()
+
+    @Test
+    fun plusPurchaseSurvivesRecreationAndRenewalIsManagedFromSettings() {
+        waitTag("main-tab-Shop")
+        compose.onNodeWithTag("main-tab-Shop").performClick()
+        compose.onNodeWithTag("main-tab-Shop").assertIsSelected()
+        waitFor("PLUS 구독하기")
+        compose.onNodeWithText("PLUS 구독하기").performScrollTo().performClick()
+        compose.onNodeWithText("구독 시작").performClick()
+        waitFor("구독 중")
+        compose.activityRule.scenario.recreate()
+        waitFor("구독 중")
+        compose.onNodeWithContentDescription("설정").performClick()
+        compose.onNodeWithText("PLUS 구독 관리").performScrollTo().performClick()
+        waitFor("구독 해지")
+        compose.onNodeWithText("구독 해지").performScrollTo().performClick()
+        compose.onNode(hasText("구독 해지") and hasAnyAncestor(isDialog())).performClick()
+        waitFor("해지 예약됨")
+        compose.activityRule.scenario.recreate()
+        waitFor("해지 예약됨")
+        compose.onNodeWithText("자동 갱신 재개").performScrollTo().performClick()
+        compose.onNode(hasText("자동 갱신 재개") and hasAnyAncestor(isDialog())).performClick()
+        waitFor("구독 중")
+    }
 
     @Test
     fun tabsKeepTheirDestinationAcrossSwitchesAndActivityRecreation() {
@@ -251,12 +278,12 @@ class MainActivityFlowTest {
         waitFor("카드 상세")
         compose.onNodeWithContentDescription("부산 동백공원 E-pit, H, +5").assertExists()
         systemBack()
-        compose.onNodeWithTag("album-grid").performScrollToNode(hasText("데모 모드 · 실제 모드로"))
-        compose.onNodeWithText("데모 모드 · 실제 모드로").performClick()
-        waitFor("실제 모드 · 데모 체험")
+        compose.onNodeWithTag("album-grid").performScrollToNode(hasText("체험 모드 종료"))
+        compose.onNodeWithText("체험 모드 종료").performClick()
+        waitFor("체험 모드 시작")
         val real = runBlocking { graph.album().observe().first { !it.demo } }
-        compose.onNodeWithText("실제 모드 · 데모 체험").performClick()
-        waitFor("데모 모드 · 실제 모드로")
+        compose.onNodeWithText("체험 모드 시작").performClick()
+        waitFor("체험 모드 종료")
         compose.onNodeWithTag("album-open-inbox").performClick()
         val tag = "album-pack-demo:Hyundai:0"
         compose.onNodeWithTag("pack-shelf-grid").performScrollToNode(hasTestTag(tag))
