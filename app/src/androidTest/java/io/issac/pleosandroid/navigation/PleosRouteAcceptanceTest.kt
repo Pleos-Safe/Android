@@ -50,7 +50,7 @@ class PleosRouteAcceptanceTest {
     @Test
     fun setsDestinationAndAddsWaypointThroughPleosNavigation() {
         openMap()
-        selectPlace("해운대 해수욕장")
+        selectPlace("해운대 해변")
         captureBeforeAction(SET_DESTINATION, ADD_WAYPOINT, "route-01-before-destination.png")
         compose.onNodeWithText(SET_DESTINATION).performClick()
         assertApplied("route-02-destination")
@@ -58,7 +58,7 @@ class PleosRouteAcceptanceTest {
         // Re-enter so the waypoint request starts from a fresh read of the confirmed destination.
         compose.onNodeWithText("여행 홈으로").performScrollTo().performClick()
         openMap()
-        selectPlace("광안리 해수욕장")
+        selectPlace("광안리 해변")
         captureBeforeAction(ADD_WAYPOINT, SET_DESTINATION, "route-03-before-waypoint.png")
         compose.onNodeWithText(ADD_WAYPOINT).performClick()
         waitForText("가는 길에 들를까요?")
@@ -71,7 +71,7 @@ class PleosRouteAcceptanceTest {
         waitForText("지도에서 찾기")
         compose.onNodeWithText("지도에서 찾기").performClick()
         waitForText("지도에서 여행지 찾기")
-        waitForText("부산 여행지 · 4곳")
+        waitForText("여행지 · 9곳")
     }
 
     private fun selectPlace(name: String) {

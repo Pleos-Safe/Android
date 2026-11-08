@@ -36,7 +36,7 @@ class TravelMapCaptureTest {
         waitForText("지도에서 찾기")
         compose.onNodeWithText("지도에서 찾기").performScrollTo().performClick()
         waitForText("지도에서 여행지 찾기")
-        waitForText("여행지 · 6곳")
+        waitForText("여행지 · 9곳")
         compose.waitUntil(timeoutMillis = 60_000) { !hasText("지도를 불러오고 있어요.") }
         capture("travel-map-01-default.png")
 
@@ -55,7 +55,7 @@ class TravelMapCaptureTest {
         compose.onNodeWithText("목록으로 보기").apply { if (!isDisplayed()) performScrollTo() }.performClick()
         waitForText("지도에서 보기")
         search("")
-        waitForText("여행지 · 6곳")
+        waitForText("여행지 · 9곳")
         capture("travel-map-03-list.png")
 
         search("일치하지 않는 여행지")
