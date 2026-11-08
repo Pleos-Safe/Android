@@ -13,6 +13,7 @@ data class DrivingAssessment(
     val harshStarts: Int,
     val longestGapMillis: Long,
     val reasons: Set<InsufficientReason> = emptySet(),
+    val pausedMillis: Long = 0,
 ) {
     val coverage: Double get() = if (elapsedMillis > 0) {
         (observedMillis.toDouble() / elapsedMillis).coerceIn(0.0, 1.0)

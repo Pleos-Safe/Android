@@ -9,10 +9,11 @@ import kotlin.math.max
 
 internal fun validDrivingAssessment(journey: JourneyRecord): Boolean {
     val d = journey.driving ?: return true // Existing imported records have no detailed observations.
+    val wallMillis = Duration.between(journey.startedAt, journey.endedAt).toMillis()
     if (d.policyVersion < 1 || d.elapsedMillis <= 0 || d.observedMillis !in 0..d.elapsedMillis ||
         d.movingMillis !in 0..d.observedMillis || d.sampleCount < 0 || d.rejectedSamples < 0 ||
         d.harshAccelerations < 0 || d.harshBrakings < 0 || d.harshStarts !in 0..d.harshAccelerations ||
-        d.longestGapMillis < 0 || d.elapsedMillis != Duration.between(journey.startedAt, journey.endedAt).toMillis()
+        d.longestGapMillis < 0 || d.pausedMillis !in 0..wallMillis || d.elapsedMillis != wallMillis - d.pausedMillis
     ) {
         return false
     }

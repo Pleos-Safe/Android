@@ -29,24 +29,27 @@ class DrivingAnalyzer(
     private val startedNanos: Long,
     private val startedWhileMoving: Boolean = false,
     private val policy: DrivingPolicy = DrivingPolicy(),
+    private val restored: DrivingResult? = null,
 ) {
     private var previous: SpeedSample? = null
-    private var lastTimestamp = startedNanos - 1
-    private var lastAcceptedTimestamp = startedNanos
-    private var observedNanos = 0L
-    private var movingNanos = 0L
-    private var distance = 0.0
-    private var samples = 0
-    private var rejected = 0
-    private var longestGap = 0L
+    private var lastAcceptedTimestamp = startedNanos + (restored?.assessment?.elapsedMillis ?: 0) * 1_000_000
+    private var lastTimestamp = lastAcceptedTimestamp - 1
+    private var observedNanos = (restored?.assessment?.observedMillis ?: 0) * 1_000_000
+    private var movingNanos = (restored?.assessment?.movingMillis ?: 0) * 1_000_000
+    private var distance = restored?.distanceMeters?.toDouble() ?: 0.0
+    private var samples = restored?.assessment?.sampleCount ?: 0
+    private var rejected = restored?.assessment?.rejectedSamples ?: 0
+    private var longestGap = (restored?.assessment?.longestGapMillis ?: 0) * 1_000_000
     private var filteredAcceleration = 0.0
     private val accelerating = EventLatch(policy)
     private val braking = EventLatch(policy)
-    private var accelerations = 0
-    private var brakings = 0
-    private var starts = 0
+    private var accelerations = restored?.assessment?.harshAccelerations ?: 0
+    private var brakings = restored?.assessment?.harshBrakings ?: 0
+    private var starts = restored?.assessment?.harshStarts ?: 0
     val accelerationCount: Int get() = accelerations
     val brakingCount: Int get() = brakings
+    val distanceMeters: Long get() = distance.toLong()
+    val movingMillis: Long get() = movingNanos / 1_000_000
 
     fun add(sample: SpeedSample) {
         // A gear/UX update may re-emit the last speed value: it is not a new observation.
@@ -140,7 +143,7 @@ class DrivingAnalyzer(
             if (gap > policy.maximumGapMillis) add(InsufficientReason.SignalGap)
             if (rejected.toDouble() / max(1, samples + rejected) > .05) add(InsufficientReason.InvalidSignal)
             if (startedWhileMoving) add(InsufficientReason.StartedWhileMoving)
-            if (interrupted) add(InsufficientReason.Interrupted)
+            if (interrupted || restored != null) add(InsufficientReason.Interrupted)
         }
         // Braking may be an appropriate response to a hazard. Report its count without a penalty.
         val score = if (reasons.isEmpty()) {

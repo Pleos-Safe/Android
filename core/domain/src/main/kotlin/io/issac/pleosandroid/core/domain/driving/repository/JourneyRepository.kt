@@ -13,9 +13,22 @@ data class JourneySession(
     val startedNanos: Long,
     val startedWhileMoving: Boolean,
     val endedNanos: Long? = null,
+    val pausedAtNanos: Long? = null,
+    val pausedNanos: Long = 0,
+    val recoveredActiveNanos: Long = 0,
+    val recoveryRequired: Boolean = false,
+    val endedAt: Instant? = null,
 ) {
     val finished: Boolean get() = endedNanos != null
-    val durationMillis: Long? get() = endedNanos?.let { ((it - startedNanos) / 1_000_000).coerceAtLeast(1) }
+    val paused: Boolean get() = !finished && pausedAtNanos != null
+    val durationMillis: Long? get() = endedNanos?.let { activeDurationMillis(it).coerceAtLeast(1) }
+
+    fun activeDurationMillis(nowNanos: Long): Long = activeDurationNanos(nowNanos) / 1_000_000
+
+    fun activeDurationNanos(nowNanos: Long): Long {
+        val cutoff = minOf(nowNanos, pausedAtNanos ?: Long.MAX_VALUE, endedNanos ?: Long.MAX_VALUE)
+        return recoveredActiveNanos + (cutoff - startedNanos - pausedNanos).coerceAtLeast(0)
+    }
 }
 
 data class JourneyState(
@@ -29,9 +42,13 @@ data class JourneyState(
 interface JourneyRepository {
     val state: StateFlow<JourneyState>
     fun returnHome(): Boolean
+    fun finish(): Boolean = false
+    fun restore(session: JourneySession) = Unit
+    fun continueRecovered(): Boolean = false
+    fun discardRecovery() = Unit
 }
 
-/** Depart automatically; D at zero speed remains active, a confirmed stop in P ends the journey. */
+/** Depart automatically. D at zero speed stays active. P pauses the same journey until departure or explicit finish. */
 fun JourneyState.withVehicle(value: VehicleState, now: Instant, nanos: Long, newId: () -> String): JourneyState {
     if (value.motion.availability != MotionAvailability.Available) {
         return copy(vehicle = value, hasObservedPark = false)
@@ -47,12 +64,22 @@ fun JourneyState.withVehicle(value: VehicleState, now: Instant, nanos: Long, new
             startedWhileMoving = !hasObservedPark,
         )
 
-        parked && session != null && !session.finished -> session.copy(
-            // P may arrive after the last zero-speed sample; the journey ends at this observation.
-            endedNanos = nanos.coerceAtLeast(session.startedNanos + 1_000_000),
-        )
+        parked && session != null && !session.finished && !session.paused -> session.copy(pausedAtNanos = nanos)
+
+        value.motion.motion == VehicleMotion.Moving && session?.paused == true && !session.recoveryRequired -> {
+            val pausedAt = checkNotNull(session.pausedAtNanos)
+            val resumedAt = maxOf(sampleNanos, pausedAt)
+            session.copy(pausedAtNanos = null, pausedNanos = session.pausedNanos + (resumedAt - pausedAt))
+        }
 
         else -> session
     }
-    return JourneyState(value, next, hasObservedPark || parked, next?.takeIf { it.finished } ?: lastFinished)
+    return JourneyState(value, next, hasObservedPark || parked, lastFinished)
+}
+
+/** The repository separately checks the latest platform UX permission before committing this transition. */
+fun JourneyState.finishPausedJourney(nanos: Long, now: Instant): JourneyState {
+    val active = session?.takeIf { it.paused } ?: return this
+    val finished = active.copy(endedNanos = maxOf(nanos, active.startedNanos), endedAt = now, recoveryRequired = false)
+    return copy(session = finished, lastFinished = finished)
 }
