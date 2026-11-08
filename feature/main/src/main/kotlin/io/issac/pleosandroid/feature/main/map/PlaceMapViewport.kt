@@ -55,6 +55,7 @@ internal fun PlaceMapViewport(
     onPlaceSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
     currentPosition: PlaceMapPosition? = null,
+    focusPosition: PlaceMapPosition? = null,
     onVisibleBoundsChanged: (PlaceMapBounds) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -112,6 +113,13 @@ internal fun PlaceMapViewport(
     }
     LaunchedEffect(map, places, currentPosition) {
         map?.let(::updateMarkerPoints)
+    }
+    LaunchedEffect(map, focusPosition) {
+        if (focusPosition != null) {
+            map?.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(LatLng(focusPosition.latitude, focusPosition.longitude), 11.5),
+            )
+        }
     }
     DisposableEffect(map, mapView) {
         val activeMap = map ?: return@DisposableEffect onDispose { }

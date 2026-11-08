@@ -38,6 +38,8 @@ internal data class PlaceNavigationState(
     val hasDestination: Boolean? = null,
     val operation: PlaceNavigationOperation = PlaceNavigationOperation.Checking,
     val routePlaceIds: Set<String> = emptySet(),
+    val destinationName: String? = null,
+    val waypointNames: List<String> = emptyList(),
     val hasWaypointCapacity: Boolean = true,
 )
 
@@ -338,6 +340,8 @@ internal class PlaceMapNavigation(context: Context, private val scope: Coroutine
             hasDestination = snapshot?.let { it.destination != null },
             operation = operation,
             routePlaceIds = routePlaces,
+            destinationName = snapshot?.destination?.name,
+            waypointNames = snapshot?.waypoints.orEmpty().map { it.name },
             hasWaypointCapacity = snapshot == null || snapshot.waypoints.size < MAX_WAYPOINTS,
         )
     }
