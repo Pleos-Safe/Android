@@ -18,6 +18,7 @@ data class PointTransaction(
     val basePointsHundredths: Long = 0,
     val multiplierThousandths: Int? = null,
     val ruleVersion: Int = 1,
+    val membershipBonusHalfPoints: Long = 0,
 )
 
 data class PointWallet(

@@ -13,6 +13,7 @@ import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceReposit
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultVisitPackRepository
 import io.issac.pleosandroid.core.data.driving.DrivingClock
+import io.issac.pleosandroid.core.data.membership.DefaultMembershipRepository
 import io.issac.pleosandroid.core.data.points.DefaultPointRepository
 import io.issac.pleosandroid.core.database.CollectionDatabase
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
@@ -28,13 +29,20 @@ import io.issac.pleosandroid.core.domain.collection.model.RecordProgressResult
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimRequest
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimResult
 import io.issac.pleosandroid.core.domain.driving.model.DrivingAssessment
+import io.issac.pleosandroid.core.domain.membership.MembershipAction
+import io.issac.pleosandroid.core.domain.membership.MembershipChange
+import io.issac.pleosandroid.core.domain.membership.MembershipStatus
 import io.issac.pleosandroid.core.domain.points.formatHalfPoints
 import java.time.Instant
 import kotlin.random.Random
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -55,8 +63,10 @@ class CardRewardsIntegrationTest {
     private val provider = object : CollectionDatabaseProvider {
         override fun create(demo: Boolean) = if (demo) this@CardRewardsIntegrationTest.demo else real
     }
+
+    @Volatile private var now = Instant.parse("2026-11-07T04:00:00Z")
     private val clock = object : DrivingClock {
-        override fun now(): Instant = Instant.parse("2026-11-07T04:00:00Z")
+        override fun now(): Instant = now
         override fun elapsedNanos() = 0L
     }
     private val firstRoll = object : Random() {
@@ -155,6 +165,93 @@ class CardRewardsIntegrationTest {
         assertTrue(album.observe().first().history.none { it.id == "demo-attempt" })
         profiles.setEnabled(false)
         assertEquals(original, album.observe().first())
+    }
+
+    @Test fun plusPersistsAcrossReopenAndGuardsAgainstDuplicateAndStaleChanges() = runBlocking {
+        val plus = DefaultMembershipRepository(store, clock)
+        val initial = plus.observeMembership().first()
+        val clicks = List(3) { async { plus.change(MembershipAction.Subscribe, initial) } }.awaitAll()
+        assertEquals(1, clicks.count { it == MembershipChange.Applied })
+        val active = plus.observeMembership().first()
+        val reopened = DefaultMembershipRepository(CollectionStore(context, provider, catalog), clock)
+        assertEquals(active, reopened.observeMembership().first())
+        assertEquals(2000L, DefaultPointRepository(store, clock).observeWallet().first().balanceHalfPoints)
+        val profiles = DefaultCollectionDemoRepository(store)
+        profiles.setEnabled(true)
+        assertEquals(MembershipStatus.Inactive, plus.observeMembership().first().status)
+        assertEquals(MembershipChange.Changed, plus.change(MembershipAction.CancelRenewal, active))
+        plus.change(MembershipAction.Subscribe, plus.observeMembership().first())
+        profiles.resetDemo()
+        assertEquals(MembershipStatus.Inactive, plus.observeMembership().first().status)
+        profiles.setEnabled(false)
+        assertEquals(active, plus.observeMembership().first())
+
+        assertEquals(MembershipChange.Applied, plus.change(MembershipAction.CancelRenewal, active))
+        val ending = reopened.observeMembership().first()
+        assertTrue(ending.hasBenefit)
+        assertEquals(MembershipStatus.Ending, ending.status)
+        assertEquals(MembershipChange.Applied, plus.change(MembershipAction.ResumeRenewal, ending))
+        assertEquals(MembershipChange.Changed, plus.change(MembershipAction.CancelRenewal, active))
+        plus.change(MembershipAction.CancelRenewal, plus.observeMembership().first())
+        val deadline = checkNotNull(ending.periodEnd)
+        now = deadline.minusMillis(20)
+        val changes = withTimeout(5_000) {
+            plus.observeMembership().onEach { if (it.hasBenefit) now = deadline }.take(2).toList()
+        }
+        assertEquals(listOf(MembershipStatus.Ending, MembershipStatus.Expired), changes.map { it.status })
+        val expired = changes.last()
+        assertEquals(MembershipStatus.Expired, expired.status)
+        assertEquals(MembershipChange.Changed, plus.change(MembershipAction.ResumeRenewal, ending))
+        assertEquals(MembershipChange.Applied, plus.change(MembershipAction.Subscribe, expired))
+        DefaultProgressRepository(store).clearUserData()
+        assertTrue(plus.observeMembership().first().hasBenefit)
+    }
+
+    @Test fun delayedAndRetriedJourneysReceiveOnlyTheBonusEarnedWhileSubscribed() = runBlocking {
+        val plus = DefaultMembershipRepository(store, clock)
+        val points = DefaultPointRepository(store, clock)
+        val progress = DefaultProgressRepository(store)
+        val generation = progress.getDataGeneration()
+        val start = now
+        plus.change(MembershipAction.Subscribe, plus.observeMembership().first())
+        plus.change(MembershipAction.CancelRenewal, plus.observeMembership().first())
+        val expiry = checkNotNull(plus.observeMembership().first().periodEnd)
+        now = expiry.plusSeconds(86400)
+        val facts = DrivingAssessment(
+            elapsedMillis = 1_800_000, observedMillis = 1_800_000, movingMillis = 1_800_000,
+            sampleCount = 1000, rejectedSamples = 0, harshAccelerations = 10, harshBrakings = 0,
+            harshStarts = 0, longestGapMillis = 0,
+        )
+        suspend fun settle(id: String, departure: Instant, covered: Long?, expectedBonus: Long) {
+            val journey = JourneyRecord(
+                id, departure, departure.plusSeconds(1800), "Asia/Seoul", 25_000, AssessmentStatus.Complete, 80, 0,
+                driving = facts.copy(membershipDistanceMeters = covered),
+            )
+            val event = if (covered == null) {
+                ProgressEvent.JourneyCompleted(id, generation, journey, true)
+            } else {
+                val pending = journey.copy(assessment = AssessmentStatus.Pending, score = null)
+                assertTrue(
+                    progress.recordProgress(
+                        ProgressEvent.JourneyCompleted(id, generation, pending, true),
+                    ) is RecordProgressResult.Applied,
+                )
+                val rescored = journey.copy(assessmentVersion = 2, driving = facts)
+                ProgressEvent.JourneyAssessmentUpdated("score:$id", generation, rescored, true)
+            }
+            assertTrue(progress.recordProgress(event) is RecordProgressResult.Applied)
+            assertTrue(progress.recordProgress(event) is RecordProgressResult.AlreadyProcessed)
+            val receipt = points.observeWallet().first().transactions.single { it.sourceId == id }
+            assertEquals(expectedBonus, receipt.membershipBonusHalfPoints)
+            assertEquals(1200L + expectedBonus, receipt.deltaHalfPoints)
+        }
+        settle("before", start.minusSeconds(1800), null, 0)
+        settle("during", start, null, 600)
+        settle("crossing", expiry.minusSeconds(900), 10_000, 240)
+        settle("after", expiry, null, 0)
+        val balance = points.observeWallet().first().balanceHalfPoints
+        assertEquals(2000L + 4 * 1200 + 840, balance)
+        assertEquals(balance, DefaultCardAlbumRepository(store, firstRoll).observe().first().balanceHalfPoints)
     }
 
     @Test fun earlierClaimCreatesOnePackEvenAfterReopeningItAndRestarting() = runBlocking {

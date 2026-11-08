@@ -33,10 +33,11 @@ class CardAlbumMigrationTest {
         try {
             migrations.runMigrationsAndValidate(
                 name,
-                6,
+                7,
                 true,
                 CollectionDatabase.migration3To4,
                 CardRewardsMigration.from4,
+                CollectionDatabase.migration6To7,
             ).close()
             val db = Room.databaseBuilder(context, CollectionDatabase::class.java, name).build()
             try {
@@ -166,10 +167,11 @@ class CardAlbumMigrationTest {
                 }
                 migrations.runMigrationsAndValidate(
                     name,
-                    6,
+                    7,
                     true,
                     CardRewardsMigration.from4,
                     CardRewardsMigration.from5,
+                    CollectionDatabase.migration6To7,
                 ).use { db ->
                     assertEquals(
                         if (version ==
@@ -181,6 +183,8 @@ class CardAlbumMigrationTest {
                         },
                         db.one("SELECT SUM(delta) FROM point_transaction"),
                     )
+                    assertEquals("0", db.one("SELECT SUM(membershipBonusHalfPoints) FROM point_transaction"))
+                    assertEquals("0", db.one("SELECT COUNT(*) FROM membership_term"))
                     if (version == 4) assertEquals("r", db.one("SELECT id FROM visit_pack"))
                 }
             } finally {

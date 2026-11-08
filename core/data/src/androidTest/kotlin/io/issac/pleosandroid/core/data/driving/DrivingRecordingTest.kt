@@ -10,6 +10,7 @@ import io.issac.pleosandroid.core.data.collection.repository.DefaultBadgeRegionS
 import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
+import io.issac.pleosandroid.core.data.membership.DefaultMembershipRepository
 import io.issac.pleosandroid.core.database.CollectionDatabase
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
 import io.issac.pleosandroid.core.database.entity.DrivingDraftEntity
@@ -29,6 +30,7 @@ import io.issac.pleosandroid.core.domain.collection.repository.VisitLocationSour
 import io.issac.pleosandroid.core.domain.driving.model.DrivingAssessment
 import io.issac.pleosandroid.core.domain.driving.model.InsufficientReason
 import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
+import io.issac.pleosandroid.core.domain.membership.MembershipAction
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
@@ -303,6 +305,48 @@ class DrivingRecordingTest {
             vehicle.move(1f)
             val next = withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Recording } }
             assertTrue(next.journeyId != active.journeyId)
+        } finally {
+            job.cancelAndJoin()
+        }
+    }
+
+    @Test fun buyingPlusAtARestStopCountsOnlyTheDistanceDrivenAfterwards() = runBlocking {
+        val recorder = recorder()
+        recorder.setEnabled(true)
+        val job = launch(Dispatchers.Default) { recorder.monitor() }
+        try {
+            delay(150)
+            clock.nanos += 200_000_000
+            vehicle.move(10f)
+            val id =
+                checkNotNull(
+                    withTimeout(10_000) {
+                        recorder.state.first { it.phase == RecordingPhase.Recording }
+                    }.journeyId,
+                )
+            suspend fun driveUntil(distance: Long) {
+                clock.nanos += 1_000_000_000
+                vehicle.move(10f)
+                withTimeout(10_000) { recorder.state.first { it.distanceMeters >= distance } }
+            }
+            driveUntil(10)
+            clock.nanos += 200_000_000
+            vehicle.park()
+            withTimeout(10_000) { recorder.state.first { it.paused } }
+            val plus = DefaultMembershipRepository(store, clock)
+            plus.change(MembershipAction.Subscribe, plus.observeMembership().first())
+            clock.nanos += 60_000_000_000
+            vehicle.move(10f)
+            withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Recording && !it.paused } }
+            driveUntil(20)
+            driveUntil(30)
+            clock.nanos += 200_000_000
+            vehicle.park()
+            withTimeout(10_000) { recorder.state.first { it.paused } }
+            assertEquals(MutationResult.Success, recorder.finish())
+            val saved = checkNotNull(DefaultHistoryRepository(store).observeJourney(id).first())
+            assertEquals(30L, saved.distanceMeters)
+            assertEquals(20L, saved.driving?.membershipDistanceMeters)
         } finally {
             job.cancelAndJoin()
         }

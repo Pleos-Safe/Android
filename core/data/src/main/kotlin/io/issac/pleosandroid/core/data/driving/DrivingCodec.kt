@@ -21,6 +21,7 @@ internal fun DrivingAssessment.encode(): String = JSONObject().apply {
     put("gap", longestGapMillis)
     put("reasons", JSONArray(reasons.sortedBy { it.name }.map { it.name }))
     if (pausedMillis != 0L) put("paused", pausedMillis)
+    membershipDistanceMeters?.let { put("plusMeters", it) }
 }.toString()
 
 internal fun decodeDriving(json: String?): DrivingAssessment? = json?.let {
@@ -32,6 +33,7 @@ internal fun decodeDriving(json: String?): DrivingAssessment? = json?.let {
         value.getInt("starts"), value.getLong("gap"),
         (0 until reasons.length()).map { index -> InsufficientReason.valueOf(reasons.getString(index)) }.toSet(),
         value.optLong("paused", 0),
+        if (value.has("plusMeters")) value.getLong("plusMeters") else null,
     )
 }
 

@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
 import io.issac.pleosandroid.core.data.collection.repository.storageResult
 import io.issac.pleosandroid.core.data.driving.DrivingClock
+import io.issac.pleosandroid.core.data.membership.toDomain
 import io.issac.pleosandroid.core.database.dao.CollectionDao
 import io.issac.pleosandroid.core.database.entity.PointTransactionEntity
 import io.issac.pleosandroid.core.domain.collection.model.JourneyRecord
@@ -81,9 +82,16 @@ internal suspend fun CollectionDao.openAlbumBalance(halfPoints: Long, at: Instan
 
 /** Called inside the same transaction that stores a new, validated journey. */
 internal suspend fun CollectionDao.creditJourney(journey: JourneyRecord) {
+    if (pointTransaction("journey:${journey.id}") != null) return
+    val terms = membershipsDuring(journey.startedAt.toEpochMilli(), journey.endedAt.toEpochMilli())
+    val covered = when {
+        terms.isEmpty() -> 0L
+        terms.any { it.toDomain().covers(journey.startedAt, journey.endedAt) } -> journey.distanceMeters
+        else -> journey.driving?.membershipDistanceMeters ?: 0L
+    }
     val date = PointEarningPolicy.drivingDate(journey.endedAt)
     val week = PointEarningPolicy.weekStart(date).toEpochDay()
-    val credit = PointEarningPolicy.settle(journey, recognizedDistanceForWeek(week)) ?: return
+    val credit = PointEarningPolicy.settle(journey, recognizedDistanceForWeek(week), covered) ?: return
     insertPointTransaction(credit.toEntity())
 }
 
@@ -100,6 +108,7 @@ private fun PointTransaction.toEntity() = PointTransactionEntity(
     basePointsHundredths = basePointsHundredths,
     multiplierThousandths = multiplierThousandths,
     ruleVersion = ruleVersion,
+    membershipBonusHalfPoints = membershipBonusHalfPoints,
 )
 
 private fun PointTransactionEntity.toDomain() = PointTransaction(
@@ -114,4 +123,5 @@ private fun PointTransactionEntity.toDomain() = PointTransaction(
     basePointsHundredths = basePointsHundredths,
     multiplierThousandths = multiplierThousandths,
     ruleVersion = ruleVersion,
+    membershipBonusHalfPoints = membershipBonusHalfPoints,
 )

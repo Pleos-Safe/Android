@@ -37,7 +37,8 @@ internal class DefaultProgressRepository @Inject constructor(private val store: 
         store.transaction {
             val state = snapshot()
             validateInput(event, state)?.let { return@transaction RecordProgressResult.Rejected(it) }
-            val duplicate = duplicate(event)
+            val journey = event.journeyForStorage(state)
+            val duplicate = duplicate(event, journey)
             if (duplicate != null) {
                 if (duplicate is RecordProgressResult.AlreadyProcessed && operation(event.operationId) == null) {
                     val source = event.source()
@@ -58,12 +59,11 @@ internal class DefaultProgressRepository @Inject constructor(private val store: 
             when (event) {
                 is ProgressEvent.VisitConfirmed -> insertVisit(event.visit.toEntity())
 
-                is ProgressEvent.JourneyCompleted -> {
-                    putJourney(event.journey.toEntity())
-                    creditJourney(event.journey)
+                is ProgressEvent.JourneyCompleted, is ProgressEvent.JourneyAssessmentUpdated -> {
+                    val record = checkNotNull(journey)
+                    putJourney(record.toEntity())
+                    creditJourney(record)
                 }
-
-                is ProgressEvent.JourneyAssessmentUpdated -> putJourney(event.journey.toEntity())
             }
             val receipt = ProgressReceipt(event.operationId)
             val source = event.source()
@@ -88,7 +88,7 @@ internal class DefaultProgressRepository @Inject constructor(private val store: 
         store.transaction {
             val state = snapshot()
             validateInput(event, state)?.let { return@transaction ProgressPreview.Rejected(it) }
-            when (val duplicate = duplicate(event)) {
+            when (val duplicate = duplicate(event, event.journeyForStorage(state))) {
                 is RecordProgressResult.Rejected -> return@transaction ProgressPreview.Rejected(duplicate.reason)
                 is RecordProgressResult.AlreadyProcessed -> return@transaction ProgressPreview.Eligible
                 else -> Unit
@@ -188,7 +188,18 @@ internal class DefaultProgressRepository @Inject constructor(private val store: 
         return if (place.qualifies(visit)) null else ProgressRejection.VisitNotQualified
     }
 
-    private suspend fun CollectionDao.duplicate(event: ProgressEvent): RecordProgressResult? {
+    /** Rescoring changes the assessment, while subscription mileage belongs to the original drive. */
+    private fun ProgressEvent.journeyForStorage(state: StoredCollection): JourneyRecord? {
+        if (this !is ProgressEvent.JourneyAssessmentUpdated) return journeyOrNull()
+        val assessment = journey.driving ?: return journey
+        val measured = state.journeys.find { it.id == journey.id }?.driving?.membershipDistanceMeters ?: return journey
+        return journey.copy(driving = assessment.copy(membershipDistanceMeters = measured))
+    }
+
+    private suspend fun CollectionDao.duplicate(
+        event: ProgressEvent,
+        journeyRecord: JourneyRecord?,
+    ): RecordProgressResult? {
         val source = event.source()
         val operations = sourceOperations(source.kind, source.id)
         if (operations.any { it.invalidated }) return RecordProgressResult.Rejected(ProgressRejection.DeletedSource)
@@ -211,7 +222,7 @@ internal class DefaultProgressRepository @Inject constructor(private val store: 
                 }
             }
         } else {
-            val journey = checkNotNull(event.journeyOrNull())
+            val journey = checkNotNull(journeyRecord)
             val existing = journeys().find { it.id == journey.id }
             if (existing == null && event is ProgressEvent.JourneyAssessmentUpdated) {
                 return RecordProgressResult.Rejected(ProgressRejection.UnknownJourney)

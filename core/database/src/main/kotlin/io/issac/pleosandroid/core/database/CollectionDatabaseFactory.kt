@@ -34,6 +34,7 @@ class CollectionDatabaseFactory @Inject constructor(@param:ApplicationContext pr
                 CollectionDatabase.migration3To4,
                 CardRewardsMigration.from4,
                 CardRewardsMigration.from5,
+                CollectionDatabase.migration6To7,
             )
             .build()
     }
