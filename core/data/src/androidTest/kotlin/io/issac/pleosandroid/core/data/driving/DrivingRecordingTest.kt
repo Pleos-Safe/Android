@@ -177,7 +177,7 @@ class DrivingRecordingTest {
         }
     }
 
-    @Test fun recoveryOfInterruptedCheckpointPreservesFactsAndWithholdsAward() = runBlocking {
+    @Test fun recoveredCheckpointRequiresAChoiceAndPreservesFactsWithoutAnAward() = runBlocking {
         val record = complete().copy(
             assessment = AssessmentStatus.Insufficient,
             score = null,
@@ -190,8 +190,33 @@ class DrivingRecordingTest {
         recorder.setEnabled(true)
         val job = launch(Dispatchers.Default) { recorder.monitor() }
         try {
+            val recovery = withTimeout(10_000) { recorder.state.first { it.recoveryRequired } }
+            assertEquals(record.id, recovery.journeyId)
+            assertEquals(record.distanceMeters, recovery.distanceMeters)
+            assertTrue(db.collectionDao().journeys().isEmpty())
+            clock.nanos += 200_000_000
+            vehicle.move(5f)
+            assertEquals(MutationResult.Restricted, recorder.continueRecoveredJourney())
+            assertEquals(MutationResult.Restricted, recorder.finish())
+            clock.nanos += 200_000_000
+            vehicle.park()
+            assertEquals(MutationResult.Success, recorder.continueRecoveredJourney())
+            assertFalse(recorder.state.value.recoveryRequired)
+            assertTrue(recorder.state.value.paused)
+            clock.nanos += 200_000_000
+            vehicle.move(5f)
+            withTimeout(10_000) { recorder.state.first { !it.paused } }
+            assertEquals(record.id, journeys.state.value.session?.id)
+            clock.nanos += 200_000_000
+            vehicle.park()
+            assertEquals(MutationResult.Success, recorder.finish())
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
-            assertEquals(record, DefaultHistoryRepository(store).observeJourney(record.id).first())
+            val finished = checkNotNull(DefaultHistoryRepository(store).observeJourney(record.id).first())
+            assertEquals(record.distanceMeters, finished.distanceMeters)
+            assertEquals(600_200L, finished.driving?.elapsedMillis)
+            assertEquals(clock.now(), finished.endedAt)
+            assertTrue(InsufficientReason.Interrupted in checkNotNull(finished.driving).reasons)
+            assertNull(finished.score)
             assertTrue(db.collectionDao().ownedCards().isEmpty())
         } finally {
             job.cancelAndJoin()
@@ -264,7 +289,7 @@ class DrivingRecordingTest {
         assertTrue(db.collectionDao().journeys().isEmpty())
     }
 
-    @Test fun parkingImmediatelySavesTheSharedJourneyAndDepartureCreatesANewOne() = runBlocking {
+    @Test fun parkingPausesTheSharedJourneyAndManualFinishCreatesANewOneOnNextDeparture() = runBlocking {
         val recorder = recorder()
         recorder.setEnabled(true)
         val job = launch(Dispatchers.Default) { recorder.monitor() }
@@ -276,8 +301,24 @@ class DrivingRecordingTest {
             assertEquals(journeys.state.value.session?.id, active.journeyId)
             clock.nanos += 200_000_000
             vehicle.park()
+            val paused = withTimeout(10_000) { recorder.state.first { it.paused } }
+            assertEquals(active.journeyId, paused.journeyId)
+            assertEquals(200L, paused.activeMillis)
+            assertTrue(db.collectionDao().journeys().isEmpty())
+            clock.nanos += 60_000_000_000
+            vehicle.move(1f)
+            withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Recording && !it.paused } }
+            assertEquals(active.journeyId, journeys.state.value.session?.id)
+            clock.nanos += 200_000_000
+            vehicle.park()
+            assertEquals(MutationResult.Success, recorder.finish())
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
             assertEquals(active.journeyId, db.collectionDao().journeys().single().id)
+            val finished = checkNotNull(
+                DefaultHistoryRepository(store).observeJourney(checkNotNull(active.journeyId)).first(),
+            )
+            assertEquals(400L, finished.driving?.elapsedMillis)
+            assertEquals(60_000L, finished.driving?.pausedMillis)
             assertTrue(journeys.returnHome())
             assertEquals(active.journeyId, journeys.state.value.lastFinished?.id)
             clock.nanos += 200_000_000
@@ -289,7 +330,7 @@ class DrivingRecordingTest {
         }
     }
 
-    @Test fun zeroSpeedInDriveDoesNotFinishButExplicitParkingDoes() = runBlocking {
+    @Test fun zeroSpeedInDriveDisallowsManualFinish() = runBlocking {
         val recorder = recorder()
         recorder.setEnabled(true)
         val job = launch(Dispatchers.Default) { recorder.monitor() }
@@ -305,6 +346,7 @@ class DrivingRecordingTest {
             assertEquals(MutationResult.Restricted, recorder.finish())
             clock.nanos += 200_000_000
             vehicle.park()
+            assertEquals(MutationResult.Success, recorder.finish())
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
             assertEquals(AssessmentStatus.Insufficient.name, db.collectionDao().journeys().single().assessment)
         } finally {
@@ -337,6 +379,7 @@ class DrivingRecordingTest {
             val active = withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Recording } }
             clock.nanos += 200_000_000
             vehicle.park()
+            assertEquals(MutationResult.Success, recorder.finish())
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
             assertTrue(journeys.returnHome())
             for (second in 0..60 step 10) {
@@ -425,6 +468,7 @@ class DrivingRecordingTest {
             clock.nanos += 10_000_000_000
             val parkedAt = clock.nanos
             vehicle.park()
+            assertEquals(MutationResult.Success, recorder.finish())
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
             delay(150)
             for (second in 10..60 step 10) {
@@ -475,6 +519,7 @@ class DrivingRecordingTest {
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Recording } }
             clock.nanos += 200_000_000
             vehicle.park()
+            assertEquals(MutationResult.Success, recorder.finish())
             withTimeout(10_000) { recorder.state.first { it.phase == RecordingPhase.Saved } }
             val fixes = MutableStateFlow<VisitLocation?>(null)
             val visits =
