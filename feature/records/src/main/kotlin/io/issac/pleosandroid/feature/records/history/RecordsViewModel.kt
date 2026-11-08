@@ -116,7 +116,7 @@ internal class RecordsViewModel @Inject constructor(
                         busy = false,
                         message = when (result) {
                             MutationResult.Success, MutationResult.AlreadyApplied -> null
-                            MutationResult.Restricted -> "주차 상태와 데모 설정을 확인해 주세요."
+                            MutationResult.Restricted -> "주차한 뒤 체험 모드가 꺼져 있는지 확인해 주세요."
                             MutationResult.Stale -> "기록이 변경됐어요. 다음 여정부터 새로 기록해요."
                             else -> "저장하지 못했어요. 다시 시도해 주세요."
                         },

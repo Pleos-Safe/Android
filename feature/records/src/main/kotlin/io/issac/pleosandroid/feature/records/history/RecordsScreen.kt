@@ -48,7 +48,7 @@ internal fun RecordsScreen(
     modifier: Modifier = Modifier,
 ) {
     val scale = PleosTextStyles.scale
-    RecordsPage("주행 기록", modifier, "다녀온 여정과 쌓인 포인트를 확인해요.") {
+    RecordsPage("주행 기록", modifier, subtitle = if (state.demo) "체험용 주행 기록" else null) {
         when {
             state.loading -> RecordBody("기록을 불러오고 있어요.")
 
@@ -58,7 +58,6 @@ internal fun RecordsScreen(
             }
 
             else -> {
-                if (state.demo) RecordCaption("POC · 데모 기록", accent = true)
                 RecordingStatus(state, onIntent)
                 RecordsOverview(state)
                 PointsOverview(state, onIntent)
@@ -75,7 +74,7 @@ internal fun RecordsScreen(
                     QuietPlate {
                         RecordIcon(RecordSymbol.Bookmark)
                         RecordHeading("아직 남긴 여정이 없어요")
-                        RecordBody("저장을 켜면 다음 여정부터 남겨요. 저장하지 않아도 장소를 둘러볼 수 있어요.")
+                        RecordBody("여정 기록 저장을 켜면 다음 주행부터 여기에 표시돼요.")
                         PleosButton("장소 둘러보기", onTravel, showArrow = true, style = PleosButtonStyle.Secondary)
                     }
                 } else {
@@ -88,7 +87,7 @@ internal fun RecordsScreen(
                             ObservationRow(
                                 journey.dateLabel(),
                                 "${journey.timeLabel()} · ${journey.distanceLabel()}",
-                                journeyPointsLabel(journey, state.points, state.demo),
+                                journeyPointsLabel(journey, state.points),
                                 onClick = { onIntent(RecordsIntent.OpenJourney(journey.id)) },
                             )
                         }
@@ -117,9 +116,9 @@ private fun RecordsOverview(state: RecordsState) {
         if (journey.assessment == AssessmentStatus.Complete) journey.score else null
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp * scale)) {
-        RecordStat("함께한 주행", "${state.journeys.size}회", Modifier.weight(1f))
+        RecordStat("주행 횟수", "${state.journeys.size}회", Modifier.weight(1f))
         RecordStat("방문한 장소", "${state.visitedPlaceCount}곳", Modifier.weight(1f))
-        RecordStat("최근 안전 점수", score?.let { "$it 점" } ?: "—", Modifier.weight(1f))
+        RecordStat("최근 안전점수", score?.let { "${it}점" } ?: "—", Modifier.weight(1f))
     }
 }
 
@@ -143,7 +142,7 @@ private fun RecordStat(label: String, value: String, modifier: Modifier = Modifi
 private fun PointsOverview(state: RecordsState, onIntent: (RecordsIntent) -> Unit) {
     val label = when {
         state.points is RecordPoints.Ready -> {
-            val label = if (state.demo) "데모 포인트" else "보유 포인트"
+            val label = if (state.demo) "체험 포인트" else "보유 포인트"
             "$label ${state.points.wallet.balanceHalfPoints.pointLabel()}"
         }
 

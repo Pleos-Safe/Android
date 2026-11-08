@@ -96,7 +96,7 @@ internal fun PackOpening(
             PleosButton("팩 보관함", onBack, Modifier.fillMaxWidth(), style = PleosButtonStyle.Secondary)
         } else {
             if (card == null || !torn) {
-                Caption("01 / 02  ·  밀봉 팩", accent = true)
+                Caption("밀봉 팩", accent = true)
                 SectionTitle("봉투를 열어 볼까요?")
                 BodyText("이 안에 여행 카드 한 장이 들어 있어요.")
                 PleosButton(
@@ -107,14 +107,14 @@ internal fun PackOpening(
                     showArrow = true,
                 )
             } else {
-                Caption("02 / 02  ·  카드 1장", accent = true)
+                Caption("카드 1장", accent = true)
                 SectionTitle("어떤 여행이 담겼을까요?")
                 BodyText("카드를 뒤집어 첫 장면을 만나 보세요.")
                 PleosButton(
                     if (turning || busy) {
                         "뒤집는 중…"
                     } else if (halfway) {
-                        "앞면 확인 저장"
+                        "다시 확인"
                     } else {
                         "카드 뒤집기"
                     },

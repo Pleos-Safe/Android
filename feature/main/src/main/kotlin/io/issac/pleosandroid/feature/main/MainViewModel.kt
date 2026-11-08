@@ -143,6 +143,7 @@ class MainViewModel @Inject constructor(
                     null
                 },
                 recognizedDistanceMeters = credit?.eligibleDistanceMeters,
+                membershipBonusHalfPoints = credit?.membershipBonusHalfPoints ?: 0,
                 settlementReason = when {
                     credit != null && credit.eligibleDistanceMeters < (summary.distanceMeters ?: 0) ->
                         "이번 주 한도까지 남은 거리만 포인트에 반영했어요."

@@ -24,6 +24,7 @@ import io.issac.pleosandroid.feature.records.component.RecordIcon
 import io.issac.pleosandroid.feature.records.component.RecordSymbol
 import io.issac.pleosandroid.feature.records.component.RecordsPage
 import io.issac.pleosandroid.feature.records.component.dateLabel
+import io.issac.pleosandroid.feature.records.component.recordDurationLabel
 import io.issac.pleosandroid.feature.records.points.JourneyPointsCard
 import io.issac.pleosandroid.feature.records.points.RecordPoints
 
@@ -41,7 +42,7 @@ internal fun DrivingDataStatusScreen(
     val data = journey.driving
     val scale = PleosTextStyles.scale
     RecordsPage("운전습관 기록 상태", modifier, journey.dateLabel(), onBack) { wide ->
-        if (demo) RecordCaption("POC · 데모 리포트", accent = true)
+        if (demo) RecordCaption("체험용 주행 기록", accent = true)
         RecordColumns(
             wide,
             leading = {
@@ -53,10 +54,9 @@ internal fun DrivingDataStatusScreen(
                         if (complete) {
                             "여정이 끝났고, 이번 기록으로\n운전습관을 돌아볼 수 있어요."
                         } else {
-                            "이번 여정의 기억은 남겨두었어요.\n점수와 카드 판정은 보류해요."
+                            "이번 주행은 기록으로 남겼어요.\n측정 정보가 부족해 점수를 내지 않았어요."
                         },
                     )
-                    if (!complete) RecordCaption("데이터 부족은 0점이나 실패가 아니에요.")
                 }
             },
             trailing = {
@@ -65,7 +65,7 @@ internal fun DrivingDataStatusScreen(
                     JourneyTravelFacts(journey)
                     ObservationRow(
                         "운전 정보",
-                        data?.let { "관찰 시간 ${it.observedMillis / 1_000}초 · 수신 ${it.sampleCount}회" }
+                        data?.let { "측정 시간 ${it.observedMillis.recordDurationLabel()}" }
                             ?: "이전 기록에는 상세 측정 정보가 없어요.",
                         data?.let { "${(it.coverage * 100).toInt()}%" } ?: "정보 없음",
                     )
@@ -78,7 +78,6 @@ internal fun DrivingDataStatusScreen(
                                 reasons.map(::reasonText).distinct().joinToString("\n")
                             },
                         )
-                        RecordCaption("기록을 채우기 위해 더 운전할 필요는 없어요. 다음 일상의 여정에서 다시 살펴봐요.")
                     } else {
                         RecordCaption("차량 속도의 변화만 관찰해요. 도로 제한속도, 교통 상황, 급회전 여부는 판단하지 않아요.")
                         RecordCaption("갑작스러운 감속은 필요한 대응일 수 있어 점수에서 제외해요.")

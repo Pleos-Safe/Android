@@ -17,8 +17,8 @@
     <string name="place_map_cancel">취소</string>
     <string name="place_map_checking_route">현재 경로를 확인하고 있어요.</string>
     <string name="place_map_requesting">내비게이션에 전달하고 있어요.</string>
-    <string name="place_map_applied">내비게이션에서 경로 변경을 확인했어요.</string>
-    <string name="place_map_rejected">경로 변경이 거절됐어요. 기존 내비 상태를 유지해요.</string>
+    <string name="place_map_applied">내비게이션 경로를 변경했어요.</string>
+    <string name="place_map_rejected">경로를 바꾸지 못했어요. 다시 시도해 주세요.</string>
     <string name="place_map_unconfirmed">내비게이션의 응답을 받지 못했어요. 현재 경로를 먼저 확인해 주세요.</string>
     <string name="place_map_navigation_unavailable">내비게이션에 연결할 수 없어요.</string>
     <string name="place_map_check_route">현재 경로 확인</string>

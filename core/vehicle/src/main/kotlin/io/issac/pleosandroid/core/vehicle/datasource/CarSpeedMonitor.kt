@@ -66,7 +66,7 @@ internal class CarSpeedMonitor @Inject constructor(
                 } else {
                     VehicleMotionState(
                         availability = MotionAvailability.Error,
-                        message = "${error.message} 자동으로 다시 연결합니다.",
+                        message = "차량 속도 정보를 다시 연결하고 있어요.",
                     )
                 }
             },
@@ -154,7 +154,7 @@ internal class CarSpeedMonitor @Inject constructor(
 
     private fun permissionRequired() = VehicleMotionState(
         availability = MotionAvailability.PermissionRequired,
-        message = "차량 속도 읽기 권한이 필요합니다.",
+        message = "차량 속도를 확인하려면 접근 권한이 필요해요.",
     )
 }
 

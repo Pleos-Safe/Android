@@ -28,19 +28,19 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-internal fun journeyPointsLabel(journey: JourneyRecord, points: RecordPoints, demo: Boolean): String = when (points) {
+internal fun journeyPointsLabel(journey: JourneyRecord, points: RecordPoints): String = when (points) {
     RecordPoints.Loading -> "포인트 확인 중"
 
     RecordPoints.Unavailable -> "포인트 확인 필요"
 
     is RecordPoints.Ready -> points.wallet.journeyCredit(journey.id)?.deltaHalfPoints
-        ?.takeIf { it > 0 }?.let { if (demo) "데모 +${it.pointLabel()}" else "+${it.pointLabel()}" } ?: "기록만 저장"
+        ?.takeIf { it > 0 }?.let { "+${it.pointLabel()}" } ?: "기록만 저장"
 }
 
 @Composable
 internal fun JourneyPointsCard(journey: JourneyRecord, points: RecordPoints, demo: Boolean, onRetry: () -> Unit) {
     QuietPlate(contentPadding = 20.dp) {
-        RecordHeading(if (demo) "데모 포인트 산정" else "포인트 산정")
+        RecordHeading(if (demo) "체험 포인트 내역" else "포인트 적립 내역")
         when {
             points is RecordPoints.Loading -> RecordBody("포인트를 확인하고 있어요.")
 
@@ -64,9 +64,15 @@ internal fun JourneyPointsCard(journey: JourneyRecord, points: RecordPoints, dem
                             val title = credit.assessedScore?.let { "점수 반영 · ${it}점" } ?: "점수 반영"
                             PointsLine(title, "× ${(multiplier / 1_000.0).decimalLabel(3)}")
                         }
+                        if (credit.membershipBonusHalfPoints > 0) {
+                            PointsLine(
+                                "주행 적립",
+                                (credit.deltaHalfPoints - credit.membershipBonusHalfPoints).pointLabel(),
+                            )
+                            PointsLine("PLUS 추가 적립", "+${credit.membershipBonusHalfPoints.pointLabel()}")
+                        }
                         RecordDivider()
-                        PointsLine("획득 포인트", credit.deltaHalfPoints.pointLabel())
-                        RecordCaption("기본 포인트에 점수 배율을 곱한 뒤 소수점 아래를 버려요.")
+                        PointsLine("총 적립", credit.deltaHalfPoints.pointLabel())
                     }
                 }
             }
@@ -112,7 +118,7 @@ internal fun DrivingPointsWeekScreen(
                     wide,
                     leading = {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp * PleosTextStyles.scale)) {
-                            if (state.demo) RecordCaption("데모 모드 · 샘플 주행", accent = true)
+                            if (state.demo) RecordCaption("체험용 주행 기록", accent = true)
                             RecordCaption(
                                 "${summary.start.format(
                                     WeekDateFormat,
@@ -120,7 +126,6 @@ internal fun DrivingPointsWeekScreen(
                                 accent = true,
                             )
                             RecordHeading("이번 주의 주행 포인트")
-                            RecordBody("주행 기록과 포인트 인정 거리를 따로 확인해요.")
                             when {
                                 wallet != null -> RecordCaption("이번 주 받은 포인트 ${summary.earnedPoints.pointLabel()}")
 
