@@ -40,6 +40,7 @@ import io.issac.pleosandroid.core.navigation.EnhancementRoute
 import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 import io.issac.pleosandroid.core.navigation.OpenPackRoute
 import io.issac.pleosandroid.core.navigation.PackShelfRoute
+import io.issac.pleosandroid.feature.badges.album.gallery.MotionGalleryRoute
 import io.issac.pleosandroid.feature.badges.component.Caption
 import io.issac.pleosandroid.feature.badges.component.CollectionStatusScreen
 import io.issac.pleosandroid.feature.badges.component.SectionTitle
@@ -94,6 +95,7 @@ internal fun AlbumDestination(route: AppRoute, modifier: Modifier, viewModel: Al
                 onFocused = nav::targetHandled,
                 packShelf = inbox,
                 modeControl = modeControl,
+                onPreviewMotions = { router.navigate(MotionGalleryRoute(startOnForge = forge)) },
                 onCard = { card ->
                     val workshop = forge || card.status == CopyStatus.Trace || card.id in album.pending
                     router.navigate(if (workshop) WorkshopRoute(card.id) else AlbumDetailRoute(card.id))

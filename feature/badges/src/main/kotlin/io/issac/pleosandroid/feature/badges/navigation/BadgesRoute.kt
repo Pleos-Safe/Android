@@ -11,12 +11,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.issac.pleosandroid.core.navigation.AppRoute
 import io.issac.pleosandroid.core.navigation.BadgesRoute
 import io.issac.pleosandroid.core.navigation.EnhancementRoute
+import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 import io.issac.pleosandroid.core.navigation.OpenPackRoute
 import io.issac.pleosandroid.core.navigation.PackShelfRoute
 import io.issac.pleosandroid.feature.badges.album.AlbumDestination
 import io.issac.pleosandroid.feature.badges.album.AlbumDetailRoute
 import io.issac.pleosandroid.feature.badges.album.PackOddsRoute
 import io.issac.pleosandroid.feature.badges.album.WorkshopRoute
+import io.issac.pleosandroid.feature.badges.album.gallery.CardMotion
+import io.issac.pleosandroid.feature.badges.album.gallery.MotionGallery
+import io.issac.pleosandroid.feature.badges.album.gallery.MotionGalleryRoute
+import io.issac.pleosandroid.feature.badges.album.gallery.MotionPlayer
 import io.issac.pleosandroid.feature.badges.component.CollectionStatusScreen
 
 @Composable
@@ -33,10 +38,15 @@ internal fun BadgesRouteContent(route: AppRoute, modifier: Modifier = Modifier) 
         return
     }
     parkedContent.SaveableStateProvider("parked") {
+        val router = LocalNavigationRouter.current
         when (route) {
             BadgesRoute, EnhancementRoute, PackShelfRoute, PackOddsRoute,
             is AlbumDetailRoute, is OpenPackRoute, is WorkshopRoute,
             -> AlbumDestination(route, modifier)
+
+            is MotionGalleryRoute -> MotionGallery(route, { router.navigate(it) }, { router.pop() }, modifier)
+
+            is CardMotion -> MotionPlayer(route, { router.pop() }, modifier)
 
             else -> error("Unsupported collection route $route")
         }
