@@ -1,19 +1,28 @@
 package io.issac.pleosandroid.feature.main.map
 
 import android.content.Context
+import android.os.SystemClock
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.issac.pleosandroid.core.domain.collection.model.PlaceQuery
+import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimRequest
+import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimResult
 import io.issac.pleosandroid.core.domain.collection.repository.PlaceRepository
+import io.issac.pleosandroid.core.domain.collection.repository.ProgressRepository
+import io.issac.pleosandroid.core.domain.collection.repository.VisitLocation
+import io.issac.pleosandroid.core.domain.collection.repository.VisitLocationSource
+import io.issac.pleosandroid.core.domain.collection.repository.VisitPackRepository
 import io.issac.pleosandroid.core.domain.driving.repository.DrivingObservationKind
 import io.issac.pleosandroid.core.domain.driving.repository.DrivingRecorder
+import io.issac.pleosandroid.core.domain.driving.repository.JourneyRepository
 import io.issac.pleosandroid.core.domain.repository.BadgeRegionSource
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.feature.main.DrivingSafetyMessage
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -22,7 +31,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -38,7 +49,11 @@ internal class PlaceMapViewModel @Inject constructor(
     private val vehicleRepository: VehicleRepository,
     badgeRegionSource: BadgeRegionSource,
     placeRepository: PlaceRepository,
-    recorder: DrivingRecorder,
+    private val recorder: DrivingRecorder,
+    private val journeys: JourneyRepository,
+    visitLocation: VisitLocationSource,
+    private val visitPacks: VisitPackRepository,
+    private val progress: ProgressRepository,
 ) : ViewModel() {
     private val location = PlaceMapLocation(context, viewModelScope)
     private val navigationDelegate = lazy {
@@ -71,6 +86,8 @@ internal class PlaceMapViewModel @Inject constructor(
                 p.category,
                 p.imageKey,
                 row.ownedCardIds.isNotEmpty(),
+                p.regionId,
+                p.radiusMeters,
             )
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -102,6 +119,90 @@ internal class PlaceMapViewModel @Inject constructor(
     val navigationState get() = navigation.state
     val badgeRegionIds = badgeRegionSource.collectedRegionIds.catch { emit(emptySet()) }
     val drivingSafetyMessage = mutableSafetyMessage.asStateFlow()
+    val visitInbox = visitPacks.observeInbox().catch { emit(emptyList()) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    private val parkedVisit =
+        combine(journeys.state, vehicleRepository.state, recorder.enabled) { journey, vehicle, enabled ->
+            journey.session?.takeIf { it.paused && !it.recoveryRequired && enabled && vehicle.allowsTabNavigation }
+        }
+    private val visitFix = parkedVisit.flatMapLatest { session ->
+        if (session == null) flowOf(null) else visitLocation.locations.catch { emit(null) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
+    private val parkedGeneration = parkedVisit.map { it?.id }.distinctUntilChanged().map { id ->
+        if (id == null) null else runCatching { progress.getDataGeneration() }.getOrNull()?.let { id to it }
+    }
+    val claimableVisit by lazy {
+        combine(parkedGeneration, visitFix, navigation.state, places, visitInbox) {
+                generation,
+                fix,
+                route,
+                catalog,
+                inbox,
+            ->
+            if (generation == null) return@combine null
+            val (id, token) = generation
+            val claimedIds = inbox.filter { it.journeyId == id }.mapTo(mutableSetOf()) { it.placeId }
+            eligibleVisit(fix, route, catalog.filterNot { it.id in claimedIds })
+                ?.takeIf { it.first == id }?.let { ClaimableVisit(id, it.second, token) }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
+    }
+    private val mutableVisitResult = MutableStateFlow<VisitPackClaimResult?>(null)
+    val visitResult = mutableVisitResult.asStateFlow()
+    private var claimJob: Job? = null
+
+    fun claimVisit(visit: ClaimableVisit) {
+        if (claimJob?.isActive == true) return
+        claimJob = viewModelScope.launch {
+            mutableVisitResult.value = try {
+                if (eligibleVisit(visitFix.value, navigation.state.value, listOf(visit.place)) ==
+                    (visit.journeyId to visit.place)
+                ) {
+                    visitPacks.claim(
+                        VisitPackClaimRequest(
+                            visit.journeyId,
+                            visit.place.id,
+                            visit.place.name,
+                            visit.place.category,
+                            visit.generation,
+                        ),
+                    )
+                } else {
+                    VisitPackClaimResult.InvalidInput
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                VisitPackClaimResult.StorageFailure
+            }
+        }
+    }
+
+    fun refreshParkedVisit() {
+        mutableVisitResult.value = null
+        navigation.recheck()
+    }
+
+    private fun eligibleVisit(
+        fix: VisitLocation?,
+        route: PlaceNavigationState,
+        catalog: List<TravelPlace>,
+    ): Pair<String, TravelPlace>? {
+        val session = journeys.state.value.session ?: return null
+        val parkedAt = session.pausedAtNanos ?: return null
+        if (!vehicleRepository.state.value.allowsTabNavigation || !recorder.enabled.value || session.recoveryRequired ||
+            !session.paused || fix == null || fix.elapsedNanos < parkedAt ||
+            SystemClock.elapsedRealtimeNanos() - fix.elapsedNanos !in 0..10_000_000_000L ||
+            fix.accuracyMeters !in 0.0..100.0
+        ) {
+            return null
+        }
+        val position = PlaceMapPosition(fix.latitude, fix.longitude)
+        val nearby = catalog.asSequence().filter { it.id in route.routePlaceIds }.map { place ->
+            place to position.distanceMetersTo(PlaceMapPosition(place.latitude, place.longitude))
+        }.filter { (place, distance) -> distance + fix.accuracyMeters <= place.visitRadiusMeters }
+            .minByOrNull { it.second }?.first ?: return null
+        return session.id to nearby
+    }
 
     val drivingPosition = combine(drivingJourney, location.freshFix) { journeyId, fix ->
         if (journeyId != null) currentPosition(fix) else null
@@ -183,3 +284,5 @@ internal class PlaceMapViewModel @Inject constructor(
         if (navigationDelegate.isInitialized()) navigation.close()
     }
 }
+
+internal data class ClaimableVisit(val journeyId: String, val place: TravelPlace, val generation: String)

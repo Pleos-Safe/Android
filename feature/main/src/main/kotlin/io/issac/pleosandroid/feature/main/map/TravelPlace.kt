@@ -14,7 +14,11 @@ internal data class TravelPlace(
     val category: String,
     val imageKey: String = "",
     val collected: Boolean = false,
+    val regionId: String? = null,
+    val visitRadiusMeters: Double = 0.0,
 )
+
+internal const val GENERIC_PLACE_IMAGE = "collection_map_pin"
 
 internal data class PlaceMapPosition(val latitude: Double, val longitude: Double) {
     fun distanceMetersTo(other: PlaceMapPosition): Double {

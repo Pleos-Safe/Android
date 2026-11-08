@@ -109,12 +109,15 @@ private fun PlaceMapScreen(
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     var waypointId by rememberSaveable { mutableStateOf<String?>(null) }
     var listOnly by rememberSaveable { mutableStateOf(false) }
+    var region by rememberSaveable { mutableStateOf<String?>(null) }
     var regionCoordinates by rememberSaveable { mutableStateOf<DoubleArray?>(null) }
     var visibleBounds by remember { mutableStateOf<PlaceMapBounds?>(null) }
     val appliedBounds = regionCoordinates?.let { PlaceMapBounds(it[0], it[1], it[2], it[3]) }
     val position = (location as? PlaceLocationState.Available)?.position
-    val places = remember(query, appliedBounds, position, catalog) {
-        val matches = searchTravelPlaces(query, appliedBounds, catalog)
+    val places = remember(query, appliedBounds, region, position, catalog) {
+        val matches = searchTravelPlaces(query, appliedBounds, catalog).filter {
+            region == null || it.regionId == region
+        }
         if (position == null) matches else matches.sortedBy { it.distanceMetersFrom(position) }
     }
     val selected = places.firstOrNull { it.id == selectedId }
@@ -157,14 +160,26 @@ private fun PlaceMapScreen(
             ) {
                 PleosChip(
                     label = stringResource(R.string.place_map_all),
-                    selected = appliedBounds == null,
-                    onSelectedChange = { regionCoordinates = null },
+                    selected = appliedBounds == null && region == null,
+                    onSelectedChange = {
+                        regionCoordinates = null
+                        region = null
+                    },
                 )
+                PLACE_REGIONS.forEach { (id, label) ->
+                    if (catalog.any { it.regionId == id }) {
+                        PleosChip(label, selected = region == id, onSelectedChange = {
+                            regionCoordinates = null
+                            region = id.takeIf { it != region }
+                        })
+                    }
+                }
                 if (visibleBounds != null) {
                     PleosChip(
                         label = stringResource(R.string.place_map_this_area),
                         selected = appliedBounds == visibleBounds,
                         onSelectedChange = {
+                            region = null
                             visibleBounds?.let { bounds ->
                                 regionCoordinates = doubleArrayOf(bounds.south, bounds.west, bounds.north, bounds.east)
                             }
@@ -210,6 +225,10 @@ private fun PlaceMapScreen(
                             onPlaceSelected = { selectedId = it },
                             modifier = mapModifier,
                             currentPosition = position,
+                            focusPosition = selected?.let { PlaceMapPosition(it.latitude, it.longitude) }
+                                ?: places.firstOrNull {
+                                    region != null
+                                }?.let { PlaceMapPosition(it.latitude, it.longitude) },
                             onVisibleBoundsChanged = { visibleBounds = it },
                         )
                     }
@@ -280,7 +299,7 @@ private fun PlaceResults(
                 val imageId = remember(selected.imageKey, context) {
                     context.resources.getIdentifier(selected.imageKey, "drawable", context.packageName)
                 }
-                if (imageId != 0) {
+                if (imageId != 0 && selected.imageKey != GENERIC_PLACE_IMAGE) {
                     Image(
                         painter = painterResource(imageId),
                         contentDescription = null,
@@ -313,6 +332,15 @@ private fun PlaceResults(
                         color = PleosTheme.colors.textSecondary,
                     )
                 }
+                Text(
+                    if (selected.id in navigation.routePlaceIds) {
+                        "등록한 장소예요. 근처에 주차하면 방문 카드팩을 받을 수 있어요."
+                    } else {
+                        "내비에 등록하고 장소 근처에 주차하면 방문 카드팩을 받을 수 있어요."
+                    },
+                    style = PleosTextStyles.meta,
+                    color = PleosTheme.colors.textSecondary,
+                )
                 PleosButton(
                     text = stringResource(
                         if (navigation.hasDestination == true) {
@@ -323,7 +351,8 @@ private fun PlaceResults(
                     ),
                     onClick = { onNavigate(selected) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = actionEnabled,
+                    enabled = actionEnabled && selected.id !in navigation.routePlaceIds &&
+                        navigation.hasWaypointCapacity,
                     showArrow = true,
                 )
             }
@@ -331,6 +360,15 @@ private fun PlaceResults(
     }
     val results: @Composable () -> Unit = {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap)) {
+            navigation.destinationName?.let { destination ->
+                PleosInfoPanel(Modifier.fillMaxWidth()) {
+                    Text("이번 여정", style = PleosTextStyles.section, color = PleosTheme.colors.textPrimary)
+                    navigation.waypointNames.forEach { name ->
+                        Text("경유지 · $name", style = PleosTextStyles.meta, color = PleosTheme.colors.textSecondary)
+                    }
+                    Text("목적지 · $destination", style = PleosTextStyles.body, color = PleosTheme.colors.textPrimary)
+                }
+            }
             if (status != null) {
                 Text(stringResource(status), color = PleosTheme.colors.textSecondary)
             }
@@ -373,6 +411,13 @@ private fun PlaceResults(
         }
     }
 }
+
+private val PLACE_REGIONS = listOf(
+    "KR-11" to "서울",
+    "KR-26" to "부산",
+    "KR-41" to "경기",
+    "KR-49" to "제주",
+)
 
 @Composable
 private fun PlaceResultRow(place: TravelPlace, selected: Boolean, position: PlaceMapPosition?, onClick: () -> Unit) {
