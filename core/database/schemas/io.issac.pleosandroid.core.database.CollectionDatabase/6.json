@@ -1,0 +1,1600 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "b94820be08f00690971c8c6fe4f3f903",
+    "entities": [
+      {
+        "tableName": "album_print",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `region` TEXT, `pool` TEXT NOT NULL, `baseGrade` TEXT NOT NULL, `art` TEXT NOT NULL, `variantArt` TEXT NOT NULL, `place` TEXT NOT NULL, `serial` TEXT NOT NULL, `mapRegionId` TEXT DEFAULT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "region",
+            "columnName": "region",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pool",
+            "columnName": "pool",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baseGrade",
+            "columnName": "baseGrade",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "art",
+            "columnName": "art",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "variantArt",
+            "columnName": "variantArt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "place",
+            "columnName": "place",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serial",
+            "columnName": "serial",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mapRegionId",
+            "columnName": "mapRegionId",
+            "affinity": "TEXT",
+            "defaultValue": "NULL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "album_pack",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `region` TEXT, `source` TEXT NOT NULL, `receivedAt` INTEGER NOT NULL, `place` TEXT, `journeyId` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "region",
+            "columnName": "region",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receivedAt",
+            "columnName": "receivedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "place",
+            "columnName": "place",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "journeyId",
+            "columnName": "journeyId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "album_copy",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `packId` TEXT NOT NULL, `printId` TEXT NOT NULL, `variant` INTEGER NOT NULL, `level` INTEGER NOT NULL, `highest` INTEGER NOT NULL, `status` TEXT NOT NULL, `revision` INTEGER NOT NULL, `acquiredAt` INTEGER NOT NULL, `seenAt` INTEGER, `legacyId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`printId`) REFERENCES `album_print`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`packId`) REFERENCES `album_pack`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packId",
+            "columnName": "packId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "printId",
+            "columnName": "printId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "variant",
+            "columnName": "variant",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "highest",
+            "columnName": "highest",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revision",
+            "columnName": "revision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "acquiredAt",
+            "columnName": "acquiredAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seenAt",
+            "columnName": "seenAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "legacyId",
+            "columnName": "legacyId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_album_copy_printId",
+            "unique": false,
+            "columnNames": [
+              "printId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_album_copy_printId` ON `${TABLE_NAME}` (`printId`)"
+          },
+          {
+            "name": "index_album_copy_packId",
+            "unique": true,
+            "columnNames": [
+              "packId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_album_copy_packId` ON `${TABLE_NAME}` (`packId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "album_print",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "printId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "album_pack",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "packId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "album_wallet",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `featuredId` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "featuredId",
+            "columnName": "featuredId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "album_action",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `copyId` TEXT NOT NULL, `beforeLevel` INTEGER NOT NULL, `afterLevel` INTEGER NOT NULL, `outcome` TEXT NOT NULL, `cost` INTEGER NOT NULL, `at` INTEGER NOT NULL, `shown` INTEGER NOT NULL, `materialId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`copyId`) REFERENCES `album_copy`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyId",
+            "columnName": "copyId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "beforeLevel",
+            "columnName": "beforeLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "afterLevel",
+            "columnName": "afterLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "outcome",
+            "columnName": "outcome",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cost",
+            "columnName": "cost",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "at",
+            "columnName": "at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shown",
+            "columnName": "shown",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "materialId",
+            "columnName": "materialId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_album_action_copyId",
+            "unique": false,
+            "columnNames": [
+              "copyId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_album_action_copyId` ON `${TABLE_NAME}` (`copyId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "album_copy",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "copyId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "catalog_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `version` INTEGER NOT NULL, `hash` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hash",
+            "columnName": "hash",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "user_data_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `generation` TEXT NOT NULL, `revision` INTEGER NOT NULL, `demoSeeded` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generation",
+            "columnName": "generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revision",
+            "columnName": "revision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "demoSeeded",
+            "columnName": "demoSeeded",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "place",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `district` TEXT NOT NULL, `category` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `radiusMeters` REAL NOT NULL, `minimumDwellSeconds` INTEGER NOT NULL, `imageKey` TEXT NOT NULL, `active` INTEGER NOT NULL, `regionId` TEXT DEFAULT NULL, `rewardPack` TEXT DEFAULT NULL, `cardPrintId` TEXT DEFAULT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "district",
+            "columnName": "district",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "radiusMeters",
+            "columnName": "radiusMeters",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minimumDwellSeconds",
+            "columnName": "minimumDwellSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageKey",
+            "columnName": "imageKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "regionId",
+            "columnName": "regionId",
+            "affinity": "TEXT",
+            "defaultValue": "NULL"
+          },
+          {
+            "fieldPath": "rewardPack",
+            "columnName": "rewardPack",
+            "affinity": "TEXT",
+            "defaultValue": "NULL"
+          },
+          {
+            "fieldPath": "cardPrintId",
+            "columnName": "cardPrintId",
+            "affinity": "TEXT",
+            "defaultValue": "NULL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_place_active",
+            "unique": false,
+            "columnNames": [
+              "active"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_place_active` ON `${TABLE_NAME}` (`active`)"
+          }
+        ]
+      },
+      {
+        "tableName": "card_definition",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `kind` TEXT NOT NULL, `placeId` TEXT, `title` TEXT NOT NULL, `subtitle` TEXT NOT NULL, `context` TEXT NOT NULL, `series` TEXT NOT NULL, `artworkKey` TEXT NOT NULL, `glossKey` TEXT NOT NULL, `engravingKey` TEXT NOT NULL, `template` TEXT NOT NULL, `ruleVersion` INTEGER NOT NULL, `active` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`placeId`) REFERENCES `place`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "placeId",
+            "columnName": "placeId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subtitle",
+            "columnName": "subtitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context",
+            "columnName": "context",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "series",
+            "columnName": "series",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artworkKey",
+            "columnName": "artworkKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "glossKey",
+            "columnName": "glossKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "engravingKey",
+            "columnName": "engravingKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "template",
+            "columnName": "template",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ruleVersion",
+            "columnName": "ruleVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_card_definition_placeId",
+            "unique": false,
+            "columnNames": [
+              "placeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_card_definition_placeId` ON `${TABLE_NAME}` (`placeId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "place",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "placeId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "card_level_rule",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cardId` TEXT NOT NULL, `level` INTEGER NOT NULL, `version` INTEGER NOT NULL, `requiredCount` INTEGER NOT NULL, `eligibleFrom` INTEGER NOT NULL, `minimumScore` INTEGER, `minimumDistanceMeters` INTEGER NOT NULL, `maximumHarshStarts` INTEGER, PRIMARY KEY(`cardId`, `level`, `version`), FOREIGN KEY(`cardId`) REFERENCES `card_definition`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "cardId",
+            "columnName": "cardId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requiredCount",
+            "columnName": "requiredCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eligibleFrom",
+            "columnName": "eligibleFrom",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minimumScore",
+            "columnName": "minimumScore",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "minimumDistanceMeters",
+            "columnName": "minimumDistanceMeters",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maximumHarshStarts",
+            "columnName": "maximumHarshStarts",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cardId",
+            "level",
+            "version"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "card_definition",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cardId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "journey",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `startedAt` INTEGER NOT NULL, `endedAt` INTEGER NOT NULL, `zoneId` TEXT NOT NULL, `distanceMeters` INTEGER NOT NULL, `assessment` TEXT NOT NULL, `score` INTEGER, `harshStarts` INTEGER, `assessmentVersion` INTEGER NOT NULL, `drivingJson` TEXT DEFAULT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startedAt",
+            "columnName": "startedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endedAt",
+            "columnName": "endedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zoneId",
+            "columnName": "zoneId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "distanceMeters",
+            "columnName": "distanceMeters",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assessment",
+            "columnName": "assessment",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "score",
+            "columnName": "score",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "harshStarts",
+            "columnName": "harshStarts",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "assessmentVersion",
+            "columnName": "assessmentVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "drivingJson",
+            "columnName": "drivingJson",
+            "affinity": "TEXT",
+            "defaultValue": "NULL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "visit",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `placeId` TEXT NOT NULL, `journeyId` TEXT, `arrivedAt` INTEGER NOT NULL, `departedAt` INTEGER NOT NULL, `confirmedAt` INTEGER NOT NULL, `zoneId` TEXT NOT NULL, `distanceFromPlaceMeters` REAL NOT NULL, `accuracyMeters` REAL NOT NULL, `qualificationVersion` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`placeId`) REFERENCES `place`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`journeyId`) REFERENCES `journey`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "placeId",
+            "columnName": "placeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "journeyId",
+            "columnName": "journeyId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "arrivedAt",
+            "columnName": "arrivedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departedAt",
+            "columnName": "departedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confirmedAt",
+            "columnName": "confirmedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zoneId",
+            "columnName": "zoneId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "distanceFromPlaceMeters",
+            "columnName": "distanceFromPlaceMeters",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accuracyMeters",
+            "columnName": "accuracyMeters",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "qualificationVersion",
+            "columnName": "qualificationVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_visit_placeId_confirmedAt",
+            "unique": false,
+            "columnNames": [
+              "placeId",
+              "confirmedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_visit_placeId_confirmedAt` ON `${TABLE_NAME}` (`placeId`, `confirmedAt`)"
+          },
+          {
+            "name": "index_visit_journeyId",
+            "unique": false,
+            "columnNames": [
+              "journeyId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_visit_journeyId` ON `${TABLE_NAME}` (`journeyId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "place",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "placeId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "journey",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "journeyId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "progress_operation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `sourceKind` TEXT NOT NULL, `sourceId` TEXT NOT NULL, `sourceVersion` INTEGER NOT NULL, `fingerprint` TEXT, `receipt` TEXT, `invalidated` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceKind",
+            "columnName": "sourceKind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceId",
+            "columnName": "sourceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceVersion",
+            "columnName": "sourceVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fingerprint",
+            "columnName": "fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receipt",
+            "columnName": "receipt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "invalidated",
+            "columnName": "invalidated",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_progress_operation_sourceKind_sourceId",
+            "unique": false,
+            "columnNames": [
+              "sourceKind",
+              "sourceId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_progress_operation_sourceKind_sourceId` ON `${TABLE_NAME}` (`sourceKind`, `sourceId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "card_memory",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `cardId` TEXT NOT NULL, `visitId` TEXT, `journeyId` TEXT, `occurredAt` INTEGER NOT NULL, `localDate` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`cardId`) REFERENCES `card_definition`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`visitId`) REFERENCES `visit`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`journeyId`) REFERENCES `journey`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardId",
+            "columnName": "cardId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "visitId",
+            "columnName": "visitId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "journeyId",
+            "columnName": "journeyId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "occurredAt",
+            "columnName": "occurredAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localDate",
+            "columnName": "localDate",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_card_memory_cardId_occurredAt",
+            "unique": false,
+            "columnNames": [
+              "cardId",
+              "occurredAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_card_memory_cardId_occurredAt` ON `${TABLE_NAME}` (`cardId`, `occurredAt`)"
+          },
+          {
+            "name": "index_card_memory_cardId_visitId",
+            "unique": true,
+            "columnNames": [
+              "cardId",
+              "visitId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_card_memory_cardId_visitId` ON `${TABLE_NAME}` (`cardId`, `visitId`)"
+          },
+          {
+            "name": "index_card_memory_cardId_journeyId",
+            "unique": true,
+            "columnNames": [
+              "cardId",
+              "journeyId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_card_memory_cardId_journeyId` ON `${TABLE_NAME}` (`cardId`, `journeyId`)"
+          },
+          {
+            "name": "index_card_memory_visitId",
+            "unique": false,
+            "columnNames": [
+              "visitId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_card_memory_visitId` ON `${TABLE_NAME}` (`visitId`)"
+          },
+          {
+            "name": "index_card_memory_journeyId",
+            "unique": false,
+            "columnNames": [
+              "journeyId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_card_memory_journeyId` ON `${TABLE_NAME}` (`journeyId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "card_definition",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cardId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "visit",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "visitId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "journey",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "journeyId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "owned_card",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cardId` TEXT NOT NULL, `ownershipId` TEXT NOT NULL, `earnedLevel` INTEGER NOT NULL, `revealedLevel` INTEGER, `acquiredAt` INTEGER NOT NULL, `revision` INTEGER NOT NULL, PRIMARY KEY(`cardId`), FOREIGN KEY(`cardId`) REFERENCES `card_definition`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "cardId",
+            "columnName": "cardId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownershipId",
+            "columnName": "ownershipId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "earnedLevel",
+            "columnName": "earnedLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revealedLevel",
+            "columnName": "revealedLevel",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "acquiredAt",
+            "columnName": "acquiredAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revision",
+            "columnName": "revision",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cardId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_owned_card_ownershipId",
+            "unique": true,
+            "columnNames": [
+              "ownershipId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_owned_card_ownershipId` ON `${TABLE_NAME}` (`ownershipId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "card_definition",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cardId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "card_level_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ownershipId` TEXT NOT NULL, `level` INTEGER NOT NULL, `grantId` TEXT NOT NULL, `earnedAt` INTEGER NOT NULL, `ruleVersion` INTEGER NOT NULL, `revealedAt` INTEGER, PRIMARY KEY(`ownershipId`, `level`), FOREIGN KEY(`ownershipId`) REFERENCES `owned_card`(`ownershipId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "ownershipId",
+            "columnName": "ownershipId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "grantId",
+            "columnName": "grantId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "earnedAt",
+            "columnName": "earnedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ruleVersion",
+            "columnName": "ruleVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revealedAt",
+            "columnName": "revealedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "ownershipId",
+            "level"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_card_level_state_grantId",
+            "unique": true,
+            "columnNames": [
+              "grantId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_card_level_state_grantId` ON `${TABLE_NAME}` (`grantId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "owned_card",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "ownershipId"
+            ],
+            "referencedColumns": [
+              "ownershipId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "reward_notice",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `operationId` TEXT NOT NULL, `cardId` TEXT NOT NULL, `ownershipId` TEXT NOT NULL, `fromLevel` INTEGER NOT NULL, `toLevel` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `acknowledgedAt` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`ownershipId`) REFERENCES `owned_card`(`ownershipId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operationId",
+            "columnName": "operationId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardId",
+            "columnName": "cardId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownershipId",
+            "columnName": "ownershipId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromLevel",
+            "columnName": "fromLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "toLevel",
+            "columnName": "toLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "acknowledgedAt",
+            "columnName": "acknowledgedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_reward_notice_ownershipId",
+            "unique": false,
+            "columnNames": [
+              "ownershipId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_reward_notice_ownershipId` ON `${TABLE_NAME}` (`ownershipId`)"
+          },
+          {
+            "name": "index_reward_notice_acknowledgedAt",
+            "unique": false,
+            "columnNames": [
+              "acknowledgedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_reward_notice_acknowledgedAt` ON `${TABLE_NAME}` (`acknowledgedAt`)"
+          },
+          {
+            "name": "index_reward_notice_operationId_cardId",
+            "unique": true,
+            "columnNames": [
+              "operationId",
+              "cardId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_reward_notice_operationId_cardId` ON `${TABLE_NAME}` (`operationId`, `cardId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "owned_card",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "ownershipId"
+            ],
+            "referencedColumns": [
+              "ownershipId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "collection_display",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `cardId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`cardId`) REFERENCES `owned_card`(`cardId`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardId",
+            "columnName": "cardId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_collection_display_cardId",
+            "unique": false,
+            "columnNames": [
+              "cardId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_collection_display_cardId` ON `${TABLE_NAME}` (`cardId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "owned_card",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cardId"
+            ],
+            "referencedColumns": [
+              "cardId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "driving_draft",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `generation` TEXT NOT NULL, `payload` TEXT NOT NULL, `finished` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generation",
+            "columnName": "generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "finished",
+            "columnName": "finished",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "point_transaction",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`operationId` TEXT NOT NULL, `sourceId` TEXT NOT NULL, `kind` TEXT NOT NULL, `delta` INTEGER NOT NULL, `occurredAt` INTEGER NOT NULL, `eligibleDistanceMeters` INTEGER NOT NULL, `drivingEpochDay` INTEGER, `weekStartEpochDay` INTEGER, `assessedScore` INTEGER, `basePointsHundredths` INTEGER NOT NULL, `multiplierThousandths` INTEGER, `ruleVersion` INTEGER NOT NULL, PRIMARY KEY(`operationId`))",
+        "fields": [
+          {
+            "fieldPath": "operationId",
+            "columnName": "operationId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceId",
+            "columnName": "sourceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deltaHalfPoints",
+            "columnName": "delta",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAt",
+            "columnName": "occurredAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eligibleDistanceMeters",
+            "columnName": "eligibleDistanceMeters",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "drivingEpochDay",
+            "columnName": "drivingEpochDay",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "weekStartEpochDay",
+            "columnName": "weekStartEpochDay",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "assessedScore",
+            "columnName": "assessedScore",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "basePointsHundredths",
+            "columnName": "basePointsHundredths",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "multiplierThousandths",
+            "columnName": "multiplierThousandths",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "ruleVersion",
+            "columnName": "ruleVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "operationId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_point_transaction_weekStartEpochDay",
+            "unique": false,
+            "columnNames": [
+              "weekStartEpochDay"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_point_transaction_weekStartEpochDay` ON `${TABLE_NAME}` (`weekStartEpochDay`)"
+          }
+        ]
+      },
+      {
+        "tableName": "visit_pack",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `journeyId` TEXT NOT NULL, `placeId` TEXT NOT NULL, `placeTitle` TEXT NOT NULL, `category` TEXT NOT NULL, `claimedAt` INTEGER NOT NULL, `claimEpochDay` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "journeyId",
+            "columnName": "journeyId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "placeId",
+            "columnName": "placeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "placeTitle",
+            "columnName": "placeTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "claimedAt",
+            "columnName": "claimedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "claimEpochDay",
+            "columnName": "claimEpochDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_visit_pack_journeyId_placeId",
+            "unique": true,
+            "columnNames": [
+              "journeyId",
+              "placeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_visit_pack_journeyId_placeId` ON `${TABLE_NAME}` (`journeyId`, `placeId`)"
+          },
+          {
+            "name": "index_visit_pack_placeId_claimedAt",
+            "unique": false,
+            "columnNames": [
+              "placeId",
+              "claimedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_visit_pack_placeId_claimedAt` ON `${TABLE_NAME}` (`placeId`, `claimedAt`)"
+          },
+          {
+            "name": "index_visit_pack_claimEpochDay",
+            "unique": false,
+            "columnNames": [
+              "claimEpochDay"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_visit_pack_claimEpochDay` ON `${TABLE_NAME}` (`claimEpochDay`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b94820be08f00690971c8c6fe4f3f903')"
+    ]
+  }
+}
