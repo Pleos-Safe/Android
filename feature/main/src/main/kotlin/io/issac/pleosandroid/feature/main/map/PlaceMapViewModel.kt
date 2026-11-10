@@ -38,7 +38,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
 // Keep one route writer and one pending request across the parked map and driving home.
@@ -59,8 +61,9 @@ internal class PlaceMapViewModel @Inject constructor(
     private val profiles: CollectionDemoRepository,
 ) : ViewModel() {
     private val location = PlaceMapLocation(context, viewModelScope)
+    private val visitArrival = MutableStateFlow<VisitArrival?>(null)
     private val navigationDelegate = lazy {
-        PlaceMapNavigation(context, viewModelScope).also { it.updateCatalog(this.places.value) }
+        PlaceMapNavigation(context, viewModelScope, ::onNavigationArrival).also { it.updateCatalog(this.places.value) }
     }
     private val navigation by navigationDelegate
     private var parkedMapVisible = false
@@ -126,20 +129,40 @@ internal class PlaceMapViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
     // Speed samples keep arriving in P. Keep the GPS subscription alive throughout the same stop.
-    private val parkedVisit =
-        combine(journeys.state, vehicleRepository.state, recorder.enabled) { journey, vehicle, enabled ->
-            journey.session?.takeIf { it.paused && !it.recoveryRequired && enabled && vehicle.allowsTabNavigation }
-        }.distinctUntilChanged()
+    private val parkedVisit = combine(
+        journeys.state,
+        vehicleRepository.state,
+        recorder.enabled,
+        profiles.enabled,
+    ) { journey, vehicle, enabled, demo ->
+        journey.session?.takeIf { it.paused && !it.recoveryRequired && enabled && !demo && vehicle.allowsTabNavigation }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     private val visitFix = parkedVisit.flatMapLatest { session ->
-        if (session == null) flowOf(null) else visitLocation.locations.catch { emit(null) }
+        if (session == null) {
+            flowOf(null)
+        } else {
+            val parkedAt = checkNotNull(session.pausedAtNanos)
+            visitLocation.locations.scan<VisitLocation?, VisitLocation?>(null) { previous, next ->
+                chooseParkedVisitFix(previous, next, parkedAt, SystemClock.elapsedRealtimeNanos())
+            }.distinctUntilChanged()
+                .transformLatest { fix ->
+                    emit(fix)
+                    if (fix != null) {
+                        val ageNanos = SystemClock.elapsedRealtimeNanos() - fix.elapsedNanos
+                        delay(((MAX_VISIT_FIX_AGE_NANOS - ageNanos) / 1_000_000L).coerceAtLeast(0))
+                        emit(null)
+                    }
+                }.catch { emit(null) }
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
-    private val parkedGeneration = combine(parkedVisit, profiles.enabled) { session, demo ->
-        session?.id?.takeUnless { demo }
-    }.distinctUntilChanged().map { id ->
+    private val parkedGeneration = parkedVisit.map { it?.id }.distinctUntilChanged().map { id ->
         if (id == null) null else runCatching { progress.getDataGeneration() }.getOrNull()?.let { id to it }
     }
+    private val visitRouteEvidence by lazy {
+        combine(navigation.state, visitArrival) { route, arrival -> VisitRouteEvidence(route.routePlaceIds, arrival) }
+    }
     val claimableVisit by lazy {
-        combine(parkedGeneration, visitFix, navigation.state, places, visitInbox) {
+        combine(parkedGeneration, visitFix, visitRouteEvidence, places, visitInbox) {
                 generation,
                 fix,
                 route,
@@ -159,7 +182,7 @@ internal class PlaceMapViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            profiles.enabled.collect {
+            parkedVisit.collect {
                 claimJob?.cancel()
                 mutableVisitResult.value = null
             }
@@ -170,10 +193,10 @@ internal class PlaceMapViewModel @Inject constructor(
         if (claimJob?.isActive == true) return
         claimJob = viewModelScope.launch {
             mutableVisitResult.value = try {
-                if (!profiles.enabled.first() &&
-                    eligibleVisit(visitFix.value, navigation.state.value, listOf(visit.place)) ==
-                    (visit.journeyId to visit.place)
-                ) {
+                val demo = profiles.enabled.first()
+                val route = VisitRouteEvidence(navigation.state.value.routePlaceIds, visitArrival.value)
+                val candidate = eligibleVisit(visitFix.value, route, listOf(visit.place))
+                if (!demo && candidate?.first == visit.journeyId) {
                     visitPacks.claim(
                         VisitPackClaimRequest(
                             visit.journeyId,
@@ -195,30 +218,25 @@ internal class PlaceMapViewModel @Inject constructor(
     }
 
     fun refreshParkedVisit() {
-        mutableVisitResult.value = null
         navigation.recheck()
     }
 
     private fun eligibleVisit(
         fix: VisitLocation?,
-        route: PlaceNavigationState,
+        route: VisitRouteEvidence,
         catalog: List<TravelPlace>,
     ): Pair<String, TravelPlace>? {
+        if (!vehicleRepository.state.value.allowsTabNavigation || !recorder.enabled.value) return null
         val session = journeys.state.value.session ?: return null
-        val parkedAt = session.pausedAtNanos ?: return null
-        if (!vehicleRepository.state.value.allowsTabNavigation || !recorder.enabled.value || session.recoveryRequired ||
-            !session.paused || fix == null || fix.elapsedNanos < parkedAt ||
-            SystemClock.elapsedRealtimeNanos() - fix.elapsedNanos !in 0..10_000_000_000L ||
-            fix.accuracyMeters !in 0.0..100.0
-        ) {
-            return null
-        }
-        val position = PlaceMapPosition(fix.latitude, fix.longitude)
-        val nearby = catalog.asSequence().filter { it.id in route.routePlaceIds }.map { place ->
-            place to position.distanceMetersTo(PlaceMapPosition(place.latitude, place.longitude))
-        }.filter { (place, distance) -> distance + fix.accuracyMeters <= place.visitRadiusMeters }
-            .minByOrNull { it.second }?.first ?: return null
-        return session.id to nearby
+        val place = selectParkedVisitPlace(session, fix, route, catalog, SystemClock.elapsedRealtimeNanos())
+        return place?.let { session.id to it }
+    }
+
+    private fun onNavigationArrival(name: String) {
+        val session = journeys.state.value.session?.takeUnless { it.finished || it.recoveryRequired } ?: return
+        val arrivedName = name.trim()
+        val place = places.value.singleOrNull { it.name.trim() == arrivedName } ?: return
+        visitArrival.value = VisitArrival(session.id, place.id, SystemClock.elapsedRealtimeNanos())
     }
 
     val drivingPosition = combine(drivingJourney, location.freshFix) { journeyId, fix ->
