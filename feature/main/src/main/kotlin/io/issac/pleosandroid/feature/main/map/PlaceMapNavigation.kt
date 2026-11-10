@@ -3,10 +3,12 @@ package io.issac.pleosandroid.feature.main.map
 import ai.pleos.playground.navi.constants.NaviErrorCode
 import ai.pleos.playground.navi.constants.NaviMode
 import ai.pleos.playground.navi.constants.WaypointIndex
+import ai.pleos.playground.navi.data.DestinationArrivedInfo
 import ai.pleos.playground.navi.data.DestinationInfo
 import ai.pleos.playground.navi.data.RequestWaypointInfo
 import ai.pleos.playground.navi.data.RouteInfo
 import ai.pleos.playground.navi.data.RouteStateInfo
+import ai.pleos.playground.navi.data.WaypointArrivedInfo
 import ai.pleos.playground.navi.data.WaypointChangedInfo
 import ai.pleos.playground.navi.data.WaypointInfo
 import ai.pleos.playground.navi.helper.NaviHelper
@@ -43,7 +45,11 @@ internal data class PlaceNavigationState(
     val hasWaypointCapacity: Boolean = true,
 )
 
-internal class PlaceMapNavigation(context: Context, private val scope: CoroutineScope) {
+internal class PlaceMapNavigation(
+    context: Context,
+    private val scope: CoroutineScope,
+    private val onVisitArrival: (String) -> Unit,
+) {
     private val applicationContext = context.applicationContext
     private val mainHandler = Handler(Looper.getMainLooper())
     private val mutableState = MutableStateFlow(PlaceNavigationState())
@@ -390,6 +396,14 @@ internal class PlaceMapNavigation(context: Context, private val scope: Coroutine
 
             override fun onDestinationChanged() = dispatch(::routeChanged)
             override fun onWaypointChanged(waypointChangedInfo: WaypointChangedInfo) = dispatch(::routeChanged)
+            override fun onDestinationArrived(destinationArrivedInfo: DestinationArrivedInfo) = dispatch {
+                onVisitArrival(destinationArrivedInfo.name)
+            }
+
+            override fun onWayPointArrived(waypointArrivedInfo: WaypointArrivedInfo) = dispatch {
+                onVisitArrival(waypointArrivedInfo.name)
+            }
+
             override fun onRoutingCompleted() = dispatch(::routeChanged)
             override fun onRouteCancelled() = dispatch(::routeChanged)
             override fun onRouteEnded() = dispatch(::routeChanged)
