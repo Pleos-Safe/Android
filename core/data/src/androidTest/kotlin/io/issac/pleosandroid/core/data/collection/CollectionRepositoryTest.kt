@@ -208,12 +208,16 @@ class CollectionRepositoryTest {
         assertEquals(PointSpendResult.StaleGeneration, points.spendForEnhancement("upgrade", 50, generation))
     }
 
-    @Test fun packClaimUsesKoreaDayAndFourteenDayCooldown() = runBlocking<Unit> {
+    @Test fun packClaimUsesKoreaDayAndFourteenDayRegionalCooldown() = runBlocking<Unit> {
         val packs = DefaultVisitPackRepository(store, rewardClock)
-        db.collectionDao().putPlaces(
-            (1..11).map {
-                db.collectionDao().places().first().copy(id = "place-$it", rewardPack = "Busan")
-            },
+        val dao = db.collectionDao()
+        val template = dao.places().first()
+        dao.putPlaces((1..10).map { template.copy(id = "place-$it", regionId = "region-$it", rewardPack = "Busan") })
+        dao.putPlaces(
+            listOf(
+                template.copy(id = "place-11", regionId = null, rewardPack = "Busan"),
+                template.copy(id = "same-region", regionId = "region-1", rewardPack = "Busan"),
+            ),
         )
         val first = VisitPackClaimRequest("journey", "place-1", "장소 1", "관광지", generation)
         val applied = packs.claim(first) as VisitPackClaimResult.Applied
@@ -226,10 +230,15 @@ class CollectionRepositoryTest {
         assertEquals(VisitPackClaimResult.AlreadyClaimed(applied.receipt), retried)
 
         rewardNow = rewardNow.plusSeconds(1)
-        assertEquals(VisitPackClaimResult.PlaceCooldown, packs.claim(first.copy(journeyId = "next")))
+        val sameRegion = first.copy(placeId = "same-region", journeyId = "next")
+        assertEquals(VisitPackClaimResult.RegionCooldown, packs.claim(sameRegion))
         assertTrue(packs.claim(eleventh) is VisitPackClaimResult.Applied)
-        rewardNow = applied.receipt.claimedAt.plusSeconds(14 * 24 * 60 * 60L)
-        assertTrue(packs.claim(first.copy(journeyId = "later")) is VisitPackClaimResult.Applied)
+        assertEquals(VisitPackClaimResult.RegionCooldown, packs.claim(eleventh.copy(journeyId = "next")))
+        val canClaimAgainAt = applied.receipt.claimedAt.plusSeconds(14 * 24 * 60 * 60L)
+        rewardNow = canClaimAgainAt.minusMillis(1)
+        assertEquals(VisitPackClaimResult.RegionCooldown, packs.claim(sameRegion))
+        rewardNow = canClaimAgainAt
+        assertTrue(packs.claim(sameRegion) is VisitPackClaimResult.Applied)
         assertEquals(12, packs.observeInbox().first().size)
 
         assertEquals(MutationResult.Success, progress.clearUserData())

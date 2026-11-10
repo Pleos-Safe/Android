@@ -122,10 +122,16 @@ fun VisitPackRewardCard(
     if (placeName == null && result == null) return
     val message = when (result) {
         is VisitPackClaimResult.Applied, is VisitPackClaimResult.AlreadyClaimed -> "방문 카드팩 1개를 받았어요"
+
         VisitPackClaimResult.DailyLimitReached -> "오늘 방문팩 ${VisitPackPolicy.DAILY_CLAIM_LIMIT}개를 모두 받았어요"
-        VisitPackClaimResult.PlaceCooldown -> "이 장소의 방문 카드팩은 14일 뒤 다시 받을 수 있어요"
+
+        VisitPackClaimResult.RegionCooldown ->
+            "같은 지역의 방문 카드팩은 마지막 수령 후 ${VisitPackPolicy.REGION_COOLDOWN_DAYS}일이 지나면 다시 받을 수 있어요"
+
         VisitPackClaimResult.InvalidInput -> "주차와 현재 위치를 다시 확인해 주세요"
+
         VisitPackClaimResult.StaleGeneration, VisitPackClaimResult.StorageFailure -> "카드팩을 저장하지 못했어요. 다시 시도해 주세요"
+
         null -> "방문 보상을 받을 수 있어요"
     }
     val receipt = when (result) {
@@ -146,7 +152,9 @@ fun VisitPackRewardCard(
         }
         if (receipt != null && onOpenPack != null) {
             PleosButton("받은 팩 열어보기", { onOpenPack(receipt.albumPackId) }, Modifier.fillMaxWidth(), showArrow = true)
-        } else if (onClaim != null && result !is VisitPackClaimResult.DailyLimitReached) {
+        } else if (onClaim != null && result !is VisitPackClaimResult.DailyLimitReached &&
+            result !is VisitPackClaimResult.RegionCooldown
+        ) {
             PleosButton("카드팩 받기", onClaim, modifier = Modifier.fillMaxWidth(), showArrow = true)
         }
     }
