@@ -115,11 +115,14 @@ interface CollectionDao {
     @Query("SELECT * FROM visit_pack WHERE journeyId = :journeyId AND placeId = :placeId")
     suspend fun visitPack(journeyId: String, placeId: String): VisitPackEntity?
 
-    @Query("SELECT COUNT(*) FROM visit_pack WHERE claimEpochDay = :day")
+    @Query("SELECT COUNT(DISTINCT placeId) FROM visit_pack WHERE claimEpochDay = :day")
     suspend fun visitPacksClaimedOn(day: Long): Int
 
-    @Query("SELECT EXISTS(SELECT 1 FROM visit_pack WHERE placeId = :placeId AND claimedAt > :cutoff)")
-    suspend fun wasVisitPackClaimedAfter(placeId: String, cutoff: Long): Boolean
+    @Query(
+        "SELECT EXISTS(SELECT 1 FROM visit_pack WHERE claimedAt > :cutoff " +
+            "AND placeId IN (SELECT id FROM place WHERE id = :placeId OR regionId = :regionId))",
+    )
+    suspend fun wasVisitPackClaimedInRegionAfter(placeId: String, regionId: String?, cutoff: Long): Boolean
 
     @Insert suspend fun insertVisitPack(value: VisitPackEntity)
 

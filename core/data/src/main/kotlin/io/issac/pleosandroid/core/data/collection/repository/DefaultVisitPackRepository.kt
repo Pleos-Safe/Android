@@ -48,8 +48,9 @@ internal class DefaultVisitPackRepository @Inject constructor(
                     if (claimedToday >= VisitPackPolicy.DAILY_CLAIM_LIMIT) {
                         return@databaseTransaction VisitPackClaimResult.DailyLimitReached
                     }
-                    if (wasVisitPackClaimedAfter(request.placeId, now.minus(placeCooldown).toEpochMilli())) {
-                        return@databaseTransaction VisitPackClaimResult.PlaceCooldown
+                    val cutoff = now.minus(regionCooldown).toEpochMilli()
+                    if (wasVisitPackClaimedInRegionAfter(place.id, place.regionId, cutoff)) {
+                        return@databaseTransaction VisitPackClaimResult.RegionCooldown
                     }
                     val pack = VisitPackEntity(
                         id = UUID.randomUUID().toString(),
@@ -71,7 +72,7 @@ internal class DefaultVisitPackRepository @Inject constructor(
 
     private companion object {
         val claimZone: ZoneId = ZoneId.of("Asia/Seoul")
-        val placeCooldown: Duration = Duration.ofDays(14)
+        val regionCooldown: Duration = Duration.ofDays(VisitPackPolicy.REGION_COOLDOWN_DAYS)
     }
 }
 
