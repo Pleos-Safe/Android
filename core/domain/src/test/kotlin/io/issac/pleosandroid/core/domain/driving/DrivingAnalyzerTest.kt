@@ -96,12 +96,20 @@ class DrivingAnalyzerTest {
     @Test fun `short trips unknown beginnings and interrupted sessions have no score`() {
         val short = Drive().apply { hold(10.0, 10.0) }.result()
         assertNull(short.score)
-        assertTrue(InsufficientReason.TooShort in short.assessment.reasons)
+        assertTrue(InsufficientReason.TooLittleDistance in short.assessment.reasons)
         val late = Drive(late = true).apply { hold(10.0, 180.0) }.result()
         assertNull(late.score)
         assertTrue(InsufficientReason.StartedWhileMoving in late.assessment.reasons)
         val drive = Drive().apply { hold(10.0, 180.0) }
         assertNull(drive.analyzer.result(drive.now, interrupted = true).score)
+    }
+
+    @Test fun `a measured two kilometer drive can be scored in less than two minutes`() {
+        val result = Drive(step = 1.0).apply { hold(25.0, 90.0) }.result()
+        assertEquals(100, result.score)
+        assertEquals(90, result.assessment.sampleCount)
+        assertTrue(result.distanceMeters >= 2_000)
+        assertTrue(result.assessment.movingMillis < 120_000)
     }
 
     @Test fun `reverse motion cannot count as forward acceleration or a qualified drive`() {

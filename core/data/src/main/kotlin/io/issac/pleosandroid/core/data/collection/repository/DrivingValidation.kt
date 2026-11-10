@@ -20,9 +20,18 @@ internal fun validDrivingAssessment(journey: JourneyRecord): Boolean {
     }
     return if (journey.assessment == AssessmentStatus.Complete) {
         val policy = DrivingPolicy()
-        d.policyVersion == policy.version && d.reasons.isEmpty() && journey.harshStarts == d.harshStarts &&
-            d.movingMillis >= policy.minimumMovingMillis && journey.distanceMeters >= policy.minimumDistanceMeters &&
-            d.sampleCount >= policy.minimumSamples && d.coverage >= policy.minimumCoverage &&
+        val validMeasurements = when (d.policyVersion) {
+            1 -> d.movingMillis >= 120_000L && d.sampleCount >= 300
+
+            policy.version ->
+                d.movingMillis > 0 && d.sampleCount >= 2 &&
+                    d.observedMillis <= (d.sampleCount - 1L) * policy.maximumIntervalMillis
+
+            else -> false
+        }
+        validMeasurements && d.reasons.isEmpty() && journey.harshStarts == d.harshStarts &&
+            journey.distanceMeters >= policy.minimumDistanceMeters &&
+            d.coverage >= policy.minimumCoverage &&
             d.longestGapMillis <= policy.maximumGapMillis &&
             d.rejectedSamples.toDouble() / max(1, d.sampleCount + d.rejectedSamples) <= .05 &&
             journey.score == accelerationReferenceScore(d.harshAccelerations, d.movingMillis)

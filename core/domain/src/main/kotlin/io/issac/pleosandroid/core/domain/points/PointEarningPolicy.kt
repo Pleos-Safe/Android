@@ -9,12 +9,11 @@ import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
 object PointEarningPolicy {
-    const val MINIMUM_MOVING_MILLIS = 600_000L
-    const val MINIMUM_DISTANCE_METERS = 5_000L
+    const val MINIMUM_DISTANCE_METERS = 2_000L
     const val WEEKLY_DISTANCE_LIMIT_METERS = 1_000_000L
     const val POINTS_PER_KILOMETER = 20L
     private const val SAFETY_MULTIPLIER_TENTHS = 15
-    private const val RULE_VERSION = 3
+    private const val RULE_VERSION = 4
     private val drivingZone = ZoneId.of("Asia/Seoul")
 
     fun drivingDate(occurredAt: Instant): LocalDate = occurredAt.atZone(drivingZone).toLocalDate()
@@ -28,7 +27,7 @@ object PointEarningPolicy {
     ): PointTransaction? {
         val score = journey.score ?: return null
         if (journey.assessment != AssessmentStatus.Complete || score !in 0..100 ||
-            (journey.driving?.movingMillis ?: 0) < MINIMUM_MOVING_MILLIS ||
+            journey.driving == null ||
             journey.distanceMeters < MINIMUM_DISTANCE_METERS
         ) {
             return null

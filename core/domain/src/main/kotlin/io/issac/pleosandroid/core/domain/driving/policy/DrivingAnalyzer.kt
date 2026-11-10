@@ -11,10 +11,8 @@ import kotlin.math.roundToInt
 
 /** MVP policy: all thresholds are tunable product rules and must be calibrated with vehicle traces. */
 data class DrivingPolicy(
-    val version: Int = 1,
-    val minimumMovingMillis: Long = 120_000,
+    val version: Int = 2,
     val minimumDistanceMeters: Long = 1_000,
-    val minimumSamples: Int = 300,
     val minimumCoverage: Double = .9,
     val maximumIntervalMillis: Long = 2_000,
     val maximumGapMillis: Long = 10_000,
@@ -138,9 +136,9 @@ class DrivingAnalyzer(
         val tailGap = (endedNanos - lastAcceptedTimestamp).coerceAtLeast(0)
         val gap = max(longestGap, tailGap) / 1_000_000
         val reasons = buildSet {
-            if (moving < policy.minimumMovingMillis) add(InsufficientReason.TooShort)
+            if (moving == 0L) add(InsufficientReason.TooShort)
             if (distance < policy.minimumDistanceMeters) add(InsufficientReason.TooLittleDistance)
-            if (samples < policy.minimumSamples) add(InsufficientReason.TooFewSamples)
+            if (samples < 2) add(InsufficientReason.TooFewSamples)
             if (observed.toDouble() / elapsed < policy.minimumCoverage) add(InsufficientReason.LowCoverage)
             if (gap > policy.maximumGapMillis) add(InsufficientReason.SignalGap)
             if (rejected.toDouble() / max(1, samples + rejected) > .05) add(InsufficientReason.InvalidSignal)

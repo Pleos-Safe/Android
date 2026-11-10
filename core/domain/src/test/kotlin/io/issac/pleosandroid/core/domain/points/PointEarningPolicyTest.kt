@@ -10,11 +10,10 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class PointEarningPolicyTest {
-    @Test fun `requires both measured thresholds and a completed score`() {
-        val journey = trip()
-        assertEquals(240L, PointEarningPolicy.settle(journey, 0)?.deltaHalfPoints)
-        assertNull(PointEarningPolicy.settle(journey.copy(distanceMeters = 4_999), 0))
-        assertNull(PointEarningPolicy.settle(journey.copy(driving = journey.driving!!.copy(movingMillis = 599_999)), 0))
+    @Test fun `two measured kilometers earn points with a completed score regardless of duration`() {
+        val journey = trip(distanceMeters = 2_000, durationSeconds = 90)
+        assertEquals(96L, PointEarningPolicy.settle(journey, 0)?.deltaHalfPoints)
+        assertNull(PointEarningPolicy.settle(journey.copy(distanceMeters = 1_999), 0))
         assertNull(PointEarningPolicy.settle(journey.copy(driving = null), 0))
         assertNull(PointEarningPolicy.settle(journey.copy(assessment = AssessmentStatus.Insufficient, score = null), 0))
     }
@@ -59,19 +58,21 @@ class PointEarningPolicyTest {
     private fun trip(
         score: Int = 80,
         startedAt: Instant = Instant.parse("2026-11-02T00:00:00Z"),
-        endedAt: Instant = startedAt.plusSeconds(600),
+        durationSeconds: Long = 600,
+        endedAt: Instant = startedAt.plusSeconds(durationSeconds),
+        distanceMeters: Long = 5_000,
     ) = JourneyRecord(
         id = "drive",
         startedAt = startedAt,
         endedAt = endedAt,
         zoneId = "Asia/Seoul",
-        distanceMeters = 5_000,
+        distanceMeters = distanceMeters,
         assessment = AssessmentStatus.Complete,
         score = score,
         driving = DrivingAssessment(
-            elapsedMillis = 600_000,
-            observedMillis = 600_000,
-            movingMillis = 600_000,
+            elapsedMillis = durationSeconds * 1_000,
+            observedMillis = durationSeconds * 1_000,
+            movingMillis = durationSeconds * 1_000,
             sampleCount = 600,
             rejectedSamples = 0,
             harshAccelerations = 0,

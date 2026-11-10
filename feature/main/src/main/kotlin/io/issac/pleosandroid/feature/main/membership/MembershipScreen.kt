@@ -247,7 +247,7 @@ private fun MembershipDetails(
     )
     if (!membership.hasBenefit && !managing) {
         Text(
-            "구독 중 달린 거리부터 적용돼요. 10분 이상, 5km 이상 달려 안전점수가 나오면 적립돼요.",
+            "구독 중 달린 거리부터 적용돼요. 2km 이상 달리고 안전점수가 나오면 적립돼요.",
             style = PleosTextStyles.meta,
             color = colors.textSecondary,
         )
