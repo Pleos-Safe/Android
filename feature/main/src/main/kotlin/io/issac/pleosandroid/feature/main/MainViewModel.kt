@@ -150,9 +150,8 @@ class MainViewModel @Inject constructor(
 
                     credit != null || summary.reportId == null || currentWallet == null -> null
 
-                    summary.durationMillis < PointEarningPolicy.MINIMUM_MOVING_MILLIS ||
-                        (summary.distanceMeters ?: 0) < PointEarningPolicy.MINIMUM_DISTANCE_METERS ->
-                        "10분 이상, 5km 이상 달리면 포인트를 받아요."
+                    (summary.distanceMeters ?: 0) < PointEarningPolicy.MINIMUM_DISTANCE_METERS ->
+                        "2km 이상 달리면 포인트를 받아요."
 
                     summary.safetyScore == null -> "안전점수 자료가 부족해 이번 정산은 기록만 남겼어요."
 

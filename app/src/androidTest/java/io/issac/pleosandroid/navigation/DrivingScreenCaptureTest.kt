@@ -109,12 +109,12 @@ class DrivingScreenCaptureTest {
                     "이번 주행은 기록만 남겼어요",
                     "13-summary-no-points",
                     summary = earned.copy(
-                        durationMillis = 8 * 60_000L,
-                        distanceMeters = 4_200,
+                        durationMillis = 4 * 60_000L,
+                        distanceMeters = 1_900,
                         safetyScore = null,
                         earnedPoints = 0,
                         recognizedDistanceMeters = 0,
-                        settlementReason = "10분 이상, 5km 이상 달리면 포인트를 받아요.",
+                        settlementReason = "2km 이상 달리면 포인트를 받아요.",
                     ),
                 ),
                 Capture(
