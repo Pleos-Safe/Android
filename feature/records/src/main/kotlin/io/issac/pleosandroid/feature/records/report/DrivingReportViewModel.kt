@@ -5,51 +5,58 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.collection.repository.HistoryRepository
 import io.issac.pleosandroid.core.domain.points.PointRepository
+import io.issac.pleosandroid.core.ui.flow.collectUiState
 import io.issac.pleosandroid.core.ui.mvi.BaseViewModel
 import io.issac.pleosandroid.feature.records.points.observeRecordPoints
 import javax.inject.Inject
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 internal class DrivingReportViewModel @Inject constructor(
     private val history: HistoryRepository,
     private val demo: CollectionDemoRepository,
     private val points: PointRepository,
 ) : BaseViewModel<DrivingReportState, ReportIntent, ReportEffect>(DrivingReportState()) {
-    private var id: String? = null
-    private var observation: Job? = null
+    private val request = MutableStateFlow<ReportRequest?>(null)
+
+    init {
+        viewModelScope.launch {
+            request.filterNotNull().collectLatest { observe(it.journeyId) }
+        }
+    }
 
     override fun processIntent(intent: ReportIntent) {
         when (intent) {
-            is ReportIntent.Load -> if (id != intent.id) {
-                id = intent.id
-                observe(intent.id)
+            is ReportIntent.Load -> request.update { current ->
+                if (current?.journeyId == intent.id) current else ReportRequest(intent.id)
             }
 
-            ReportIntent.Retry -> id?.let(::observe)
+            ReportIntent.Retry -> request.update { current -> current?.copy(refresh = current.refresh + 1) }
         }
     }
 
-    private fun observe(id: String) {
-        observation?.cancel()
-        observation = viewModelScope.launch {
-            updateState { copy(loading = true, error = false) }
-            try {
-                demo.enabled.collectLatest { usingDemo ->
-                    updateState { DrivingReportState(demo = usingDemo) }
-                    combine(history.observeJourney(id), points.observeRecordPoints(usingDemo)) { journey, wallet ->
-                        DrivingReportState(loading = false, journey = journey, demo = usingDemo, points = wallet)
-                    }.collect { value -> updateState { value } }
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                updateState { copy(loading = false, error = true) }
+    private suspend fun observe(id: String) {
+        demo.enabled.flatMapLatest { usingDemo ->
+            combine(history.observeJourney(id), points.observeRecordPoints(usingDemo)) { journey, wallet ->
+                DrivingReportState(loading = false, journey = journey, demo = usingDemo, points = wallet)
+            }.onStart {
+                updateState { DrivingReportState(demo = usingDemo) }
             }
-        }
+        }.collectUiState(
+            onLoading = { updateState { copy(loading = true, error = false) } },
+            onError = { updateState { copy(loading = false, error = true) } },
+            onState = { value -> updateState { value } },
+        )
     }
 }
+
+private data class ReportRequest(val journeyId: String, val refresh: Int = 0)
