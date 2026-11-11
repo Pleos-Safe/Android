@@ -24,6 +24,7 @@ import io.issac.pleosandroid.core.navigation.BadgesRoute
 import io.issac.pleosandroid.core.navigation.DrivingReportRoute
 import io.issac.pleosandroid.core.navigation.ExploreRoute
 import io.issac.pleosandroid.core.navigation.RecordsRoute
+import io.issac.pleosandroid.core.ui.flow.catchUiError
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,7 +33,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -60,11 +60,11 @@ internal class HomeViewModel @Inject constructor(
     internal val effect = effects.receiveAsFlow()
     private val action = MutableStateFlow(JourneyAction())
     private val wallet =
-        points?.observeWallet()?.map<PointWallet, PointWallet?> { it }?.catch { emit(null) }
+        points?.observeWallet()?.map<PointWallet, PointWallet?> { it }?.catchUiError { emit(null) }
             ?: flowOf<PointWallet?>(null)
     private val arrivedJourney = savedStateHandle.getStateFlow<String?>("arrived_journey_id", null)
     private val report = journeys.state.map { it.session?.id }.distinctUntilChanged().flatMapLatest { id ->
-        if (id == null) flowOf(null) else history.observeJourney(id).catch { emit(null) }
+        if (id == null) flowOf(null) else history.observeJourney(id).catchUiError { emit(null) }
     }
 
     private val journeyUi = combine(
