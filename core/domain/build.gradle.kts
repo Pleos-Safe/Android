@@ -1,5 +1,6 @@
 plugins {
     id("pleos.kotlin.jvm")
+    `java-test-fixtures`
 }
 
 dependencies {
