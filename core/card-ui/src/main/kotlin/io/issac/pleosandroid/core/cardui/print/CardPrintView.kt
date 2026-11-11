@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.imageResource
@@ -113,6 +115,10 @@ private val stocks = mapOf(
 private val FullWindow = { 1f }
 private val SquareWindow = { 0f }
 
+internal val CardCopy.plateResource: Int get() = plates[stocks.getValue(grade).plateIndex][(level / 5).coerceAtMost(5)]
+internal val CardCopy.artworkResource: Int get() =
+    printArt.getValue(if (variant) requireNotNull(print.variantArtwork) else print.artwork)
+
 class PrintLevelChange(val before: Int, val after: Int, val progress: () -> Float)
 
 @Composable
@@ -125,14 +131,16 @@ fun CardPrintView(
     artExpansion: (() -> Float)? = null,
     levelChange: PrintLevelChange? = null,
     flipAngle: State<Float>? = null,
+    prepared: PreparedCardPrint? = null,
 ) {
     val stockStyle = stocks.getValue(card.grade)
     val stage = (card.level / 5).coerceAtMost(5)
     val expansion = artExpansion ?: if (stage >= 3) FullWindow else SquareWindow
-    val key = if (card.variant) requireNotNull(card.print.variantArtwork) else card.print.artwork
-    val artwork = printArt.getValue(key)
-    val plate = ImageBitmap.imageResource(plates[stockStyle.plateIndex][stage])
+    val plate = prepared?.plate ?: ImageBitmap.imageResource(card.plateResource)
     val trace = card.status == CopyStatus.Trace
+    val frontAngle = flipAngle?.let { angle ->
+        remember(angle) { derivedStateOf { angle.value.coerceAtLeast(90f) } }
+    }
     val light = illumination ?: rememberMilestoneCardLight(inspectable && (stage >= 2 || stockStyle.plateIndex > 0))
     var tilt by remember(card.id) { mutableFloatStateOf(0f) }
     var dragging by remember(card.id) { mutableStateOf(false) }
@@ -168,10 +176,10 @@ fun CardPrintView(
                 Modifier
             } else {
                 val bitmap = plate.asAndroidBitmap()
-                val flipFoil = if (flipAngle == null) {
+                val flipFoil = if (frontAngle == null) {
                     Modifier
                 } else {
-                    Modifier.packFlipFoil(card.grade, bitmap, stage, expansion, flipAngle)
+                    Modifier.packFlipFoil(card.grade, bitmap, stage, expansion, frontAngle)
                 }
                 flipFoil.printCoating(
                     stage,
@@ -181,14 +189,19 @@ fun CardPrintView(
                     light = { light.value },
                     tilt = {
                         val rotation = surfaceRotation?.value ?: Offset.Zero
-                        val flipYaw = (flipAngle?.value ?: 180f) - 180f
-                        Offset(rotation.x + resting + flipYaw, rotation.y)
+                        val yaw = (frontAngle?.value ?: 180f) - 180f
+                        Offset(rotation.x + resting + yaw, rotation.y)
                     },
                     fullArt = expansion,
                 )
             }
             Box(Modifier.fillMaxSize().clipPrintStock(stage, expansion).then(stock).background(stockStyle.paper)) {
-                FramedPrintArtwork(painterResource(artwork), stage, expansion)
+                val artwork = if (prepared == null) {
+                    painterResource(card.artworkResource)
+                } else {
+                    remember(prepared) { BitmapPainter(prepared.artwork) }
+                }
+                FramedPrintArtwork(artwork, stage, expansion)
                 Image(
                     plate,
                     null,
