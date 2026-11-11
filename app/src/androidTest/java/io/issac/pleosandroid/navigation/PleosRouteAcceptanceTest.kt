@@ -1,11 +1,13 @@
 package io.issac.pleosandroid.navigation
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasText as matchesText
 import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -53,10 +55,10 @@ class PleosRouteAcceptanceTest {
         selectPlace("해운대 해변")
         captureBeforeAction(SET_DESTINATION, ADD_WAYPOINT, "route-01-before-destination.png")
         compose.onNodeWithText(SET_DESTINATION).performClick()
-        assertApplied("route-02-destination")
+        assertApplied("route-02-destination", "목적지 · 해운대 해변")
 
         // Re-enter so the waypoint request starts from a fresh read of the confirmed destination.
-        compose.onNodeWithText("여행 홈으로").performScrollTo().performClick()
+        compose.onNodeWithText("여행 홈으로").apply { if (!isDisplayed()) performScrollTo() }.performClick()
         openMap()
         selectPlace("광안리 해변")
         captureBeforeAction(ADD_WAYPOINT, SET_DESTINATION, "route-03-before-waypoint.png")
@@ -64,19 +66,19 @@ class PleosRouteAcceptanceTest {
         waitForText("가는 길에 들를까요?")
         capture("route-04-confirm-waypoint.png")
         compose.onNode(matchesText(ADD_WAYPOINT) and hasAnyAncestor(isDialog())).performClick()
-        assertApplied("route-05-waypoint")
+        assertApplied("route-05-waypoint", "경유지 · 광안리 해변", "목적지 · 해운대 해변")
     }
 
     private fun openMap() {
         waitForText("지도에서 찾기")
         compose.onNodeWithText("지도에서 찾기").performClick()
         waitForText("지도에서 여행지 찾기")
-        waitForText("여행지 · 9곳")
+        waitForText("해운대 해변")
     }
 
     private fun selectPlace(name: String) {
         waitForText(name)
-        compose.onNodeWithText(name).performScrollTo().performClick()
+        compose.onNodeWithText(name).apply { if (!isDisplayed()) performScrollTo() }.performClick()
     }
 
     private fun captureBeforeAction(action: String, unexpectedAction: String, filename: String) {
@@ -87,21 +89,36 @@ class PleosRouteAcceptanceTest {
                     hasText(RouteOutcome.Unavailable.label)
             }
             val visibleAction = if (hasText(action)) action else unexpectedAction
-            if (hasText(visibleAction)) compose.onNodeWithText(visibleAction).performScrollTo()
+            if (hasText(visibleAction)) {
+                compose.onNodeWithText(visibleAction).apply {
+                    if (!isDisplayed()) performScrollTo()
+                }
+            }
         } finally {
             capture(filename)
         }
         compose.onNodeWithText(action).assertIsEnabled()
     }
 
-    private fun assertApplied(filenameStem: String) {
+    private fun assertApplied(filenameStem: String, vararg expectedRouteLabels: String) {
+        val activity = compose.activity
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val returnIntent = Intent(context, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
         var outcome: RouteOutcome? = null
         try {
             compose.waitUntil(timeoutMillis = 45_000) {
-                outcome = RouteOutcome.entries.firstOrNull { hasText(it.label) }
+                // The native SDK can foreground its app after the request callback returns.
+                if (!activity.hasWindowFocus()) context.startActivity(returnIntent)
+                outcome = if (expectedRouteLabels.all(::hasText)) {
+                    RouteOutcome.Applied
+                } else {
+                    RouteOutcome.entries.firstOrNull { it != RouteOutcome.Applied && hasText(it.label) }
+                }
                 outcome != null
             }
-            outcome?.let { compose.onNodeWithText(it.label).performScrollTo() }
+            val visibleLabel = if (outcome == RouteOutcome.Applied) expectedRouteLabels.last() else outcome?.label
+            visibleLabel?.let { compose.onNodeWithText(it).apply { if (!isDisplayed()) performScrollTo() } }
         } finally {
             capture("$filenameStem-${outcome?.fileTag ?: "timed-out"}.png")
         }
