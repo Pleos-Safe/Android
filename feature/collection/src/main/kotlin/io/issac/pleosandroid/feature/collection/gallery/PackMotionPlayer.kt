@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import io.issac.pleosandroid.core.cardui.preview.PreviewStage
 import io.issac.pleosandroid.core.cardui.preview.previewPackCard
+import io.issac.pleosandroid.core.cardui.print.rememberPreparedCardPrint
 import io.issac.pleosandroid.core.navigation.PackMotionRoute
 import io.issac.pleosandroid.feature.collection.pack.PACK_FLIP_MS
 import io.issac.pleosandroid.feature.collection.pack.PACK_TEAR_MS
@@ -36,11 +37,12 @@ private val clockSaver = Saver<Animatable<Float, AnimationVector1D>, Float>(
 internal fun PackMotionPlayer(scene: PackMotionRoute, onBack: () -> Unit, modifier: Modifier = Modifier) {
     var run by rememberSaveable(scene) { mutableIntStateOf(0) }
     val replay: () -> Unit = { run++ }
+    val card = remember(scene) { previewPackCard(scene.region, scene.grade) }
+    val prepared = rememberPreparedCardPrint(card)
     key(scene, run) {
-        val card = remember(scene) { previewPackCard(scene.region, scene.grade) }
         val flipAt = if (scene.flipOnly) 0 else PACK_TEAR_MS + CARD_BACK_PAUSE_MS
         val duration = flipAt + PACK_FLIP_MS
-        TimedPreview(scene, duration, replay, onBack, modifier) { time, done, art ->
+        TimedPreview(scene, duration, prepared != null, replay, onBack, modifier) { time, done, art ->
             val tear = remember(time) {
                 derivedStateOf {
                     if (scene.flipOnly) 1f else (time.value * duration / PACK_TEAR_MS).coerceIn(0f, 1f)
@@ -52,7 +54,7 @@ internal fun PackMotionPlayer(scene: PackMotionRoute, onBack: () -> Unit, modifi
                     180f * FastOutSlowInEasing.transform(flip)
                 }
             }
-            PackOpeningPrint(card.pack, card, tear, angle, done, art)
+            PackOpeningPrint(card.pack, card, tear, angle, done, art, prepared = prepared)
         }
     }
 }
@@ -61,6 +63,7 @@ internal fun PackMotionPlayer(scene: PackMotionRoute, onBack: () -> Unit, modifi
 private fun TimedPreview(
     scene: PackMotionRoute,
     durationMs: Int,
+    ready: Boolean,
     replay: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier,
@@ -68,7 +71,8 @@ private fun TimedPreview(
 ) {
     val time = rememberSaveable(saver = clockSaver) { Animatable(0f) }
     var skip by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(time, skip) {
+    LaunchedEffect(time, skip, ready) {
+        if (!ready) return@LaunchedEffect
         if (skip) {
             time.snapTo(1f)
         } else if (time.value < 1f) {

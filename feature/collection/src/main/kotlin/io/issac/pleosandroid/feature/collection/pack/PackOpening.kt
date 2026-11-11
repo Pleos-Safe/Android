@@ -18,10 +18,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import io.issac.pleosandroid.core.cardui.component.BodyText
@@ -30,7 +33,9 @@ import io.issac.pleosandroid.core.cardui.component.ExhibitScreen
 import io.issac.pleosandroid.core.cardui.component.SectionTitle
 import io.issac.pleosandroid.core.cardui.motion.smoothStep
 import io.issac.pleosandroid.core.cardui.print.CardPrintView
+import io.issac.pleosandroid.core.cardui.print.PreparedCardPrint
 import io.issac.pleosandroid.core.cardui.print.packFlipEdge
+import io.issac.pleosandroid.core.cardui.print.rememberPreparedCardPrint
 import io.issac.pleosandroid.core.designsystem.R as DesignR
 import io.issac.pleosandroid.core.designsystem.component.PleosButton
 import io.issac.pleosandroid.core.designsystem.component.PleosButtonStyle
@@ -59,13 +64,14 @@ internal fun PackOpening(
     var turning by remember(pack.id) { mutableStateOf(false) }
     val tear = remember(pack.id) { Animatable(if (card == null) 0f else 1f) }
     val angle = remember(pack.id) { Animatable(if (card?.seen == true) 180f else 0f) }
+    val prepared = rememberPreparedCardPrint(card)
     LaunchedEffect(card?.id) {
         if (card != null) {
             if (openedHere) tear.animateTo(1f, tween(PACK_TEAR_MS, easing = LinearEasing)) else tear.snapTo(1f)
         }
     }
-    LaunchedEffect(turning) {
-        if (turning && card != null && !card.seen) {
+    LaunchedEffect(turning, prepared) {
+        if (turning && card != null && prepared != null && !card.seen) {
             angle.animateTo(180f, tween(PACK_FLIP_MS, easing = FastOutSlowInEasing))
             send(CollectionIntent.Reveal(card.id))
             turning = false
@@ -88,6 +94,7 @@ internal fun PackOpening(
             angle.asState(),
             shown,
             art,
+            prepared = prepared,
             onUnseal = if (card == null && !busy) unseal else null,
             onFlip = if (canTurn) flip else null,
         )
@@ -143,6 +150,7 @@ internal fun PackOpeningPrint(
     angle: State<Float>,
     shown: Boolean,
     modifier: Modifier,
+    prepared: PreparedCardPrint?,
     onUnseal: (() -> Unit)? = null,
     onFlip: (() -> Unit)? = null,
 ) {
@@ -165,15 +173,39 @@ internal fun PackOpeningPrint(
                 translationY = size.height * (.044f - .119f * emerge + .075f * settle - .025f * lift)
                 cameraDistance = 12f * density
             }.then(if (onFlip == null) Modifier else Modifier.customClickable(onClick = onFlip))
-            if (shown || halfway) {
-                CardPrintView(card, face, inspectable = shown, flipAngle = angle.takeUnless { shown })
-            } else {
-                Image(
-                    painterResource(DesignR.drawable.milestone_common_back),
-                    if (torn) "카드 뒷면" else null,
-                    face,
-                    contentScale = ContentScale.FillBounds,
-                )
+            val showFront = prepared != null && (shown || halfway)
+            Box(face) {
+                if (prepared != null) {
+                    val visibility = if (showFront) Modifier else Modifier.clearAndSetSemantics {}
+                    Box(
+                        Modifier.fillMaxSize().then(visibility).drawWithContent {
+                            if (showFront) {
+                                drawContent()
+                            } else {
+                                // Prime the foil on the GPU under one opaque pixel of the back.
+                                clipRect(center.x, center.y, center.x + 1f, center.y + 1f) {
+                                    this@drawWithContent.drawContent()
+                                }
+                            }
+                        },
+                    ) {
+                        CardPrintView(
+                            card,
+                            Modifier.fillMaxSize(),
+                            inspectable = shown,
+                            flipAngle = angle.takeUnless { shown },
+                            prepared = prepared,
+                        )
+                    }
+                }
+                if (!showFront) {
+                    Image(
+                        painterResource(DesignR.drawable.milestone_common_back),
+                        if (torn && !shown) "카드 뒷면" else null,
+                        Modifier.fillMaxSize(),
+                        contentScale = ContentScale.FillBounds,
+                    )
+                }
             }
         }
         if (!torn) {

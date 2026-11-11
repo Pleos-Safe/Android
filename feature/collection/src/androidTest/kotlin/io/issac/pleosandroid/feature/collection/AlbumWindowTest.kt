@@ -17,6 +17,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -131,6 +132,7 @@ class AlbumWindowTest {
         }
         val seal = compose.onNodeWithTag("album-open-seal")
         val flip = compose.onNodeWithTag("album-flip")
+        val front = compose.onNodeWithContentDescription(card.print.title, substring = true)
         advance(9)
         assertEquals(emptyList<CollectionIntent>(), actions)
         flip.assertDoesNotExist()
@@ -141,11 +143,15 @@ class AlbumWindowTest {
         compose.onNodeWithText(card.print.title).assertDoesNotExist()
         advance(44)
         flip.assertIsEnabled()
+        front.assertDoesNotExist()
         assertEquals(listOf(CollectionIntent.Open(pack.id)), actions)
         flip.performClick()
         advance(5)
+        front.assertDoesNotExist()
         assertEquals(listOf(CollectionIntent.Open(pack.id)), actions)
-        advance(26)
+        advance(6)
+        front.assertExists()
+        advance(20)
         compose.onNodeWithTag("album-show-copy").assertIsEnabled()
         assertEquals(listOf(CollectionIntent.Open(pack.id), CollectionIntent.Reveal(card.id)), actions)
     }
