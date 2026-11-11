@@ -17,12 +17,9 @@ import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
 import io.issac.pleosandroid.core.domain.model.VehicleMotionState
 import io.issac.pleosandroid.core.domain.model.VehicleState
-import io.issac.pleosandroid.core.domain.place.DrivingSafetyMessage
 import io.issac.pleosandroid.core.domain.place.PlaceNavigationOperation
 import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
-import io.issac.pleosandroid.feature.home.driving.DrivingOverviewScreen
 import io.issac.pleosandroid.feature.home.driving.DrivingRecommendation
-import io.issac.pleosandroid.feature.home.driving.DrivingRegionMap
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test

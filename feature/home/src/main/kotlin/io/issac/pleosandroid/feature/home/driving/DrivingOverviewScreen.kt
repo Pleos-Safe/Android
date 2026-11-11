@@ -37,8 +37,6 @@ import io.issac.pleosandroid.core.domain.place.DrivingSafetyMessage
 import io.issac.pleosandroid.feature.home.JourneyProgressDisplay
 import io.issac.pleosandroid.feature.home.R
 import io.issac.pleosandroid.feature.home.journey.JourneyProgressRows
-import io.issac.pleosandroid.feature.home.journey.journeyDistance
-import io.issac.pleosandroid.feature.home.journey.journeyDuration
 
 @Composable
 internal fun DrivingOverviewScreen(

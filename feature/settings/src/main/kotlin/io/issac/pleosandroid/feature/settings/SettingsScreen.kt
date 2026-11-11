@@ -2,7 +2,6 @@ package io.issac.pleosandroid.feature.settings
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -12,7 +11,6 @@ import io.issac.pleosandroid.core.designsystem.component.PleosButtonStyle
 import io.issac.pleosandroid.core.designsystem.component.PleosInfoPanel
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
-import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 
 @Composable
 internal fun SettingsScreen(
