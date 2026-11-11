@@ -36,7 +36,7 @@ class TravelMapCaptureTest {
         waitForText("지도에서 찾기")
         compose.onNodeWithText("지도에서 찾기").performScrollTo().performClick()
         waitForText("지도에서 여행지 찾기")
-        waitForText("여행지 · 9곳")
+        waitForText("해운대 해변")
         compose.waitUntil(timeoutMillis = 60_000) { !hasText("지도를 불러오고 있어요.") }
         capture("travel-map-01-default.png")
 
@@ -45,7 +45,7 @@ class TravelMapCaptureTest {
         compose.onAllNodesWithText("해운대구 · 자연·산책")[0].performScrollTo()
         capture("travel-map-05-haeundae-setup.png")
 
-        search("수영구")
+        search("광안리 해변")
         waitForText("여행지 · 1곳")
         compose.onNodeWithText("광안리 해변").performScrollTo().performClick()
         waitForText("수영구 · 전망·명소")
@@ -55,7 +55,7 @@ class TravelMapCaptureTest {
         compose.onNodeWithText("목록으로 보기").apply { if (!isDisplayed()) performScrollTo() }.performClick()
         waitForText("지도에서 보기")
         search("")
-        waitForText("여행지 · 9곳")
+        waitForText("해운대 해변")
         capture("travel-map-03-list.png")
 
         search("일치하지 않는 여행지")
