@@ -23,7 +23,7 @@ Room v7은 `membership_term`에 프로필별 구독 시작과 혜택 종료 시�
 
 ## 모듈과 데이터 소유권
 
-`:feature:badges → :core:domain ← :core:data → :core:database`. 기능 모듈은 도메인의 계약을 호출한다. 저장 구현은 Room 트랜잭션을 사용한다. 실제 기록과 체험은 서로 다른 암호화 DB를 사용한다.
+`:feature:collection`과 `:feature:forge`는 `:core:domain`의 같은 카드 보관함을 구독한다. `:core:data`가 이 계약을 구현하고 `:core:database`의 Room 트랜잭션으로 변경을 저장한다. 실제 기록과 체험은 서로 다른 암호화 DB를 사용한다.
 
 | 호출 | 저장 결과 |
 |---|---|
