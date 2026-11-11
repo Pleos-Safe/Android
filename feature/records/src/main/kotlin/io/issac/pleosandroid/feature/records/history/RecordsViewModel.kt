@@ -18,6 +18,7 @@ import io.issac.pleosandroid.feature.records.points.observeRecordPoints
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -40,52 +41,8 @@ internal class RecordsViewModel @Inject constructor(
         observe()
     }
 
-    private fun observe() {
-        observation?.cancel()
-        observation = viewModelScope.launch {
-            updateState { copy(loading = true, error = false) }
-            try {
-                demo.enabled.collectLatest { usingDemo ->
-                    updateState { copy(loading = true, error = false, demo = usingDemo) }
-                    val records = combine(
-                        history.observeJourneys(),
-                        recorder.enabled,
-                        recorder.state,
-                        visits,
-                    ) { journeys, enabled, recording, visitStatus ->
-                        RecordsState(
-                            loading = false,
-                            journeys = journeys.sortedByDescending { it.endedAt },
-                            enabled = enabled,
-                            recording = recording,
-                            demo = usingDemo,
-                            visitStatus = visitStatus,
-                        )
-                    }
-                    combine(
-                        records,
-                        history.observeVisits(),
-                        packs.observeInbox().catch { emit(emptyList()) },
-                        points.observeRecordPoints(usingDemo),
-                    ) { value, confirmedVisits, claimedPacks, wallet ->
-                        val visitedPlaces = (
-                            confirmedVisits.map {
-                                it.placeId
-                            } + claimedPacks.map { it.placeId }
-                            ).toSet()
-                        value.copy(visitedPlaceCount = visitedPlaces.size, points = wallet)
-                    }.collect { value -> updateState { value.copy(busy = busy, message = message) } }
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                updateState { copy(loading = false, error = true) }
-            }
-        }
-    }
-
     override fun processIntent(intent: RecordsIntent) {
-        if (!vehicle.state.value.allowsTabNavigation) return
+        if (!canInteract()) return
         when (intent) {
             is RecordsIntent.OpenJourney -> if (state.value.journeys.any { it.id == intent.id }) {
                 sendEffect(RecordsEffect.Navigate(DrivingReportRoute(intent.id)))
@@ -102,6 +59,55 @@ internal class RecordsViewModel @Inject constructor(
             RecordsIntent.RetrySave -> mutate { recorder.retrySave() }
 
             RecordsIntent.Finish -> mutate { recorder.finish() }
+        }
+    }
+
+    fun canInteract(): Boolean = vehicle.state.value.allowsTabNavigation
+
+    private fun observe() {
+        observation?.cancel()
+        observation = viewModelScope.launch {
+            updateState { copy(loading = true, error = false) }
+            try {
+                demo.enabled.collectLatest { usingDemo ->
+                    updateState { copy(loading = true, error = false, demo = usingDemo) }
+                    observeRecords(usingDemo).collect { value ->
+                        updateState { value.copy(busy = busy, message = message) }
+                    }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                updateState { copy(loading = false, error = true) }
+            }
+        }
+    }
+
+    private fun observeRecords(usingDemo: Boolean): Flow<RecordsState> {
+        val records = combine(
+            history.observeJourneys(),
+            recorder.enabled,
+            recorder.state,
+            visits,
+        ) { journeys, enabled, recording, visitStatus ->
+            RecordsState(
+                loading = false,
+                journeys = journeys.sortedByDescending { it.endedAt },
+                enabled = enabled,
+                recording = recording,
+                demo = usingDemo,
+                visitStatus = visitStatus,
+            )
+        }
+        return combine(
+            records,
+            history.observeVisits(),
+            packs.observeInbox().catch { emit(emptyList()) },
+            points.observeRecordPoints(usingDemo),
+        ) { value, confirmedVisits, claimedPacks, wallet ->
+            val visitedPlaces = confirmedVisits.mapTo(mutableSetOf()) { it.placeId }
+            claimedPacks.mapTo(visitedPlaces) { it.placeId }
+            value.copy(visitedPlaceCount = visitedPlaces.size, points = wallet)
         }
     }
 
