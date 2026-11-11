@@ -1,4 +1,4 @@
-# 홈·탐색·기록 모듈 규칙
+# 기능 모듈의 책임과 화면 상태 관리
 
 ## 기능 소유권
 
@@ -11,6 +11,9 @@
 | `feature:records` | 여정 목록·안전 리포트·포인트·기록 저장 설정 |
 | `feature:settings` | 일반 설정 진입 화면 |
 | `feature:membership` | PLUS 상점과 구독 관리 |
+| `feature:collection` | 팩 보관·개봉·뒤집기, 컬렉션·대표 카드, 연출 목록과 개봉 미리보기 |
+| `feature:forge` | 강화 대상 선택, 강화·흔적 복구, 결과 확인과 강화 미리보기 |
+| `core:card-ui` | 두 기능이 사용하는 카드 원화·프레임·재질, 카드 목록과 전시 레이아웃 |
 | `core:domain` | 주행·장소·보상 모델, 정책, 저장소 계약 |
 | `core:vehicle` | 차량·위치·외부 내비 SDK 연결과 공유 장소 세션 |
 | `core:data` | 기록·포인트·방문팩 저장과 데이터 변경 |
@@ -18,11 +21,13 @@
 
 홈과 탐색은 상대 기능의 ViewModel을 참조하지 않는다. `app`이 각 기능의 `NavEntryFactory`를 조립한다. 기존 `feature:nav`는 탭 호스트가 사용하는 공통 화면 렌더러다. 기존 `MainRoute`의 직렬화된 이름을 유지해 저장된 화면 복원과 호환한다.
 
+컬렉션과 강화는 각자의 화면 경로를 등록하고 `CardAlbumRepository.observe()`로 보관함을 읽는다. 포인트 차감과 강화 결과 기록은 한 저장 트랜잭션에서 처리한다. 강화나 개봉 후 컬렉션으로 돌아갈 때는 탐색 결과로 사본 ID를 전달하고, 컬렉션이 해당 카드를 표시한 뒤 소비한다.
+
 ## MVVM과 단방향 데이터 흐름
 
 사용자 동작은 `Intent`로 ViewModel에 전달한다. ViewModel은 저장소의 Flow와 화면 선택 상태를 결합해 읽기 전용 `StateFlow<State>`를 제공한다. Compose 화면은 전달받은 상태를 그리고 동작 콜백을 호출한다.
 
-`HomeContract`, `ExploreContract`, `RecordsContract`, `DrivingReportContract`는 해당 화면의 상태·입력·일회성 UI 효과를 정의한다. 탭 호스트의 `MainState`는 차량과 여정 상태에서 파생되며, 탭 이동 이력은 UI의 `MainTabNavigation`이 소유한다.
+각 기능의 Contract가 화면 상태와 입력을 정의한다. 홈과 탐색 등 화면 밖으로 일회성 동작을 전달하는 기능은 Effect도 정의한다. 컬렉션과 강화는 각각 `CollectionContract`와 `ForgeContract`로 보관함 로딩·재시도·사용자 작업을 관리한다. 탭 호스트의 `MainState`는 차량과 여정 상태에서 파생되며, 탭 이동 이력은 UI의 `MainTabNavigation`이 소유한다.
 
 포인트 적립, 카드팩 지급, 정산 결과와 재시도 오류는 저장소 또는 상태에 남긴다. 일회성 효과는 화면 이동과 권한 요청에 사용한다. Channel은 영속 전달을 보장하는 수단으로 사용하지 않는다. 효과 소비 시 현재 화면 경로와 최신 차량 상태를 다시 확인한다.
 
