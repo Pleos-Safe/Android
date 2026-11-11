@@ -18,4 +18,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     implementation(libs.hilt.viewmodel.compose)
     implementation(libs.androidx.compose.material3)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

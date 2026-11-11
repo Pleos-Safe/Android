@@ -13,17 +13,23 @@ import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.core.navigation.DrivingPointsWeekRoute
 import io.issac.pleosandroid.core.navigation.DrivingReportRoute
 import io.issac.pleosandroid.core.navigation.RecordingSettingsRoute
+import io.issac.pleosandroid.core.ui.flow.catchUiError
+import io.issac.pleosandroid.core.ui.flow.collectUiState
 import io.issac.pleosandroid.core.ui.mvi.BaseViewModel
 import io.issac.pleosandroid.feature.records.points.observeRecordPoints
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 internal class RecordsViewModel @Inject constructor(
     private val history: HistoryRepository,
@@ -34,11 +40,13 @@ internal class RecordsViewModel @Inject constructor(
     private val packs: VisitPackRepository,
     visits: VisitRecorder,
 ) : BaseViewModel<RecordsState, RecordsIntent, RecordsEffect>(RecordsState()) {
-    private var observation: Job? = null
+    private val refresh = MutableStateFlow(0)
     private val visits = visits.status
 
     init {
-        observe()
+        viewModelScope.launch {
+            refresh.collectLatest { observe() }
+        }
     }
 
     override fun processIntent(intent: RecordsIntent) {
@@ -52,7 +60,7 @@ internal class RecordsViewModel @Inject constructor(
 
             RecordsIntent.OpenPointsWeek -> sendEffect(RecordsEffect.Navigate(DrivingPointsWeekRoute))
 
-            RecordsIntent.Retry -> observe()
+            RecordsIntent.Retry -> refresh.update { it + 1 }
 
             is RecordsIntent.SetEnabled -> mutate { recorder.setEnabled(intent.enabled) }
 
@@ -64,23 +72,16 @@ internal class RecordsViewModel @Inject constructor(
 
     fun canInteract(): Boolean = vehicle.state.value.allowsTabNavigation
 
-    private fun observe() {
-        observation?.cancel()
-        observation = viewModelScope.launch {
-            updateState { copy(loading = true, error = false) }
-            try {
-                demo.enabled.collectLatest { usingDemo ->
-                    updateState { copy(loading = true, error = false, demo = usingDemo) }
-                    observeRecords(usingDemo).collect { value ->
-                        updateState { value.copy(busy = busy, message = message) }
-                    }
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                updateState { copy(loading = false, error = true) }
+    private suspend fun observe() {
+        demo.enabled.flatMapLatest { usingDemo ->
+            observeRecords(usingDemo).onStart {
+                updateState { copy(loading = true, error = false, demo = usingDemo) }
             }
-        }
+        }.collectUiState(
+            onLoading = { updateState { copy(loading = true, error = false) } },
+            onError = { updateState { copy(loading = false, error = true) } },
+            onState = { value -> updateState { value.copy(busy = busy, message = message) } },
+        )
     }
 
     private fun observeRecords(usingDemo: Boolean): Flow<RecordsState> {
@@ -102,7 +103,7 @@ internal class RecordsViewModel @Inject constructor(
         return combine(
             records,
             history.observeVisits(),
-            packs.observeInbox().catch { emit(emptyList()) },
+            packs.observeInbox().catchUiError { emit(emptyList()) },
             points.observeRecordPoints(usingDemo),
         ) { value, confirmedVisits, claimedPacks, wallet ->
             val visitedPlaces = confirmedVisits.mapTo(mutableSetOf()) { it.placeId }
