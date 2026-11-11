@@ -30,6 +30,8 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:main"))
+    implementation(project(":feature:home"))
+    implementation(project(":feature:explore"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:membership"))
     implementation(project(":feature:badges"))

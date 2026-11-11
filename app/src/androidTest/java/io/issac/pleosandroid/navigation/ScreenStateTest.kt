@@ -14,9 +14,9 @@ import io.issac.pleosandroid.core.domain.model.VehicleMotion
 import io.issac.pleosandroid.core.domain.model.VehicleMotionState
 import io.issac.pleosandroid.core.domain.model.VehicleState
 import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
-import io.issac.pleosandroid.feature.main.MainPhase
-import io.issac.pleosandroid.feature.main.MainScreen
-import io.issac.pleosandroid.feature.main.MainUiState
+import io.issac.pleosandroid.feature.home.HomePhase
+import io.issac.pleosandroid.feature.home.HomeScreen
+import io.issac.pleosandroid.feature.home.HomeUiState
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,12 +27,12 @@ class ScreenStateTest {
     val compose = createComposeRule()
 
     @Test
-    fun oneMainScreenRendersAllFourPhases() {
-        val phase = mutableStateOf(MainPhase.BeforeDriving)
+    fun oneHomeScreenRendersAllFourPhases() {
+        val phase = mutableStateOf(HomePhase.BeforeDriving)
         compose.setContent {
-            val moving = phase.value == MainPhase.DrivingMoving
-            MainScreen(
-                uiState = MainUiState.Ready(
+            val moving = phase.value == HomePhase.DrivingMoving
+            HomeScreen(
+                uiState = HomeUiState.Ready(
                     phase.value,
                     VehicleState(
                         motion = VehicleMotionState(
@@ -42,27 +42,27 @@ class ScreenStateTest {
                         ),
                         uxPolicy = if (moving) CarUxPolicy(connected = true, known = true) else unrestricted,
                         uxAvailability = UxAvailability.Available,
-                        gear = if (phase.value == MainPhase.BeforeDriving || phase.value == MainPhase.Finished) {
+                        gear = if (phase.value == HomePhase.BeforeDriving || phase.value == HomePhase.Finished) {
                             VehicleGear.Park
                         } else {
                             VehicleGear.Drive
                         },
                     ),
                 ),
-                onReturnHome = { phase.value = MainPhase.BeforeDriving },
+                onReturnHome = { phase.value = HomePhase.BeforeDriving },
                 onOpenBadges = {},
                 onRequestSpeedPermission = {},
                 onRetryVehicle = {},
             )
         }
         val labels = listOf("주행 전", "정차 중에도 조작은 잠시 쉬어요", "지금은 운전에 집중해요", "주행 종료")
-        MainPhase.entries.forEachIndexed { index, state ->
+        HomePhase.entries.forEachIndexed { index, state ->
             compose.runOnIdle { phase.value = state }
             compose.onNodeWithText(labels[index]).assertExists()
             compose.onNodeWithText("여정 시작").assertDoesNotExist()
             compose.onNodeWithText("새 여정 시작").assertDoesNotExist()
             compose.onNodeWithText("여정 종료").assertDoesNotExist()
-            if (state == MainPhase.DrivingMoving || state == MainPhase.DrivingStopped) {
+            if (state == HomePhase.DrivingMoving || state == HomePhase.DrivingStopped) {
                 compose.onNodeWithText("주행 위치 지도").assertExists()
                 compose.onNodeWithText("컬렉션 보기").assertDoesNotExist()
             }
@@ -82,8 +82,8 @@ class ScreenStateTest {
             ),
         )
         compose.setContent {
-            MainScreen(
-                uiState = MainUiState.Ready(MainPhase.BeforeDriving, vehicle.value),
+            HomeScreen(
+                uiState = HomeUiState.Ready(HomePhase.BeforeDriving, vehicle.value),
                 onReturnHome = {},
                 onOpenBadges = {},
                 onRequestSpeedPermission = {},

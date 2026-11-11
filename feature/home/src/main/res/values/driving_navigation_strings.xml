@@ -1,0 +1,5 @@
+<resources>
+    <string name="place_map_set_destination">목적지로 설정</string>
+    <string name="place_map_add_waypoint">경유지로 추가</string>
+    <string name="place_map_check_route">현재 경로 확인</string>
+</resources>

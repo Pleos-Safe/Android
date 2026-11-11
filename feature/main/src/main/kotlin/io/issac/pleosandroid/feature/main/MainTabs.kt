@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -21,40 +19,25 @@ import io.issac.pleosandroid.core.designsystem.component.pleosShellBackground
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavigationRouter
 import io.issac.pleosandroid.core.navigation.SettingsRoute
-import io.issac.pleosandroid.feature.main.map.LocalPlaceMapViewModel
-import io.issac.pleosandroid.feature.main.map.PlaceMapViewModel
 import io.issac.pleosandroid.feature.nav.PleosNavDisplay
 import io.issac.pleosandroid.feature.nav.rememberPleosNavEntries
-
-// Keep one journey running while the driver switches tabs or the vehicle enters a restricted state.
-internal val LocalMainViewModel = staticCompositionLocalOf<MainViewModel?> { null }
-
-internal val LocalHomeCard = staticCompositionLocalOf<@Composable () -> Unit> { {} }
 
 @Composable
 fun PleosMain(
     factories: Set<NavEntryFactory>,
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel(),
-    homeCard: @Composable () -> Unit = {},
+    restrictedContent: @Composable () -> Unit,
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val placeMapViewModel = hiltViewModel<PlaceMapViewModel>()
-    CompositionLocalProvider(
-        LocalMainViewModel provides viewModel,
-        LocalHomeCard provides homeCard,
-        LocalPlaceMapViewModel provides placeMapViewModel,
-    ) {
-        MainTabs(
-            factories = factories,
-            restricted = (uiState as? MainUiState.Ready)?.canUseTabs != true,
-            canNavigate = viewModel::canUseTabs,
-            modifier = modifier,
-            showJourneyResult =
-                (uiState as? MainUiState.Ready)?.let { it.canReturnHome || it.canManagePausedJourney } == true,
-            restrictedContent = { JourneyContent(uiState, viewModel, onOpenBadges = {}) },
-        )
-    }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    MainTabs(
+        factories = factories,
+        restricted = !state.canUseTabs,
+        canNavigate = viewModel::canUseTabs,
+        modifier = modifier,
+        showJourneyResult = state.showJourneyResult,
+        restrictedContent = restrictedContent,
+    )
 }
 
 @Composable

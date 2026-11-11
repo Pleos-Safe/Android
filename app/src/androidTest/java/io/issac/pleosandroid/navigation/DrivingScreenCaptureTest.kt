@@ -38,12 +38,12 @@ import io.issac.pleosandroid.core.domain.model.VehicleMotion
 import io.issac.pleosandroid.core.domain.model.VehicleMotionState
 import io.issac.pleosandroid.core.domain.model.VehicleState
 import io.issac.pleosandroid.core.domain.policy.CarUxPolicy
-import io.issac.pleosandroid.feature.main.JourneyProgressDisplay
-import io.issac.pleosandroid.feature.main.JourneySummary
-import io.issac.pleosandroid.feature.main.MainPhase
-import io.issac.pleosandroid.feature.main.MainScreen
-import io.issac.pleosandroid.feature.main.MainUiState
-import io.issac.pleosandroid.feature.main.VisitPackRewardCard
+import io.issac.pleosandroid.feature.home.HomePhase
+import io.issac.pleosandroid.feature.home.HomeScreen
+import io.issac.pleosandroid.feature.home.HomeUiState
+import io.issac.pleosandroid.feature.home.JourneyProgressDisplay
+import io.issac.pleosandroid.feature.home.JourneySummary
+import io.issac.pleosandroid.feature.home.component.VisitPackRewardCard
 import java.io.File
 import java.time.Instant
 import org.junit.Rule
@@ -60,13 +60,13 @@ class DrivingScreenCaptureTest {
     fun captureFourDrivingStates() {
         capture(
             cases = listOf(
-                Capture(MainPhase.BeforeDriving, "주행 전", "01-before-driving"),
-                Capture(MainPhase.DrivingStopped, "정차 중에도 조작은 잠시 쉬어요", "02-driving-stopped"),
-                Capture(MainPhase.DrivingMoving, "지금은 운전에 집중해요", "03-driving-moving"),
-                Capture(MainPhase.Finished, "주행 종료", "04-finished"),
-                Capture(MainPhase.DrivingStopped, "도착했어요. 주차 후 이어가요", "05-arrived", arrived = true),
-                Capture(MainPhase.BeforeDriving, "조작 가능 상태를 확인하고 있어요", "06-ux-unconfirmed", known = false),
-                Capture(MainPhase.BeforeDriving, "출발하면 여정이 시작돼요", "07-drive-before-motion", driveBeforeMotion = true),
+                Capture(HomePhase.BeforeDriving, "주행 전", "01-before-driving"),
+                Capture(HomePhase.DrivingStopped, "정차 중에도 조작은 잠시 쉬어요", "02-driving-stopped"),
+                Capture(HomePhase.DrivingMoving, "지금은 운전에 집중해요", "03-driving-moving"),
+                Capture(HomePhase.Finished, "주행 종료", "04-finished"),
+                Capture(HomePhase.DrivingStopped, "도착했어요. 주차 후 이어가요", "05-arrived", arrived = true),
+                Capture(HomePhase.BeforeDriving, "조작 가능 상태를 확인하고 있어요", "06-ux-unconfirmed", known = false),
+                Capture(HomePhase.BeforeDriving, "출발하면 여정이 시작돼요", "07-drive-before-motion", driveBeforeMotion = true),
             ),
             layouts = listOf("full" to 1216.dp, "split" to 520.dp),
         )
@@ -86,26 +86,26 @@ class DrivingScreenCaptureTest {
         )
         capture(
             cases = listOf(
-                Capture(MainPhase.BeforeDriving, "주행 전", "08-home-wallet", pointBalance = 2_450),
-                Capture(MainPhase.DrivingMoving, "주행 기록 중", "09-live-recording", progress = progress),
+                Capture(HomePhase.BeforeDriving, "주행 전", "08-home-wallet", pointBalance = 2_450),
+                Capture(HomePhase.DrivingMoving, "주행 기록 중", "09-live-recording", progress = progress),
                 Capture(
-                    MainPhase.DrivingStopped,
+                    HomePhase.DrivingStopped,
                     "잠시 주차했어요",
                     "10-parked-pause",
                     progress = progress,
                     paused = true,
                 ),
                 Capture(
-                    MainPhase.DrivingStopped,
+                    HomePhase.DrivingStopped,
                     "이전 주행 이어가기",
                     "11-recovery",
                     progress = progress,
                     paused = true,
                     recovering = true,
                 ),
-                Capture(MainPhase.Finished, "+513 P", "12-summary-earned", summary = earned),
+                Capture(HomePhase.Finished, "+513 P", "12-summary-earned", summary = earned),
                 Capture(
-                    MainPhase.Finished,
+                    HomePhase.Finished,
                     "이번 주행은 기록만 남겼어요",
                     "13-summary-no-points",
                     summary = earned.copy(
@@ -118,7 +118,7 @@ class DrivingScreenCaptureTest {
                     ),
                 ),
                 Capture(
-                    MainPhase.Finished,
+                    HomePhase.Finished,
                     "이번 주 포인트 인정 거리를 모두 사용했어요",
                     "14-summary-weekly-cap",
                     summary = earned.copy(
@@ -128,7 +128,7 @@ class DrivingScreenCaptureTest {
                     ),
                 ),
                 Capture(
-                    MainPhase.DrivingStopped,
+                    HomePhase.DrivingStopped,
                     "방문 보상을 받을 수 있어요",
                     "15-visit-reward-available",
                     progress = progress,
@@ -136,7 +136,7 @@ class DrivingScreenCaptureTest {
                     visit = VisitReward.Available,
                 ),
                 Capture(
-                    MainPhase.DrivingStopped,
+                    HomePhase.DrivingStopped,
                     "방문 카드팩 1개를 받았어요",
                     "16-visit-reward-claimed",
                     progress = progress,
@@ -170,7 +170,7 @@ class DrivingScreenCaptureTest {
                                 Column(Modifier.pleosShellBackground()) {
                                     PleosHeader(PleosTab.Travel, {}, {}, restricted = !state.canUseTabs)
                                     Box(Modifier.weight(1f)) {
-                                        MainScreen(
+                                        HomeScreen(
                                             uiState = state,
                                             onReturnHome = {},
                                             onOpenBadges = {},
@@ -217,12 +217,12 @@ class DrivingScreenCaptureTest {
         }
     }
 
-    private fun fixture(capture: Capture): MainUiState.Ready {
+    private fun fixture(capture: Capture): HomeUiState.Ready {
         val phase = capture.phase
-        val moving = phase == MainPhase.DrivingMoving
-        return MainUiState.Ready(
+        val moving = phase == HomePhase.DrivingMoving
+        return HomeUiState.Ready(
             phase = phase,
-            summary = capture.summary ?: if (phase == MainPhase.Finished) {
+            summary = capture.summary ?: if (phase == HomePhase.Finished) {
                 JourneySummary(durationMillis = 23 * 60_000L)
             } else {
                 null
@@ -247,7 +247,7 @@ class DrivingScreenCaptureTest {
                 ),
                 uxAvailability = UxAvailability.Available,
                 gear = if (!capture.driveBeforeMotion &&
-                    (phase == MainPhase.BeforeDriving || phase == MainPhase.Finished || capture.paused)
+                    (phase == HomePhase.BeforeDriving || phase == HomePhase.Finished || capture.paused)
                 ) {
                     VehicleGear.Park
                 } else {
@@ -258,7 +258,7 @@ class DrivingScreenCaptureTest {
     }
 
     private data class Capture(
-        val phase: MainPhase,
+        val phase: HomePhase,
         val label: String,
         val filename: String,
         val arrived: Boolean = false,
