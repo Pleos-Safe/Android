@@ -1,4 +1,4 @@
-package io.issac.pleosandroid.feature.main
+package io.issac.pleosandroid.feature.settings
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn

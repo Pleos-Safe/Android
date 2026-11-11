@@ -1,4 +1,4 @@
-package io.issac.pleosandroid.feature.main.membership
+package io.issac.pleosandroid.feature.membership
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

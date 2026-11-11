@@ -1,4 +1,4 @@
-package io.issac.pleosandroid.feature.main.membership
+package io.issac.pleosandroid.feature.membership
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
