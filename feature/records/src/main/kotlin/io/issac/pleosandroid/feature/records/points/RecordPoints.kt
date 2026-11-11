@@ -7,11 +7,11 @@ import io.issac.pleosandroid.core.domain.points.PointTransaction
 import io.issac.pleosandroid.core.domain.points.PointTransactionKind
 import io.issac.pleosandroid.core.domain.points.PointWallet
 import io.issac.pleosandroid.core.domain.points.formatHalfPoints
+import io.issac.pleosandroid.core.ui.flow.catchUiError
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Locale
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -26,7 +26,7 @@ internal fun PointRepository.observeRecordPoints(demo: Boolean) = observeWallet(
     .filter { it.demo == demo }
     .map<PointWallet, RecordPoints> { RecordPoints.Ready(it) }
     .onStart { emit(RecordPoints.Loading) }
-    .catch { emit(RecordPoints.Unavailable) }
+    .catchUiError { emit(RecordPoints.Unavailable) }
 
 internal fun PointWallet.journeyCredit(id: String): PointTransaction? = transactions.firstOrNull {
     it.kind == PointTransactionKind.JourneyEarned && it.sourceId == id
