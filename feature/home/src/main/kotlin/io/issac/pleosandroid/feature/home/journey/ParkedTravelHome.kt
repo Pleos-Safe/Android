@@ -5,20 +5,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
@@ -27,12 +23,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.component.PleosButton
 import io.issac.pleosandroid.core.designsystem.component.PleosButtonStyle
-import io.issac.pleosandroid.core.designsystem.component.PleosDialog
 import io.issac.pleosandroid.core.designsystem.component.PleosInfoPanel
 import io.issac.pleosandroid.core.designsystem.component.PleosScreen
 import io.issac.pleosandroid.core.designsystem.component.PleosTextLink
@@ -41,19 +37,15 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosShape
 import io.issac.pleosandroid.core.designsystem.theme.PleosSpacing
 import io.issac.pleosandroid.core.designsystem.theme.PleosTextStyles
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
-import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
-import io.issac.pleosandroid.core.domain.points.formatHalfPoints
 import io.issac.pleosandroid.feature.home.HomePlace
-import io.issac.pleosandroid.feature.home.JourneyProgressDisplay
-import io.issac.pleosandroid.feature.home.JourneySummary
 import io.issac.pleosandroid.feature.home.LocalHomeCard
 import io.issac.pleosandroid.feature.home.R
 
 @Composable
 internal fun ParkedTravelHome(
-    place: HomePlace? = null,
     onOpenBadges: () -> Unit,
     modifier: Modifier = Modifier,
+    place: HomePlace? = null,
     onOpenMap: (() -> Unit)? = null,
     onOpenRecords: () -> Unit = {},
     pointBalance: Long? = null,
@@ -136,9 +128,10 @@ internal fun ParkedTravelHome(
 
 @Composable
 private fun RecommendedPlacePhoto(wide: Boolean, place: HomePlace?) {
-    val context = LocalContext.current
-    val imageId = remember(place?.imageKey, context) {
-        place?.imageKey?.let { context.resources.getIdentifier(it, "drawable", context.packageName) } ?: 0
+    val resources = LocalResources.current
+    val packageName = LocalContext.current.packageName
+    val imageId = remember(place?.imageKey, resources, packageName) {
+        place?.imageKey?.let { resources.getIdentifier(it, "drawable", packageName) } ?: 0
     }
     val colors = PleosTheme.colors
     val shape = PleosShape.button

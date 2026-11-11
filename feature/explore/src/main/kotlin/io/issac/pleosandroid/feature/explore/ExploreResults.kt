@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -94,10 +95,7 @@ private fun SelectedPlaceCard(
         PlaceNavigationOperation.Rejected,
     )
     PleosInfoPanel(Modifier.fillMaxWidth()) {
-        val context = LocalContext.current
-        val imageId = remember(place.imageKey, context) {
-            context.resources.getIdentifier(place.imageKey, "drawable", context.packageName)
-        }
+        val imageId = placeImageId(place.imageKey)
         if (imageId != 0 && place.imageKey != GENERIC_PLACE_IMAGE) {
             Image(
                 painter = painterResource(imageId),
@@ -201,10 +199,7 @@ private fun PlaceResultRows(
 private fun PlaceResultRow(place: TravelPlace, selected: Boolean, position: PlaceMapPosition?, onClick: () -> Unit) {
     val colors = PleosTheme.colors
     val scale = PleosTextStyles.scale
-    val context = LocalContext.current
-    val imageId = remember(place.imageKey, context) {
-        context.resources.getIdentifier(place.imageKey, "drawable", context.packageName)
-    }
+    val imageId = placeImageId(place.imageKey)
     Row(
         Modifier.fillMaxWidth().customClickable(role = Role.Button, onClick = onClick)
             .background(if (selected) colors.chipSelected else colors.surface, PleosShape.button)
@@ -251,4 +246,13 @@ private fun TravelPlace.distanceMetersFrom(position: PlaceMapPosition): Float {
     val result = FloatArray(1)
     Location.distanceBetween(position.latitude, position.longitude, latitude, longitude, result)
     return result[0]
+}
+
+@Composable
+private fun placeImageId(imageKey: String): Int {
+    val resources = LocalResources.current
+    val packageName = LocalContext.current.packageName
+    return remember(imageKey, resources, packageName) {
+        resources.getIdentifier(imageKey, "drawable", packageName)
+    }
 }
