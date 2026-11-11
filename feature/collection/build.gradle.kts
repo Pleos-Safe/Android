@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.hilt.viewmodel.compose)
     androidTestImplementation(testFixtures(project(":core:card-ui")))
+    testImplementation(testFixtures(project(":core:domain")))
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

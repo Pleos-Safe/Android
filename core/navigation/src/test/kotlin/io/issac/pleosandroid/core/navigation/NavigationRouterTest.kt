@@ -45,7 +45,7 @@ class NavigationRouterTest {
 
     @Test
     fun `returning to existing destination removes only entries above it`() {
-        val router = router(HomeRoute, DetailRoute("first"), DetailRoute("second"), BadgesRoute)
+        val router = router(HomeRoute, DetailRoute("first"), DetailRoute("second"), TestBadgeRoute)
 
         assertTrue(router.navigate(DetailRoute("first")))
 
@@ -58,16 +58,16 @@ class NavigationRouterTest {
     fun `replace removes the outgoing destination from back history`() {
         val router = router(HomeRoute, DetailRoute("first"))
 
-        assertTrue(router.replace(BadgesRoute))
-        assertFalse(router.replace(BadgesRoute))
-        assertEquals(listOf(HomeRoute, BadgesRoute), router.currentBackStack)
+        assertTrue(router.replace(TestBadgeRoute))
+        assertFalse(router.replace(TestBadgeRoute))
+        assertEquals(listOf(HomeRoute, TestBadgeRoute), router.currentBackStack)
         assertTrue(router.pop())
         assertEquals(HomeRoute, router.currentEntry)
     }
 
     @Test
     fun `replace with an existing destination reuses its entry`() {
-        val router = router(HomeRoute, DetailRoute("first"), BadgesRoute)
+        val router = router(HomeRoute, DetailRoute("first"), TestBadgeRoute)
 
         assertTrue(router.replace(DetailRoute("first")))
 
@@ -76,7 +76,7 @@ class NavigationRouterTest {
 
     @Test
     fun `reset discards the previous flow and preserves a root`() {
-        val router = router(HomeRoute, DetailRoute("first"), BadgesRoute)
+        val router = router(HomeRoute, DetailRoute("first"), TestBadgeRoute)
 
         router.resetTo(FinishedRoute)
 
@@ -86,7 +86,7 @@ class NavigationRouterTest {
 
     @Test
     fun `popTo supports inclusive removal without removing root`() {
-        val router = router(HomeRoute, DetailRoute("first"), BadgesRoute)
+        val router = router(HomeRoute, DetailRoute("first"), TestBadgeRoute)
 
         assertTrue(router.popTo<DetailRoute>(inclusive = true))
         assertEquals(listOf(HomeRoute), router.currentBackStack)
@@ -133,14 +133,14 @@ class NavigationRouterTest {
 
     @Test
     fun `invalid replacement does not corrupt the current flow`() {
-        val router = router(HomeRoute, BadgesRoute)
+        val router = router(HomeRoute, TestBadgeRoute)
 
         assertThrows(IllegalArgumentException::class.java) { router.replaceAll() }
         assertThrows(IllegalArgumentException::class.java) {
             router.replaceAll(HomeRoute, HomeRoute)
         }
 
-        assertEquals(listOf(HomeRoute, BadgesRoute), router.currentBackStack)
+        assertEquals(listOf(HomeRoute, TestBadgeRoute), router.currentBackStack)
     }
 
     @Test
@@ -164,7 +164,7 @@ private data object HomeRoute : AppRoute
 private data class DetailRoute(val tripId: String) : AppRoute
 
 @Serializable
-private data object BadgesRoute : AppRoute
+private data object TestBadgeRoute : AppRoute
 
 @Serializable
 private data object FinishedRoute : AppRoute

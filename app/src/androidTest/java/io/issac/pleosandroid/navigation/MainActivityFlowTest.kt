@@ -2,6 +2,7 @@ package io.issac.pleosandroid.navigation
 
 import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
@@ -265,6 +266,13 @@ class MainActivityFlowTest {
         assertEquals(ForgeOutcome.Restored, after.pending.getValue("demo:trace").outcome)
         assertEquals(7, after.collection.single { it.id == "demo:trace" }.level)
         assertEquals(CopyStatus.Spent, after.copies.single { it.id == "demo:material" }.status)
+        compose.onNodeWithText("컬렉션에서 보기").performScrollTo().performClick()
+        waitTag("album-copy-demo:trace")
+        compose.onNodeWithTag("album-copy-demo:trace").assertIsDisplayed()
+        waitFor("방금 확인한 카드")
+        compose.onNodeWithTag("album-grid").performScrollToNode(hasText("부산"))
+        compose.onNodeWithText("부산").assertIsOn()
+        assertFalse(runBlocking { "demo:trace" in graph.album().observe().first().pending })
     }
 
     @Test fun hyundaiCardsAndPackArePlayableInDemoAndSwitchingLeavesTheRealShelfAlone() {
