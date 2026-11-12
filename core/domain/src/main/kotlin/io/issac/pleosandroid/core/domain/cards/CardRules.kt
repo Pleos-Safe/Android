@@ -53,13 +53,13 @@ object CardRules {
     }
 
     private val odds = listOf(
-        ForgeOdds(85, 10, 5, 0, 0), ForgeOdds(80, 10, 10, 0, 0), ForgeOdds(75, 10, 15, 0, 0),
-        ForgeOdds(70, 10, 20, 0, 0), ForgeOdds(65, 10, 25, 0, 0), ForgeOdds(60, 10, 25, 5, 0),
-        ForgeOdds(55, 10, 25, 10, 0), ForgeOdds(50, 10, 25, 15, 0), ForgeOdds(45, 10, 25, 20, 0),
-        ForgeOdds(40, 10, 25, 25, 0), ForgeOdds(38, 10, 26, 25, 1), ForgeOdds(36, 10, 28, 25, 1),
-        ForgeOdds(34, 9, 31, 25, 1), ForgeOdds(32, 9, 32, 25, 2), ForgeOdds(30, 8, 35, 25, 2),
-        ForgeOdds(28, 7, 38, 25, 2), ForgeOdds(26, 7, 40, 25, 2), ForgeOdds(24, 6, 42, 25, 3),
-        ForgeOdds(22, 6, 44, 25, 3), ForgeOdds(20, 5, 47, 25, 3), ForgeOdds(35, 0, 48, 15, 2),
+        ForgeOdds(90, 10, 0, 0, 0), ForgeOdds(90, 10, 0, 0, 0), ForgeOdds(90, 10, 0, 0, 0),
+        ForgeOdds(90, 10, 0, 0, 0), ForgeOdds(90, 10, 0, 0, 0), ForgeOdds(85, 10, 0, 5, 0),
+        ForgeOdds(80, 10, 0, 10, 0), ForgeOdds(75, 10, 0, 15, 0), ForgeOdds(70, 10, 0, 20, 0),
+        ForgeOdds(65, 10, 0, 25, 0), ForgeOdds(65, 10, 0, 25, 0), ForgeOdds(65, 10, 0, 25, 0),
+        ForgeOdds(66, 9, 0, 25, 0), ForgeOdds(66, 9, 0, 25, 0), ForgeOdds(67, 8, 0, 25, 0),
+        ForgeOdds(68, 7, 0, 25, 0), ForgeOdds(68, 7, 0, 25, 0), ForgeOdds(69, 6, 0, 25, 0),
+        ForgeOdds(69, 6, 0, 25, 0), ForgeOdds(70, 5, 0, 25, 0), ForgeOdds(70, 0, 0, 30, 0),
     )
 
     fun odds(level: Int): ForgeOdds {

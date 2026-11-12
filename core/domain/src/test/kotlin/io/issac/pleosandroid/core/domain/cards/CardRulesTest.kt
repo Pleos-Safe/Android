@@ -15,13 +15,17 @@ class CardRulesTest {
             assertEquals(odds.drop, results.getOrDefault(ForgeOutcome.Drop, 0))
             assertEquals(odds.destroy, results.getOrDefault(ForgeOutcome.Destroyed, 0))
             assertEquals(level >= 5, odds.drop > 0)
-            assertEquals(level >= 10, odds.destroy > 0)
+            assertEquals(0, odds.hold)
+            assertEquals(0, odds.destroy)
             assertEquals(level < 20, odds.great > 0)
+            if (level >= 20) assertEquals(ForgeOdds(70, 0, 0, 30, 0), odds)
         }
-        assertEquals(ForgeOdds(34, 9, 31, 25, 1), CardRules.odds(12))
-        assertEquals(21, CardRules.nextLevel(19, CardRules.odds(19).result(20)))
-        assertEquals(7, CardRules.nextLevel(12, CardRules.odds(12).result(99)))
+        assertEquals(ForgeOdds(66, 9, 0, 25, 0), CardRules.odds(12))
+        assertEquals(21, CardRules.nextLevel(19, CardRules.odds(19).result(70)))
+        assertEquals(11, CardRules.nextLevel(12, CardRules.odds(12).result(99)))
+        assertEquals(7, CardRules.nextLevel(12, ForgeOutcome.Destroyed))
         assertEquals(31, CardRules.nextLevel(30, CardRules.odds(30).result(0)))
+        assertEquals(ForgeOdds(70, 0, 0, 30, 0), CardRules.odds(Int.MAX_VALUE))
     }
 
     @Test fun costUsesCurrentLevelAndKeepsHalfPoints() {
