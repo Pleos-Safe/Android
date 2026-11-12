@@ -24,6 +24,13 @@ class MotionGalleryCoverageTest {
         )
         val forge = scenes.filterIsInstance<ForgeMotionRoute>()
         assertEquals(ForgeOutcome.entries.toSet(), forge.map { it.outcome }.toSet())
+        for (outcome in listOf(ForgeOutcome.Hold, ForgeOutcome.Destroyed)) {
+            val preview = motionChoices(MotionGroup.Outcomes, 14).single {
+                (it.scene as ForgeMotionRoute).outcome == outcome
+            }
+            assertTrue(preview.enabled)
+            assertTrue(preview.detail.contains("실제 발생 확률 0%"))
+        }
         assertEquals(
             listOf(5, 10, 15, 20, 25, 26, 27, 28),
             motionChoices(MotionGroup.Milestones, 14).map {
