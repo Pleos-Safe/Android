@@ -45,13 +45,20 @@ internal fun motionChoices(group: MotionGroup, before: Int): List<MotionChoice> 
         listOf(
             ForgeOutcome.Success to (odds.success > 0),
             ForgeOutcome.GreatSuccess to (odds.great > 0),
-            ForgeOutcome.Hold to (odds.hold > 0),
+            ForgeOutcome.Hold to true,
             ForgeOutcome.Drop to (odds.drop > 0),
-            ForgeOutcome.Destroyed to (odds.destroy > 0),
+            ForgeOutcome.Destroyed to (before >= 10),
             ForgeOutcome.Restored to true,
         ).map { (outcome, enabled) ->
             val scene = ForgeMotionRoute(before, CardRules.nextLevel(before, outcome).coerceAtLeast(0), outcome)
-            val detail = if (enabled) scene.detail else "이 단계에서는 발생하지 않아요"
+            val detail = when {
+                !enabled -> "이 단계에서는 발생하지 않아요"
+
+                (outcome == ForgeOutcome.Hold && odds.hold == 0) ||
+                    (outcome == ForgeOutcome.Destroyed && odds.destroy == 0) -> "${scene.detail} · 실제 발생 확률 0%"
+
+                else -> scene.detail
+            }
             MotionChoice(scene, detail = detail, enabled = enabled)
         }
     }
