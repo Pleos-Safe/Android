@@ -112,6 +112,12 @@ interface CollectionDao {
     @Query("SELECT * FROM visit_pack ORDER BY claimedAt DESC, id DESC")
     suspend fun visitPacks(): List<VisitPackEntity>
 
+    @Query(
+        "SELECT p.regionId, COUNT(*) AS packCount FROM visit_pack v JOIN place p ON p.id = v.placeId " +
+            "WHERE p.regionId IS NOT NULL GROUP BY p.regionId ORDER BY p.regionId",
+    )
+    fun observeRegionVisitPackCounts(): Flow<List<RegionVisitPackCount>>
+
     @Query("SELECT * FROM visit_pack WHERE journeyId = :journeyId AND placeId = :placeId")
     suspend fun visitPack(journeyId: String, placeId: String): VisitPackEntity?
 
@@ -176,3 +182,5 @@ interface CollectionDao {
     @Query("DELETE FROM progress_operation")
     suspend fun clearOperations()
 }
+
+data class RegionVisitPackCount(val regionId: String, val packCount: Int)
