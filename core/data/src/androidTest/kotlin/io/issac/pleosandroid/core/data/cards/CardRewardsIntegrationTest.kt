@@ -7,10 +7,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.issac.pleosandroid.core.data.collection.local.CatalogLoader
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
-import io.issac.pleosandroid.core.data.collection.repository.DefaultBadgeRegionSource
 import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionDemoRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultRegionVisitPackSource
 import io.issac.pleosandroid.core.data.collection.repository.DefaultVisitPackRepository
 import io.issac.pleosandroid.core.data.driving.DrivingClock
 import io.issac.pleosandroid.core.data.membership.DefaultMembershipRepository
@@ -123,7 +123,7 @@ class CardRewardsIntegrationTest {
         assertEquals(CardGrade.HH, card.grade)
         assertFalse(card.variant)
         assertEquals(setOf(place), map.observePlace(place).first()!!.ownedCardIds)
-        assertEquals(setOf("KR-41"), DefaultBadgeRegionSource(store).collectedRegionIds.first())
+        assertEquals(mapOf("KR-41" to 1), DefaultRegionVisitPackSource(store).regionVisitPackCounts.first())
 
         val first = album.enhance(copy, 0, "attempt-a", generation)
         album.acknowledge(first.id, generation)

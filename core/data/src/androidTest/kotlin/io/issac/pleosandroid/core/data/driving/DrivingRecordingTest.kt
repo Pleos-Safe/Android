@@ -6,10 +6,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
-import io.issac.pleosandroid.core.data.collection.repository.DefaultBadgeRegionSource
 import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultRegionVisitPackSource
 import io.issac.pleosandroid.core.data.membership.DefaultMembershipRepository
 import io.issac.pleosandroid.core.database.CollectionDatabase
 import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
@@ -415,12 +415,12 @@ class DrivingRecordingTest {
             }
             assertEquals(active.journeyId, visit.journeyId)
             assertTrue(requireNotNull(places.observePlace(place.id).first()).ownedCardIds.isEmpty())
-            assertTrue(DefaultBadgeRegionSource(store).collectedRegionIds.first().isEmpty())
+            assertTrue(DefaultRegionVisitPackSource(store).regionVisitPackCounts.first().isEmpty())
             store.realTransaction {
                 putPlaces(places().map { it.copy(active = false) })
                 touch()
             }
-            assertTrue(DefaultBadgeRegionSource(store).collectedRegionIds.first().isEmpty())
+            assertTrue(DefaultRegionVisitPackSource(store).regionVisitPackCounts.first().isEmpty())
             clock.nanos += 10_000_000_000
             vehicle.park()
             fixes.value = fixes.value!!.copy(elapsedNanos = clock.nanos)
@@ -430,7 +430,7 @@ class DrivingRecordingTest {
                 MutationResult.Success,
                 progress.deleteHistory(DeleteHistoryRequest(HistoryKind.Visit, visit.id, generation)),
             )
-            assertTrue(DefaultBadgeRegionSource(store).collectedRegionIds.first().isEmpty())
+            assertTrue(DefaultRegionVisitPackSource(store).regionVisitPackCounts.first().isEmpty())
         } finally {
             visitJob.cancelAndJoin()
             recordingJob.cancelAndJoin()
