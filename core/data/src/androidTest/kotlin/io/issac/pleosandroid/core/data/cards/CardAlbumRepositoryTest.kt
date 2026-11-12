@@ -106,7 +106,7 @@ class CardAlbumRepositoryTest {
 
     @Test fun chargeAndResultAreAtomicAcrossRetriesRecreationAndInsufficientFunds() = runBlocking<Unit> {
         val id = draw("a")
-        roll = 85
+        roll = 90
         val receipts = (1..4).map { async { repository.enhance(id, 0, "first") } }.awaitAll()
         assertEquals(1, receipts.distinct().size)
         assertEquals(ForgeOutcome.GreatSuccess, receipts.first().outcome)
@@ -126,7 +126,7 @@ class CardAlbumRepositoryTest {
         assertEquals(1, snapshot().history.size)
     }
 
-    @Test fun destructionKeepsIdentityAndOnlyOneEligibleMaterialIsConsumedOnRestoration() = runBlocking<Unit> {
+    @Test fun existingTraceKeepsIdentityAndOnlyOneEligibleMaterialIsConsumedOnRestoration() = runBlocking<Unit> {
         roll = 99
         val original = draw("one")
         val material = draw("two")
@@ -136,9 +136,14 @@ class CardAlbumRepositoryTest {
         val differentPrint = draw("wrong", PackType.Jeju)
         val dao = db.albumDao()
         val before = dao.copy(original)!!
-        dao.save(before.copy(level = 12, highest = 16))
-        repository.feature(original)
-        val destroyed = repository.enhance(original, 0, "destroy")
+        dao.save(before.copy(level = 7, highest = 16, status = CopyStatus.Trace.name, revision = 1))
+        dao.log(
+            io.issac.pleosandroid.core.database.entity.ForgeEntity(
+                "destroy", original, 12, 7, ForgeOutcome.Destroyed.name, 0, before.acquiredAt, false, null,
+            ),
+        )
+        connect()
+        val destroyed = snapshot().pending.getValue(original)
         assertEquals(ForgeOutcome.Destroyed, destroyed.outcome)
         assertEquals(7, destroyed.after)
         assertNull(snapshot().featuredId)
