@@ -7,11 +7,11 @@ import dagger.hilt.components.SingletonComponent
 import io.issac.pleosandroid.core.data.cards.DefaultCardAlbumRepository
 import io.issac.pleosandroid.core.data.collection.local.CatalogLoader
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
-import io.issac.pleosandroid.core.data.collection.repository.DefaultBadgeRegionSource
 import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionDemoRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultHistoryRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
+import io.issac.pleosandroid.core.data.collection.repository.DefaultRegionVisitPackSource
 import io.issac.pleosandroid.core.data.collection.repository.DefaultVisitPackRepository
 import io.issac.pleosandroid.core.data.membership.DefaultMembershipRepository
 import io.issac.pleosandroid.core.data.points.DefaultPointRepository
@@ -25,7 +25,7 @@ import io.issac.pleosandroid.core.domain.collection.repository.ProgressRepositor
 import io.issac.pleosandroid.core.domain.collection.repository.VisitPackRepository
 import io.issac.pleosandroid.core.domain.membership.MembershipRepository
 import io.issac.pleosandroid.core.domain.points.PointRepository
-import io.issac.pleosandroid.core.domain.repository.BadgeRegionSource
+import io.issac.pleosandroid.core.domain.repository.RegionVisitPackSource
 import javax.inject.Singleton
 
 @Module
@@ -62,5 +62,5 @@ internal abstract class CollectionModule {
     abstract fun demo(impl: DefaultCollectionDemoRepository): CollectionDemoRepository
 
     @Binds @Singleton
-    abstract fun regions(impl: DefaultBadgeRegionSource): BadgeRegionSource
+    abstract fun regions(impl: DefaultRegionVisitPackSource): RegionVisitPackSource
 }

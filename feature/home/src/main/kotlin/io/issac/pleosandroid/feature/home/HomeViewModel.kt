@@ -121,11 +121,11 @@ internal class HomeViewModel @Inject constructor(
             session.drivingPlace,
             session.navigationState,
             session.drivingPosition,
-            session.badgeRegionIds,
-        ) { catalog, recommendation, navigation, position, regions ->
+            session.regionVisitPackCounts,
+        ) { catalog, recommendation, navigation, position, packCounts ->
             val featured = (catalog.firstOrNull { it.id == "haeundae" } ?: catalog.firstOrNull())
                 ?.let { HomePlace(it.name, it.district, it.category, it.imageKey) }
-            HomePlacesState(featured, recommendation, navigation, position, regions)
+            HomePlacesState(featured, recommendation, navigation, position, packCounts)
         }
     } ?: flowOf(HomePlacesState())
 

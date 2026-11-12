@@ -129,7 +129,7 @@ private class FakePlaces : PlaceSessionRepository {
     override val catalogError = MutableStateFlow(false)
     override val locationState = MutableStateFlow<PlaceLocationState>(PlaceLocationState.Unavailable)
     override val navigationState = MutableStateFlow(route(hasDestination = false))
-    override val badgeRegionIds = MutableStateFlow(emptySet<String>())
+    override val regionVisitPackCounts = MutableStateFlow(emptyMap<String, Int>())
     override val drivingSafetyMessage = MutableStateFlow<DrivingSafetyMessage?>(null)
     override val claimableVisit = MutableStateFlow<ClaimableVisit?>(null)
     override val visitResult = MutableStateFlow<VisitPackClaimResult?>(null)

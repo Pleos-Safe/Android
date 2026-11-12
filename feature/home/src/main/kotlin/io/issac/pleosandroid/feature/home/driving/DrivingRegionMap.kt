@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,7 +31,6 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.theme.PleosLayout
 import io.issac.pleosandroid.core.designsystem.theme.PleosMotion
@@ -44,7 +44,7 @@ import org.json.JSONObject
 @Composable
 internal fun DrivingRegionMap(
     position: PlaceMapPosition?,
-    badgeRegionIds: Set<String>,
+    regionVisitPackCounts: Map<String, Int>,
     isMoving: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -71,7 +71,16 @@ internal fun DrivingRegionMap(
         },
     )
     val title = stringResource(R.string.driving_region_map_title)
-    val description = stringResource(R.string.driving_region_map_description, locationLabel)
+    val packDescription = regions.mapNotNull { region ->
+        val count = regionVisitPackCounts[region.id]?.takeIf { it > 0 } ?: return@mapNotNull null
+        resources.getString(
+            R.string.driving_region_map_region_pack_description,
+            region.name,
+            count,
+            VisitPackMapPalette.stepFor(count),
+        )
+    }.joinToString(", ").ifEmpty { resources.getString(R.string.driving_region_map_no_visit_packs) }
+    val description = stringResource(R.string.driving_region_map_description, locationLabel, packDescription)
 
     Column(
         modifier = modifier.background(colors.background).padding(PleosLayout.panelPadding),
@@ -113,12 +122,12 @@ internal fun DrivingRegionMap(
                 scale(scale, scale, pivot = Offset.Zero)
             }) {
                 for (region in regions) {
-                    val earned = region.id in badgeRegionIds
-                    val fill = if (earned) colors.accentLilac.copy(alpha = 0.60f) else colors.actionSecondary
+                    val count = regionVisitPackCounts[region.id] ?: 0
+                    val fill = VisitPackMapPalette.colorFor(count, colors.actionSecondary)
                     drawPath(region.boundary, fill)
                 }
                 for (region in regions) {
-                    val earned = region.id in badgeRegionIds
+                    val earned = (regionVisitPackCounts[region.id] ?: 0) > 0
                     val edge = if (earned) colors.accentLilac else colors.borderControl
                     val width = if (earned) 1.5.dp else 1.dp
                     drawPath(region.boundary, edge, style = Stroke(width.toPx() / scale))
@@ -131,28 +140,26 @@ internal fun DrivingRegionMap(
                 drawCircle(colors.actionPrimary, 5.dp.toPx(), pixel)
             }
         }
-        Row(
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space16),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalArrangement = Arrangement.spacedBy(PleosSpacing.space8),
         ) {
             DrivingMapLegend(
                 label = locationLabel,
                 color = if (target != null) colors.actionPrimary else colors.textDisabled,
-                modifier = Modifier.weight(1f, fill = false),
             )
             DrivingMapLegend(
-                label = stringResource(R.string.driving_region_map_owned_badge_area),
-                color = colors.accentLilac,
-                modifier = Modifier.weight(1f, fill = false),
+                label = stringResource(R.string.driving_region_map_visit_pack_scale),
+                color = VisitPackMapPalette.colors.first(),
             )
         }
     }
 }
 
 @Composable
-private fun DrivingMapLegend(label: String, color: Color, modifier: Modifier = Modifier) {
+private fun DrivingMapLegend(label: String, color: Color) {
     Row(
-        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space8),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -161,13 +168,12 @@ private fun DrivingMapLegend(label: String, color: Color, modifier: Modifier = M
             text = label,
             color = PleosTheme.colors.textSecondary,
             style = PleosTextStyles.meta,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            maxLines = 2,
         )
     }
 }
 
-private data class DrivingRegion(val id: String, val boundary: Path)
+private data class DrivingRegion(val id: String, val name: String, val boundary: Path)
 
 private fun loadDrivingRegions(resources: Resources): List<DrivingRegion> {
     val json = resources.openRawResource(R.raw.driving_korea_regions).bufferedReader().use { it.readText() }
@@ -192,8 +198,33 @@ private fun loadDrivingRegions(resources: Resources): List<DrivingRegion> {
                 }
             }
         }
-        DrivingRegion(region.getString("id"), boundary)
+        val id = region.getString("id")
+        DrivingRegion(id, drivingRegionName(resources, id), boundary)
     }
+}
+
+private fun drivingRegionName(resources: Resources, id: String): String {
+    val name = when (id) {
+        "KR-11" -> R.string.driving_region_map_seoul
+        "KR-26" -> R.string.driving_region_map_busan
+        "KR-27" -> R.string.driving_region_map_daegu
+        "KR-28" -> R.string.driving_region_map_incheon
+        "KR-29" -> R.string.driving_region_map_gwangju
+        "KR-30" -> R.string.driving_region_map_daejeon
+        "KR-31" -> R.string.driving_region_map_ulsan
+        "KR-41" -> R.string.driving_region_map_gyeonggi
+        "KR-42" -> R.string.driving_region_map_gangwon
+        "KR-43" -> R.string.driving_region_map_chungbuk
+        "KR-44" -> R.string.driving_region_map_chungnam
+        "KR-45" -> R.string.driving_region_map_jeonbuk
+        "KR-46" -> R.string.driving_region_map_jeonnam
+        "KR-47" -> R.string.driving_region_map_gyeongbuk
+        "KR-48" -> R.string.driving_region_map_gyeongnam
+        "KR-49" -> R.string.driving_region_map_jeju
+        "KR-50" -> R.string.driving_region_map_sejong
+        else -> return id
+    }
+    return resources.getString(name)
 }
 
 private object KoreaRegionProjection {

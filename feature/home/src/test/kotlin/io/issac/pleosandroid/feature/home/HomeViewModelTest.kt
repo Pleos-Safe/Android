@@ -624,7 +624,7 @@ class HomeViewModelTest {
         override val navigationState = MutableStateFlow(
             PlaceNavigationState(hasDestination = false, operation = PlaceNavigationOperation.Idle),
         )
-        override val badgeRegionIds = MutableStateFlow(emptySet<String>())
+        override val regionVisitPackCounts = MutableStateFlow(emptyMap<String, Int>())
         override val drivingSafetyMessage = MutableStateFlow<DrivingSafetyMessage?>(null)
         override val claimableVisit = MutableStateFlow<ClaimableVisit?>(null)
         override val visitResult = MutableStateFlow<VisitPackClaimResult?>(null)
