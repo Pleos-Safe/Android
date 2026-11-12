@@ -52,7 +52,7 @@ fun HomeScreen(
                     isMoving = isMoving,
                     progress = (uiState as HomeUiState.Ready).progress,
                     modifier = modifier,
-                    map = { DrivingRegionMap(null, emptySet(), isMoving, it) },
+                    map = { DrivingRegionMap(null, emptyMap(), isMoving, it) },
                     recommendation = { drivingRecommendation?.invoke() ?: NoDrivingRecommendation() },
                 )
             }

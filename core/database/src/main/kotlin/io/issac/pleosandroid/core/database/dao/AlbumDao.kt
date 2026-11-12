@@ -11,16 +11,9 @@ import io.issac.pleosandroid.core.database.entity.ForgeEntity
 import io.issac.pleosandroid.core.database.entity.PackEntity
 import io.issac.pleosandroid.core.database.entity.PrintEntity
 import io.issac.pleosandroid.core.database.entity.WalletEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AlbumDao {
-    @Query(
-        "SELECT DISTINCT p.mapRegionId FROM album_copy c JOIN album_print p ON c.printId = p.id " +
-            "WHERE c.seenAt IS NOT NULL AND c.status <> 'Spent' AND p.mapRegionId IS NOT NULL",
-    )
-    fun collectedMapRegions(): Flow<List<String>>
-
     @Query(
         "SELECT DISTINCT p.id AS placeId, c.printId AS cardId FROM place p " +
             "JOIN album_copy c ON c.printId = p.cardPrintId WHERE c.seenAt IS NOT NULL AND c.status <> 'Spent'",

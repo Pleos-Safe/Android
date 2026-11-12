@@ -18,7 +18,7 @@ import io.issac.pleosandroid.core.domain.place.PlaceMapPosition
 import io.issac.pleosandroid.core.domain.place.PlaceNavigationState
 import io.issac.pleosandroid.core.domain.place.PlaceSessionRepository
 import io.issac.pleosandroid.core.domain.place.TravelPlace
-import io.issac.pleosandroid.core.domain.repository.BadgeRegionSource
+import io.issac.pleosandroid.core.domain.repository.RegionVisitPackSource
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.core.vehicle.di.ApplicationScope
 import javax.inject.Inject
@@ -44,7 +44,7 @@ internal class DefaultPlaceSessionRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
     private val vehicle: VehicleRepository,
-    private val badges: BadgeRegionSource,
+    private val regions: RegionVisitPackSource,
     private val placesRepository: PlaceRepository,
     private val recorder: DrivingRecorder,
     private val journeys: JourneyRepository,
@@ -66,7 +66,7 @@ internal class DefaultPlaceSessionRepository @Inject constructor(
     override val visitResult = observe<VisitPackClaimResult?>(null) { it.visitResult }
     override val drivingPosition = observe<PlaceMapPosition?>(null) { it.drivingPosition }
     override val drivingPlace = observe<TravelPlace?>(null) { it.drivingPlace }
-    override val badgeRegionIds = badges.collectedRegionIds.catch { emit(emptySet()) }
+    override val regionVisitPackCounts = regions.regionVisitPackCounts.catch { emit(emptyMap()) }
 
     override fun acquire(): AutoCloseable = owners.acquire()
 

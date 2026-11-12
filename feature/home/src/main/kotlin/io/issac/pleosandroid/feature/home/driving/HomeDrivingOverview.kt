@@ -42,7 +42,7 @@ internal fun HomeDrivingOverview(
         safetyMessage = state.safetyMessage.takeIf {
             isMoving && canRecommend && navigation.operation == PlaceNavigationOperation.Idle
         },
-        map = { DrivingRegionMap(state.places.position, state.places.collectedRegionIds, isMoving, it) },
+        map = { DrivingRegionMap(state.places.position, state.places.regionVisitPackCounts, isMoving, it) },
         recommendation = {
             if (canRecommend) {
                 DrivingRecommendation(

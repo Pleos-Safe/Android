@@ -24,7 +24,7 @@ internal data class HomePlacesState(
     val recommendation: TravelPlace? = null,
     val navigation: PlaceNavigationState = PlaceNavigationState(),
     val position: PlaceMapPosition? = null,
-    val collectedRegionIds: Set<String> = emptySet(),
+    val regionVisitPackCounts: Map<String, Int> = emptyMap(),
 )
 
 internal sealed interface HomeIntent : UiIntent {

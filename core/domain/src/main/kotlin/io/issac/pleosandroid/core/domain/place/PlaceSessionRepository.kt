@@ -10,7 +10,7 @@ interface PlaceSessionRepository {
     val catalogError: StateFlow<Boolean>
     val locationState: StateFlow<PlaceLocationState>
     val navigationState: StateFlow<PlaceNavigationState>
-    val badgeRegionIds: Flow<Set<String>>
+    val regionVisitPackCounts: Flow<Map<String, Int>>
     val drivingSafetyMessage: StateFlow<DrivingSafetyMessage?>
     val claimableVisit: StateFlow<ClaimableVisit?>
     val visitResult: StateFlow<VisitPackClaimResult?>

@@ -1,9 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="driving_region_map_title">주행 위치 지도</string>
-    <string name="driving_region_map_description">대한민국 주행 위치 지도, %1$s</string>
+    <string name="driving_region_map_description">대한민국 주행 위치 지도, %1$s. %2$s</string>
     <string name="driving_region_map_current_position">현재 위치</string>
     <string name="driving_region_map_location_unavailable">위치 확인 중</string>
     <string name="driving_region_map_location_outside">지도 범위 밖</string>
-    <string name="driving_region_map_owned_badge_area">보유 배지 지역</string>
+    <string name="driving_region_map_visit_pack_scale">방문 카드팩 · 3개마다 진하게</string>
+    <string name="driving_region_map_region_pack_description">%1$s 방문 카드팩 %2$d개, 농도 %3$d단계</string>
+    <string name="driving_region_map_no_visit_packs">방문 카드팩을 받은 지역이 없어요.</string>
+    <string name="driving_region_map_seoul">서울</string>
+    <string name="driving_region_map_busan">부산</string>
+    <string name="driving_region_map_daegu">대구</string>
+    <string name="driving_region_map_incheon">인천</string>
+    <string name="driving_region_map_gwangju">광주</string>
+    <string name="driving_region_map_daejeon">대전</string>
+    <string name="driving_region_map_ulsan">울산</string>
+    <string name="driving_region_map_gyeonggi">경기</string>
+    <string name="driving_region_map_gangwon">강원</string>
+    <string name="driving_region_map_chungbuk">충북</string>
+    <string name="driving_region_map_chungnam">충남</string>
+    <string name="driving_region_map_jeonbuk">전북</string>
+    <string name="driving_region_map_jeonnam">전남</string>
+    <string name="driving_region_map_gyeongbuk">경북</string>
+    <string name="driving_region_map_gyeongnam">경남</string>
+    <string name="driving_region_map_jeju">제주</string>
+    <string name="driving_region_map_sejong">세종</string>
 </resources>
