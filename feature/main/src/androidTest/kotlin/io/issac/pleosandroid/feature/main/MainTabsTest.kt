@@ -27,19 +27,51 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 import io.issac.pleosandroid.core.navigation.BadgesRoute
 import io.issac.pleosandroid.core.navigation.EnhancementRoute
 import io.issac.pleosandroid.core.navigation.ExploreRoute
+import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavEntryResult
+import io.issac.pleosandroid.core.navigation.NavigationRouter
 import io.issac.pleosandroid.core.navigation.RecordsRoute
 import io.issac.pleosandroid.core.navigation.SettingsRoute
 import io.issac.pleosandroid.core.navigation.ShopRoute
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
 class MainTabsTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun restrictedHomeKeepsItsRouterWhenVehicleSnapshotsArriveOutOfOrder() {
+        var restricted by mutableStateOf(false)
+        var restrictedRouter: NavigationRouter? = null
+        val factories = setOf(
+            NavEntryFactory { route -> NavEntryResult { Text("화면 $route") } },
+        )
+        compose.setContent {
+            PleosTheme {
+                MainTabs(factories, restricted, { !restricted }, Modifier.requiredWidth(520.dp)) {
+                    // The home feature can still have its previous parked snapshot for this frame.
+                    restrictedRouter = LocalNavigationRouter.current
+                    Text("주차 홈 스냅샷")
+                }
+            }
+        }
+        compose.onNodeWithTag("main-tab-Records").performClick()
+        compose.runOnIdle { restricted = true }
+        compose.onNodeWithText("주차 홈 스냅샷").assertExists()
+        compose.runOnIdle {
+            val router = checkNotNull(restrictedRouter)
+            assertEquals(MainRoute, router.currentEntry)
+            assertFalse(router.navigate(BadgesRoute))
+        }
+        compose.runOnIdle { restricted = false }
+        compose.onNodeWithTag("main-tab-Records").assertIsSelected()
+        compose.onNodeWithText("화면 $RecordsRoute").assertExists()
+    }
 
     @Test
     fun tabMotionFollowsOrderAndRestrictionInterruptsDetailMotion() {
