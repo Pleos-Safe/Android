@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1030" viewBox="0 0 2200 1030" role="img" aria-labelledby="title desc">
+<title id="title">책임별 컴포넌트 구조</title><desc id="desc">화면·도메인·데이터·차량 구현의 경계를 가로 배치로 보여준다.</desc>
+<defs><marker id="arrow-normal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 1 L8 5 L0 9" fill="#A9B8D2"/></marker><marker id="arrow-api" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 1 L8 5 L0 9" fill="#A6FFF0"/></marker></defs>
+<rect x="0" y="0" width="2200" height="1030" rx="0" fill="#080C19" stroke="#080C19"/>
+<text x="64" y="57" fill="#A6FFF0" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="22" font-weight="600" text-anchor="start">ARCHITECTURE / COMPONENT RESPONSIBILITIES</text>
+<text x="64" y="112" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">실제 코드 참조를 중심으로 구성 · 모든 개별 모듈 연결은 아래 전체 그래프에서 표시</text>
+<rect x="64" y="189" width="2072" height="124" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="92" y="242" fill="#B6A7F4" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="33" font-weight="600" text-anchor="start">:app</text>
+<text x="340" y="235" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="27" font-weight="400" text-anchor="start">코드 사용 / feature:main · feature:home · feature:collection</text>
+<text x="340" y="282" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="26" font-weight="400" text-anchor="start">core:domain · core:navigation · core:designsystem</text>
+<path d="M614 528 H810" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<path d="M1596 488 H1390" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<path d="M614 824 H810" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<path d="M1866 596 V653" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<rect x="64" y="374" width="550" height="314" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="92" y="422" fill="#B6A7F4" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="31" font-weight="600" text-anchor="start">화면 · ViewModel</text>
+<text x="92" y="481" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="25" font-weight="400" text-anchor="start">main · home · explore · records</text>
+<text x="92" y="532" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="25" font-weight="400" text-anchor="start">collection · forge · membership</text>
+<text x="92" y="583" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="25" font-weight="400" text-anchor="start">Intent · StateFlow · UI Effect</text>
+<text x="92" y="634" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="25" font-weight="400" text-anchor="start">Route / Destination의 화면 연결</text>
+<rect x="810" y="374" width="580" height="551" rx="16" fill="#102A32" stroke="#A6FFF0"/>
+<text x="840" y="424" fill="#A6FFF0" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="34" font-weight="600" text-anchor="start">:core:domain</text>
+<text x="840" y="465" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="25" font-weight="400" text-anchor="start">Kotlin/JVM · Repository 계약 · 정책</text>
+<text x="840" y="527" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">CardAlbumRepository · PointRepository</text>
+<text x="840" y="588" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">JourneyRepository · MembershipRepository</text>
+<text x="840" y="649" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">VehicleRepository · PlaceSessionRepository</text>
+<text x="840" y="710" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">VisitPackRepository</text>
+<text x="840" y="771" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">DrivingAnalyzer · PointEarningPolicy</text>
+<text x="840" y="832" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">CardRules · 방문 인정 정책</text>
+<rect x="1596" y="374" width="540" height="222" rx="16" fill="#111D34" stroke="#EDCBA1"/>
+<text x="1624" y="424" fill="#EDCBA1" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="32" font-weight="600" text-anchor="start">:core:data</text>
+<text x="1624" y="475" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">Repository 구현 · 카드·포인트 트랜잭션</text>
+<text x="1624" y="518" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">DefaultCardAlbumRepository</text>
+<text x="1624" y="561" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">DefaultJourneyRepository</text>
+<rect x="1596" y="653" width="540" height="112" rx="16" fill="#111D34" stroke="#EDCBA1"/>
+<text x="1620" y="692" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="30" font-weight="600" text-anchor="start">:core:database</text>
+<text x="1620" y="731" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">Room · DAO · SQLCipher · Keystore</text>
+<rect x="64" y="739" width="550" height="186" rx="16" fill="#111D34" stroke="#EDCBA1"/>
+<text x="92" y="787" fill="#EDCBA1" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="31" font-weight="600" text-anchor="start">:core:vehicle</text>
+<text x="92" y="837" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="25" font-weight="400" text-anchor="start">Vehicle / PlaceSession 저장소 구현</text>
+<text x="92" y="883" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">Car API · Pleos 위치·내비 SDK</text>
+<rect x="1596" y="816" width="540" height="109" rx="16" fill="#111D34" stroke="#344563"/>
+<text x="1624" y="861" fill="#B6A7F4" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="28" font-weight="600" text-anchor="start">공용 화면 기반</text>
+<text x="1624" y="903" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">designsystem · navigation · ui · card-ui</text>
+<text x="64" y="992" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">전체 그래프에서는 DI·등록 전용 참조를 생략하고, 사용되는 코드의 모듈 소유권을 기준으로 연결합니다.</text>
+</svg>

@@ -1,0 +1,378 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="688" viewBox="0.00 0.00 2120.50 608.30" role="img" aria-label="실제 코드 사용처를 확인한 18개 모듈의 44개 참조. DI 및 화면 등록 전용 참조는 생략한다.">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(32.4 575.9)">
+<title>G</title>
+<polygon fill="#080c19" stroke="none" points="-32.4,32.4 -32.4,-575.9 2088.1,-575.9 2088.1,32.4 -32.4,32.4" />
+
+<g id="code-edge-2" class="edge" data-source=":app" data-target=":core:navigation" data-configuration="implementation">
+<title>:app → :core:navigation / io.issac.pleosandroid.core.navigation.NavEntryFactory / app/src/main/java/io/issac/pleosandroid/MainActivity.kt:19</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M614.55,-488.88C614.55,-406.96 614.55,-170 614.55,-170 614.55,-170 494.32,-170 494.32,-170" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="494.32,-167.55 487.32,-170 494.32,-172.45 494.32,-167.55" />
+</g>
+
+<g id="code-edge-0" class="edge" data-source=":app" data-target=":core:designsystem" data-configuration="implementation">
+<title>:app → :core:designsystem / io.issac.pleosandroid.core.designsystem.theme.PleosWindowTheme / app/src/main/java/io/issac/pleosandroid/MainActivity.kt:17</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M629.27,-488.9C629.27,-402.68 629.27,-143 629.27,-143 629.27,-143 890.27,-143 890.27,-143" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="890.27,-145.45 897.27,-143 890.27,-140.55 890.27,-145.45" />
+</g>
+
+<g id="code-edge-1" class="edge" data-source=":app" data-target=":core:domain" data-configuration="implementation">
+<title>:app → :core:domain / io.issac.pleosandroid.core.domain.driving.repository.DrivingRecorder / app/src/main/java/io/issac/pleosandroid/MainActivity.kt:18</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M621.91,-488.98C621.91,-386.73 621.91,-33 621.91,-33 621.91,-33 1305.86,-33 1305.86,-33" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1305.86,-35.45 1312.86,-33 1305.86,-30.55 1305.86,-35.45" />
+</g>
+
+<g id="code-edge-3" class="edge" data-source=":app" data-target=":feature:main" data-configuration="implementation">
+<title>:app → :feature:main / io.issac.pleosandroid.feature.main.PleosMain / app/src/main/java/io/issac/pleosandroid/navigation/PleosAppNavigation.kt:12</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M582.06,-525C455.61,-525 83.54,-525 83.54,-525 83.54,-525 83.54,-430.7 83.54,-430.7" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="85.99,-430.7 83.54,-423.7 81.09,-430.7 85.99,-430.7" />
+</g>
+
+<g id="code-edge-5" class="edge" data-source=":app" data-target=":feature:collection" data-configuration="implementation">
+<title>:app → :feature:collection / io.issac.pleosandroid.feature.collection.home.CollectionHomeCard / app/src/main/java/io/issac/pleosandroid/navigation/PleosAppNavigation.kt:9</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M581.9,-507C495.04,-507 302.54,-507 302.54,-507 302.54,-507 302.54,-430.88 302.54,-430.88" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="304.99,-430.88 302.54,-423.88 300.09,-430.88 304.99,-430.88" />
+</g>
+
+<g id="code-edge-4" class="edge" data-source=":app" data-target=":feature:home" data-configuration="implementation">
+<title>:app → :feature:home / io.issac.pleosandroid.feature.home.HomeFeatureProvider / app/src/main/java/io/issac/pleosandroid/navigation/PleosAppNavigation.kt:10</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M665.17,-516C752.03,-516 944.54,-516 944.54,-516 944.54,-516 944.54,-430.61 944.54,-430.61" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="946.99,-430.61 944.54,-423.61 942.09,-430.61 946.99,-430.61" />
+</g>
+
+<g id="code-edge-6" class="edge" data-source=":core:navigation" data-target=":core:domain" data-configuration="api">
+<title>:core:navigation → :core:domain / io.issac.pleosandroid.core.domain.cards.CardGrade / core/navigation/src/main/kotlin/io/issac/pleosandroid/feature/badges/album/gallery/CardMotion.kt:3</title>
+<path fill="none" stroke="#a6fff0" stroke-width="1.7" stroke-dasharray="5,2" d="M387.54,-122.12C387.54,-83.08 387.54,-16 387.54,-16 387.54,-16 1305.37,-16 1305.37,-16" />
+<polygon fill="#a6fff0" stroke="#a6fff0" stroke-width="1.7" points="1305.37,-18.45 1312.37,-16 1305.37,-13.55 1305.37,-18.45" />
+</g>
+
+<g id="code-edge-8" class="edge" data-source=":core:data" data-target=":core:domain" data-configuration="implementation">
+<title>:core:data → :core:domain / io.issac.pleosandroid.core.domain.cards.CardPrint / core/data/src/main/kotlin/io/issac/pleosandroid/core/data/cards/RegionalPrints.kt:3</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1894.66,-149C1865.84,-149 1838.91,-149 1838.91,-149 1838.91,-149 1838.91,-14 1838.91,-14 1838.91,-14 1491.34,-14 1491.34,-14" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1491.34,-11.55 1484.34,-14 1491.34,-16.45 1491.34,-11.55" />
+</g>
+
+<g id="code-edge-7" class="edge" data-source=":core:data" data-target=":core:database" data-configuration="implementation">
+<title>:core:data → :core:database / io.issac.pleosandroid.core.database.CollectionDatabase / core/data/src/main/kotlin/io/issac/pleosandroid/core/data/cards/AlbumStorage.kt:4</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1963.54,-122C1963.54,-122 1963.54,-63.7 1963.54,-63.7" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1965.99,-63.7 1963.54,-56.7 1961.09,-63.7 1965.99,-63.7" />
+</g>
+
+<g id="code-edge-9" class="edge" data-source=":core:card-ui" data-target=":core:designsystem" data-configuration="implementation">
+<title>:core:card-ui → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosTextLink / core/card-ui/src/main/kotlin/io/issac/pleosandroid/core/cardui/component/CardAlbumContent.kt:9</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M557.53,-244.23C557.53,-202.74 557.53,-129 557.53,-129 557.53,-129 890.31,-129 890.31,-129" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="890.31,-131.45 897.31,-129 890.31,-126.55 890.31,-131.45" />
+</g>
+
+<g id="code-edge-10" class="edge" data-source=":core:card-ui" data-target=":core:domain" data-configuration="api">
+<title>:core:card-ui → :core:domain / io.issac.pleosandroid.core.domain.cards.AlbumSnapshot / core/card-ui/src/main/kotlin/io/issac/pleosandroid/core/cardui/component/CardAlbumContent.kt:10</title>
+<path fill="none" stroke="#a6fff0" stroke-width="1.7" stroke-dasharray="5,2" d="M521.24,-244.55C521.24,-179.82 521.24,-22 521.24,-22 521.24,-22 1305.64,-22 1305.64,-22" />
+<polygon fill="#a6fff0" stroke="#a6fff0" stroke-width="1.7" points="1305.64,-24.45 1312.64,-22 1305.64,-19.55 1305.64,-24.45" />
+</g>
+
+<g id="code-edge-11" class="edge" data-source=":core:vehicle" data-target=":core:domain" data-configuration="implementation">
+<title>:core:vehicle → :core:domain / io.issac.pleosandroid.core.domain.model.UxAvailability / core/vehicle/src/main/kotlin/io/issac/pleosandroid/core/vehicle/datasource/CarUxMonitor.kt:6</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1644.54,-121.8C1644.54,-89.67 1644.54,-41 1644.54,-41 1644.54,-41 1491.36,-41 1491.36,-41" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1491.36,-38.55 1484.36,-41 1491.36,-43.45 1491.36,-38.55" />
+</g>
+
+<g id="code-edge-13" class="edge" data-source=":feature:nav" data-target=":core:navigation" data-configuration="api">
+<title>:feature:nav → :core:navigation / io.issac.pleosandroid.core.navigation.AppRoute / feature/nav/src/main/kotlin/io/issac/pleosandroid/feature/nav/PleosNavHost.kt:16</title>
+<path fill="none" stroke="#a6fff0" stroke-width="1.7" stroke-dasharray="5,2" d="M225.56,-263C282.35,-263 349.35,-263 349.35,-263 349.35,-263 349.35,-186.51 349.35,-186.51" />
+<polygon fill="#a6fff0" stroke="#a6fff0" stroke-width="1.7" points="351.8,-186.51 349.35,-179.51 346.9,-186.51 351.8,-186.51" />
+</g>
+
+<g id="code-edge-12" class="edge" data-source=":feature:nav" data-target=":core:designsystem" data-configuration="api">
+<title>:feature:nav → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosTab / feature/nav/src/main/kotlin/io/issac/pleosandroid/feature/nav/PleosNavHost.kt:15</title>
+<path fill="none" stroke="#a6fff0" stroke-width="1.7" stroke-dasharray="5,2" d="M147.54,-244.26C147.54,-232.75 147.54,-222 147.54,-222 147.54,-222 926.19,-222 926.19,-222 926.19,-222 926.19,-186.45 926.19,-186.45" />
+<polygon fill="#a6fff0" stroke="#a6fff0" stroke-width="1.7" points="928.64,-186.45 926.19,-179.45 923.74,-186.45 928.64,-186.45" />
+</g>
+
+<g id="code-edge-16" class="edge" data-source=":feature:main" data-target=":core:navigation" data-configuration="implementation">
+<title>:feature:main → :core:navigation / io.issac.pleosandroid.core.navigation.NavEntryFactory / feature/main/src/main/kotlin/io/issac/pleosandroid/feature/main/MainTabs.kt:19</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M46.67,-366.42C46.67,-302.33 46.67,-149 46.67,-149 46.67,-149 280.66,-149 280.66,-149" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="280.66,-151.45 287.66,-149 280.66,-146.55 280.66,-151.45" />
+</g>
+
+<g id="code-edge-15" class="edge" data-source=":feature:main" data-target=":core:designsystem" data-configuration="implementation">
+<title>:feature:main → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosBottomTabs / feature/main/src/main/kotlin/io/issac/pleosandroid/feature/main/MainTabs.kt:15</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M142.8,-366.71C142.8,-353.3 142.8,-340 142.8,-340 142.8,-340 952.5,-340 952.5,-340 952.5,-340 952.5,-185.95 952.5,-185.95" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="954.95,-185.95 952.5,-178.95 950.05,-185.95 954.95,-185.95" />
+</g>
+
+<g id="code-edge-17" class="edge" data-source=":feature:main" data-target=":core:domain" data-configuration="implementation">
+<title>:feature:main → :core:domain / io.issac.pleosandroid.core.domain.driving.repository.DrivingRecorder / feature/main/src/main/kotlin/io/issac/pleosandroid/feature/main/MainViewModel.kt:6</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M23.33,-366.69C23.33,-278.14 23.33,-5 23.33,-5 23.33,-5 1305.9,-5 1305.9,-5" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1305.9,-7.45 1312.9,-5 1305.9,-2.55 1305.9,-7.45" />
+</g>
+
+<g id="code-edge-18" class="edge" data-source=":feature:main" data-target=":core:ui" data-configuration="implementation">
+<title>:feature:main → :core:ui / io.issac.pleosandroid.core.ui.mvi.UiState / feature/main/src/main/kotlin/io/issac/pleosandroid/feature/main/MainState.kt:3</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M118.54,-366.61C118.54,-343.1 118.54,-313 118.54,-313 118.54,-313 762.39,-313 762.39,-313 762.39,-313 762.39,-308.23 762.39,-308.23" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="764.84,-308.23 762.39,-301.23 759.94,-308.23 764.84,-308.23" />
+</g>
+
+<g id="code-edge-14" class="edge" data-source=":feature:main" data-target=":feature:nav" data-configuration="implementation">
+<title>:feature:main → :feature:nav / io.issac.pleosandroid.feature.nav.PleosNavDisplay / feature/main/src/main/kotlin/io/issac/pleosandroid/feature/main/MainTabs.kt:22</title>
+<path fill="none" stroke="#edcba1" stroke-width="2.8" d="M94.27,-366.6C94.27,-366.6 94.27,-310.34 94.27,-310.34" />
+<polygon fill="#edcba1" stroke="#edcba1" stroke-width="2.8" points="96.72,-310.34 94.27,-303.34 91.82,-310.34 96.72,-310.34" />
+</g>
+
+<g id="code-edge-21" class="edge" data-source=":feature:collection" data-target=":core:navigation" data-configuration="implementation">
+<title>:feature:collection → :core:navigation / io.issac.pleosandroid.core.navigation.AppRoute / feature/collection/src/main/kotlin/io/issac/pleosandroid/feature/collection/CollectionDestination.kt:13</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M369.09,-366.47C369.09,-366.47 369.09,-186.13 369.09,-186.13" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="371.54,-186.13 369.09,-179.13 366.64,-186.13 371.54,-186.13" />
+</g>
+
+<g id="code-edge-19" class="edge" data-source=":feature:collection" data-target=":core:designsystem" data-configuration="implementation">
+<title>:feature:collection → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosTextLink / feature/collection/src/main/kotlin/io/issac/pleosandroid/feature/collection/home/CollectionHomeCard.kt:24</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M329.61,-366.44C329.61,-359.02 329.61,-353 329.61,-353 329.61,-353 978.82,-353 978.82,-353 978.82,-353 978.82,-186.1 978.82,-186.1" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="981.27,-186.1 978.82,-179.1 976.37,-186.1 981.27,-186.1" />
+</g>
+
+<g id="code-edge-20" class="edge" data-source=":feature:collection" data-target=":core:domain" data-configuration="implementation">
+<title>:feature:collection → :core:domain / io.issac.pleosandroid.core.domain.cards.CardActionException / feature/collection/src/main/kotlin/io/issac/pleosandroid/feature/collection/CollectionViewModel.kt:5</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M257.6,-366.5C257.6,-278.67 257.6,-11 257.6,-11 257.6,-11 1305.91,-11 1305.91,-11" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1305.91,-13.45 1312.91,-11 1305.91,-8.55 1305.91,-13.45" />
+</g>
+
+<g id="code-edge-22" class="edge" data-source=":feature:collection" data-target=":core:ui" data-configuration="implementation">
+<title>:feature:collection → :core:ui / io.issac.pleosandroid.core.ui.flow.collectUiState / feature/collection/src/main/kotlin/io/issac/pleosandroid/feature/collection/CollectionViewModel.kt:10</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M309.87,-366.76C309.87,-347.83 309.87,-326 309.87,-326 309.87,-326 784.41,-326 784.41,-326 784.41,-326 784.41,-308.39 784.41,-308.39" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="786.86,-308.39 784.41,-301.39 781.96,-308.39 786.86,-308.39" />
+</g>
+
+<g id="code-edge-23" class="edge" data-source=":feature:collection" data-target=":core:card-ui" data-configuration="implementation">
+<title>:feature:collection → :core:card-ui / io.issac.pleosandroid.core.cardui.component.CardAlbumContent / feature/collection/src/main/kotlin/io/issac/pleosandroid/feature/collection/CollectionDestination.kt:9</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M388.83,-366.68C388.83,-333.23 388.83,-281 388.83,-281 388.83,-281 421.86,-281 421.86,-281" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="421.86,-283.45 428.86,-281 421.86,-278.55 421.86,-283.45" />
+</g>
+
+<g id="code-edge-26" class="edge" data-source=":feature:forge" data-target=":core:navigation" data-configuration="implementation">
+<title>:feature:forge → :core:navigation / io.issac.pleosandroid.core.navigation.AppRoute / feature/forge/src/main/kotlin/io/issac/pleosandroid/feature/forge/ForgeDestination.kt:12</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M437.79,-394C427.15,-394 419.91,-394 419.91,-394 419.91,-394 419.91,-186.22 419.91,-186.22" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="422.36,-186.22 419.91,-179.22 417.46,-186.22 422.36,-186.22" />
+</g>
+
+<g id="code-edge-24" class="edge" data-source=":feature:forge" data-target=":core:designsystem" data-configuration="implementation">
+<title>:feature:forge → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosButton / feature/forge/src/main/kotlin/io/issac/pleosandroid/feature/forge/CardWorkshop.kt:35</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M600.51,-366.43C600.51,-299.86 600.51,-136 600.51,-136 600.51,-136 890.29,-136 890.29,-136" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="890.29,-138.45 897.29,-136 890.29,-133.55 890.29,-138.45" />
+</g>
+
+<g id="code-edge-25" class="edge" data-source=":feature:forge" data-target=":core:domain" data-configuration="implementation">
+<title>:feature:forge → :core:domain / io.issac.pleosandroid.core.domain.cards.AlbumSnapshot / feature/forge/src/main/kotlin/io/issac/pleosandroid/feature/forge/ForgeSelectionScreen.kt:6</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M597.16,-366.46C597.16,-281.1 597.16,-27 597.16,-27 597.16,-27 1305.85,-27 1305.85,-27" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1305.85,-29.45 1312.85,-27 1305.85,-24.55 1305.85,-29.45" />
+</g>
+
+<g id="code-edge-27" class="edge" data-source=":feature:forge" data-target=":core:ui" data-configuration="implementation">
+<title>:feature:forge → :core:ui / io.issac.pleosandroid.core.ui.mvi.UiIntent / feature/forge/src/main/kotlin/io/issac/pleosandroid/feature/forge/ForgeContract.kt:5</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M603.85,-366.66C603.85,-330.68 603.85,-272 603.85,-272 603.85,-272 730.83,-272 730.83,-272" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="730.83,-274.45 737.83,-272 730.83,-269.55 730.83,-274.45" />
+</g>
+
+<g id="code-edge-28" class="edge" data-source=":feature:forge" data-target=":core:card-ui" data-configuration="implementation">
+<title>:feature:forge → :core:card-ui / io.issac.pleosandroid.core.cardui.component.CardShelfGrid / feature/forge/src/main/kotlin/io/issac/pleosandroid/feature/forge/ForgeSelectionScreen.kt:5</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M515.85,-366.6C515.85,-366.6 515.85,-308.3 515.85,-308.3" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="518.3,-308.3 515.85,-301.3 513.4,-308.3 518.3,-308.3" />
+</g>
+
+<g id="code-edge-30" class="edge" data-source=":feature:records" data-target=":core:navigation" data-configuration="implementation">
+<title>:feature:records → :core:navigation / io.issac.pleosandroid.core.navigation.LocalNavigationRouter / feature/records/src/main/kotlin/io/issac/pleosandroid/feature/records/settings/RecordingSettingsDestination.kt:14</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1095.04,-366.52C1095.04,-312.75 1095.04,-199 1095.04,-199 1095.04,-199 458.1,-199 458.1,-199 458.1,-199 458.1,-186.03 458.1,-186.03" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="460.55,-186.03 458.1,-179.03 455.65,-186.03 460.55,-186.03" />
+</g>
+
+<g id="code-edge-29" class="edge" data-source=":feature:records" data-target=":core:designsystem" data-configuration="implementation">
+<title>:feature:records → :core:designsystem / io.issac.pleosandroid.core.designsystem.theme.PleosLayout / feature/records/src/main/kotlin/io/issac/pleosandroid/feature/records/settings/RecordingSettingsScreen.kt:18</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1112.12,-366.47C1112.12,-366.47 1112.12,-186.13 1112.12,-186.13" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1114.57,-186.13 1112.12,-179.13 1109.67,-186.13 1114.57,-186.13" />
+</g>
+
+<g id="code-edge-31" class="edge" data-source=":feature:records" data-target=":core:domain" data-configuration="implementation">
+<title>:feature:records → :core:domain / io.issac.pleosandroid.core.domain.collection.model.JourneyRecord / feature/records/src/main/kotlin/io/issac/pleosandroid/feature/records/component/RecordsComponents.kt:42</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1191.7,-366.69C1191.7,-285.07 1191.7,-49 1191.7,-49 1191.7,-49 1305.81,-49 1305.81,-49" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1305.81,-51.45 1312.81,-49 1305.81,-46.55 1305.81,-51.45" />
+</g>
+
+<g id="code-edge-32" class="edge" data-source=":feature:records" data-target=":core:ui" data-configuration="implementation">
+<title>:feature:records → :core:ui / io.issac.pleosandroid.core.ui.flow.catchUiError / feature/records/src/main/kotlin/io/issac/pleosandroid/feature/records/history/RecordsViewModel.kt:16</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1077.96,-366.66C1077.96,-330.68 1077.96,-272 1077.96,-272 1077.96,-272 862.34,-272 862.34,-272" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="862.34,-269.55 855.34,-272 862.34,-274.45 862.34,-269.55" />
+</g>
+
+<g id="code-edge-35" class="edge" data-source=":feature:home" data-target=":core:navigation" data-configuration="implementation">
+<title>:feature:home → :core:navigation / io.issac.pleosandroid.core.navigation.AppRoute / feature/home/src/main/kotlin/io/issac/pleosandroid/feature/home/HomeViewModel.kt:22</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M871.71,-366.74C871.71,-304.21 871.71,-156 871.71,-156 871.71,-156 494.42,-156 494.42,-156" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="494.42,-153.55 487.42,-156 494.42,-158.45 494.42,-153.55" />
+</g>
+
+<g id="code-edge-33" class="edge" data-source=":feature:home" data-target=":core:designsystem" data-configuration="implementation">
+<title>:feature:home → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosButton / feature/home/src/main/kotlin/io/issac/pleosandroid/feature/home/HomeScreen.kt:9</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1005.13,-366.47C1005.13,-366.47 1005.13,-186.13 1005.13,-186.13" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1007.58,-186.13 1005.13,-179.13 1002.68,-186.13 1007.58,-186.13" />
+</g>
+
+<g id="code-edge-34" class="edge" data-source=":feature:home" data-target=":core:domain" data-configuration="implementation">
+<title>:feature:home → :core:domain / io.issac.pleosandroid.core.domain.collection.model.MutationResult / feature/home/src/main/kotlin/io/issac/pleosandroid/feature/home/HomeViewModel.kt:7</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M885.79,-366.5C885.79,-283.75 885.79,-43 885.79,-43 885.79,-43 1305.82,-43 1305.82,-43" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1305.82,-45.45 1312.82,-43 1305.82,-40.55 1305.82,-45.45" />
+</g>
+
+<g id="code-edge-36" class="edge" data-source=":feature:home" data-target=":core:ui" data-configuration="implementation">
+<title>:feature:home → :core:ui / io.issac.pleosandroid.core.ui.flow.catchUiError / feature/home/src/main/kotlin/io/issac/pleosandroid/feature/home/HomeViewModel.kt:27</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M857.27,-394C847.27,-394 840.57,-394 840.57,-394 840.57,-394 840.57,-308.38 840.57,-308.38" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="843.02,-308.38 840.57,-301.38 838.12,-308.38 843.02,-308.38" />
+</g>
+
+<g id="code-edge-38" class="edge" data-source=":feature:explore" data-target=":core:navigation" data-configuration="implementation">
+<title>:feature:explore → :core:navigation / io.issac.pleosandroid.core.navigation.AppRoute / feature/explore/src/main/kotlin/io/issac/pleosandroid/feature/explore/ExploreRoute.kt:16</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M662.56,-366.64C662.56,-305.44 662.56,-163 662.56,-163 662.56,-163 494.47,-163 494.47,-163" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="494.47,-160.55 487.47,-163 494.47,-165.45 494.47,-160.55" />
+</g>
+
+<g id="code-edge-37" class="edge" data-source=":feature:explore" data-target=":core:designsystem" data-configuration="implementation">
+<title>:feature:explore → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosButton / feature/explore/src/main/kotlin/io/issac/pleosandroid/feature/explore/ExploreResults.kt:30</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M714.44,-366.42C714.44,-302.33 714.44,-149 714.44,-149 714.44,-149 890.6,-149 890.6,-149" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="890.6,-151.45 897.6,-149 890.6,-146.55 890.6,-151.45" />
+</g>
+
+<g id="code-edge-39" class="edge" data-source=":feature:explore" data-target=":core:domain" data-configuration="implementation">
+<title>:feature:explore → :core:domain / io.issac.pleosandroid.core.domain.place.PlaceLocationState / feature/explore/src/main/kotlin/io/issac/pleosandroid/feature/explore/ExploreViewModel.kt:8</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M688.5,-366.41C688.5,-282.75 688.5,-38 688.5,-38 688.5,-38 1305.8,-38 1305.8,-38" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1305.8,-40.45 1312.8,-38 1305.8,-35.55 1305.8,-40.45" />
+</g>
+
+<g id="code-edge-40" class="edge" data-source=":feature:explore" data-target=":core:ui" data-configuration="implementation">
+<title>:feature:explore → :core:ui / io.issac.pleosandroid.core.ui.mvi.UiEffect / feature/explore/src/main/kotlin/io/issac/pleosandroid/feature/explore/ExploreContract.kt:8</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M806.43,-366.6C806.43,-366.6 806.43,-308.3 806.43,-308.3" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="808.88,-308.3 806.43,-301.3 803.98,-308.3 808.88,-308.3" />
+</g>
+
+<g id="code-edge-41" class="edge" data-source=":feature:settings" data-target=":core:designsystem" data-configuration="implementation">
+<title>:feature:settings → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosBackLink / feature/settings/src/main/kotlin/io/issac/pleosandroid/feature/settings/SettingsScreen.kt:8</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1299.06,-366.63C1299.06,-304.62 1299.06,-159 1299.06,-159 1299.06,-159 1138.64,-159 1138.64,-159" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1138.64,-156.55 1131.64,-159 1138.64,-161.45 1138.64,-156.55" />
+</g>
+
+<g id="code-edge-42" class="edge" data-source=":feature:membership" data-target=":core:designsystem" data-configuration="implementation">
+<title>:feature:membership → :core:designsystem / io.issac.pleosandroid.core.designsystem.component.PleosBackLink / feature/membership/src/main/kotlin/io/issac/pleosandroid/feature/membership/MembershipScreen.kt:25</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1566.16,-394C1541.09,-394 1522.1,-394 1522.1,-394 1522.1,-394 1522.1,-140 1522.1,-140 1522.1,-140 1138.59,-140 1138.59,-140" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1138.59,-137.55 1131.59,-140 1138.59,-142.45 1138.59,-137.55" />
+</g>
+
+<g id="code-edge-43" class="edge" data-source=":feature:membership" data-target=":core:domain" data-configuration="implementation">
+<title>:feature:membership → :core:domain / io.issac.pleosandroid.core.domain.membership.Membership / feature/membership/src/main/kotlin/io/issac/pleosandroid/feature/membership/MembershipScreen.kt:35</title>
+<path fill="none" stroke="#8497b7" stroke-width="1.45" d="M1766.51,-366.46C1766.51,-281.1 1766.51,-27 1766.51,-27 1766.51,-27 1491.23,-27 1491.23,-27" />
+<polygon fill="#8497b7" stroke="#8497b7" stroke-width="1.45" points="1491.23,-24.55 1484.23,-27 1491.23,-29.45 1491.23,-24.55" />
+</g>
+
+<g id="module-m0" class="node">
+<title>m0</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M652.7,-543.5C652.7,-543.5 594.38,-543.5 594.38,-543.5 588.38,-543.5 582.38,-537.5 582.38,-531.5 582.38,-531.5 582.38,-501.2 582.38,-501.2 582.38,-495.2 588.38,-489.2 594.38,-489.2 594.38,-489.2 652.7,-489.2 652.7,-489.2 658.7,-489.2 664.7,-495.2 664.7,-501.2 664.7,-501.2 664.7,-531.5 664.7,-531.5 664.7,-537.5 658.7,-543.5 652.7,-543.5" />
+<text text-anchor="middle" x="623.54" y="-508.2" font-family="Arial" font-size="22.00" fill="#edf6ff">:app</text>
+</g>
+
+<g id="module-m1" class="node">
+<title>m1</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M472.95,-176.6C472.95,-176.6 302.13,-176.6 302.13,-176.6 296.13,-176.6 290.13,-170.6 290.13,-164.6 290.13,-164.6 290.13,-134.3 290.13,-134.3 290.13,-128.3 296.13,-122.3 302.13,-122.3 302.13,-122.3 472.95,-122.3 472.95,-122.3 478.95,-122.3 484.95,-128.3 484.95,-134.3 484.95,-134.3 484.95,-164.6 484.95,-164.6 484.95,-170.6 478.95,-176.6 472.95,-176.6" />
+<text text-anchor="middle" x="387.54" y="-141.3" font-family="Arial" font-size="22.00" fill="#edf6ff">:core:navigation</text>
+</g>
+
+<g id="module-m2" class="node">
+<title>m2</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M1117.2,-176.6C1117.2,-176.6 911.88,-176.6 911.88,-176.6 905.88,-176.6 899.88,-170.6 899.88,-164.6 899.88,-164.6 899.88,-134.3 899.88,-134.3 899.88,-128.3 905.88,-122.3 911.88,-122.3 911.88,-122.3 1117.2,-122.3 1117.2,-122.3 1123.2,-122.3 1129.2,-128.3 1129.2,-134.3 1129.2,-134.3 1129.2,-164.6 1129.2,-164.6 1129.2,-170.6 1123.2,-176.6 1117.2,-176.6" />
+<text text-anchor="middle" x="1014.54" y="-141.3" font-family="Arial" font-size="22.00" fill="#edf6ff">:core:designsystem</text>
+</g>
+
+<g id="module-m3" class="node">
+<title>m3</title>
+<path fill="#111d34" stroke="#a6fff0" stroke-width="1.4" d="M1469.7,-54.3C1469.7,-54.3 1327.38,-54.3 1327.38,-54.3 1321.38,-54.3 1315.38,-48.3 1315.38,-42.3 1315.38,-42.3 1315.38,-12 1315.38,-12 1315.38,-6 1321.38,0 1327.38,0 1327.38,0 1469.7,0 1469.7,0 1475.7,0 1481.7,-6 1481.7,-12 1481.7,-12 1481.7,-42.3 1481.7,-42.3 1481.7,-48.3 1475.7,-54.3 1469.7,-54.3" />
+<text text-anchor="middle" x="1398.54" y="-19" font-family="Arial" font-size="22.00" fill="#edf6ff">:core:domain</text>
+</g>
+
+<g id="module-m4" class="node">
+<title>m4</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M2043.7,-54.3C2043.7,-54.3 1883.38,-54.3 1883.38,-54.3 1877.38,-54.3 1871.38,-48.3 1871.38,-42.3 1871.38,-42.3 1871.38,-12 1871.38,-12 1871.38,-6 1877.38,0 1883.38,0 1883.38,0 2043.7,0 2043.7,0 2049.7,0 2055.7,-6 2055.7,-12 2055.7,-12 2055.7,-42.3 2055.7,-42.3 2055.7,-48.3 2049.7,-54.3 2043.7,-54.3" />
+<text text-anchor="middle" x="1963.54" y="-19" font-family="Arial" font-size="22.00" fill="#edf6ff">:core:database</text>
+</g>
+
+<g id="module-m5" class="node">
+<title>m5</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M2020.07,-176.6C2020.07,-176.6 1907,-176.6 1907,-176.6 1901,-176.6 1895,-170.6 1895,-164.6 1895,-164.6 1895,-134.3 1895,-134.3 1895,-128.3 1901,-122.3 1907,-122.3 1907,-122.3 2020.07,-122.3 2020.07,-122.3 2026.07,-122.3 2032.07,-128.3 2032.07,-134.3 2032.07,-134.3 2032.07,-164.6 2032.07,-164.6 2032.07,-170.6 2026.07,-176.6 2020.07,-176.6" />
+<text text-anchor="middle" x="1963.54" y="-141.3" font-family="Arial" font-size="22.00" fill="#edf6ff">:core:data</text>
+</g>
+
+<g id="module-m6" class="node">
+<title>m6</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M840.7,-298.9C840.7,-298.9 752.38,-298.9 752.38,-298.9 746.38,-298.9 740.38,-292.9 740.38,-286.9 740.38,-286.9 740.38,-256.6 740.38,-256.6 740.38,-250.6 746.38,-244.6 752.38,-244.6 752.38,-244.6 840.7,-244.6 840.7,-244.6 846.7,-244.6 852.7,-250.6 852.7,-256.6 852.7,-256.6 852.7,-286.9 852.7,-286.9 852.7,-292.9 846.7,-298.9 840.7,-298.9" />
+<text text-anchor="middle" x="796.54" y="-263.6" font-family="Arial" font-size="22.00" fill="#edf6ff">:core:ui</text>
+</g>
+
+<g id="module-m7" class="node">
+<title>m7</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M581.82,-298.9C581.82,-298.9 443.25,-298.9 443.25,-298.9 437.25,-298.9 431.25,-292.9 431.25,-286.9 431.25,-286.9 431.25,-256.6 431.25,-256.6 431.25,-250.6 437.25,-244.6 443.25,-244.6 443.25,-244.6 581.82,-244.6 581.82,-244.6 587.82,-244.6 593.82,-250.6 593.82,-256.6 593.82,-256.6 593.82,-286.9 593.82,-286.9 593.82,-292.9 587.82,-298.9 581.82,-298.9" />
+<text text-anchor="middle" x="512.54" y="-263.6" font-family="Arial" font-size="22.00" fill="#edf6ff">:core:card-ui</text>
+</g>
+
+<g id="module-m8" class="node">
+<title>m8</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M1714.57,-176.6C1714.57,-176.6 1574.5,-176.6 1574.5,-176.6 1568.5,-176.6 1562.5,-170.6 1562.5,-164.6 1562.5,-164.6 1562.5,-134.3 1562.5,-134.3 1562.5,-128.3 1568.5,-122.3 1574.5,-122.3 1574.5,-122.3 1714.57,-122.3 1714.57,-122.3 1720.57,-122.3 1726.57,-128.3 1726.57,-134.3 1726.57,-134.3 1726.57,-164.6 1726.57,-164.6 1726.57,-170.6 1720.57,-176.6 1714.57,-176.6" />
+<text text-anchor="middle" x="1644.54" y="-141.3" font-family="Arial" font-size="22.00" fill="#edf6ff">:core:vehicle</text>
+</g>
+
+<g id="module-m9" class="node">
+<title>m9</title>
+<path fill="#111d34" stroke="#edcba1" stroke-width="1.4" d="M213.07,-298.9C213.07,-298.9 82,-298.9 82,-298.9 76,-298.9 70,-292.9 70,-286.9 70,-286.9 70,-256.6 70,-256.6 70,-250.6 76,-244.6 82,-244.6 82,-244.6 213.07,-244.6 213.07,-244.6 219.07,-244.6 225.07,-250.6 225.07,-256.6 225.07,-256.6 225.07,-286.9 225.07,-286.9 225.07,-292.9 219.07,-298.9 213.07,-298.9" />
+<text text-anchor="middle" x="147.54" y="-263.6" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:nav</text>
+</g>
+
+<g id="module-m10" class="node">
+<title>m10</title>
+<path fill="#111d34" stroke="#edcba1" stroke-width="1.4" d="M155.07,-421.2C155.07,-421.2 12,-421.2 12,-421.2 6,-421.2 0,-415.2 0,-409.2 0,-409.2 0,-378.9 0,-378.9 0,-372.9 6,-366.9 12,-366.9 12,-366.9 155.07,-366.9 155.07,-366.9 161.07,-366.9 167.07,-372.9 167.07,-378.9 167.07,-378.9 167.07,-409.2 167.07,-409.2 167.07,-415.2 161.07,-421.2 155.07,-421.2" />
+<text text-anchor="middle" x="83.54" y="-385.9" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:main</text>
+</g>
+
+<g id="module-m11" class="node">
+<title>m11</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M396.57,-421.2C396.57,-421.2 208.5,-421.2 208.5,-421.2 202.5,-421.2 196.5,-415.2 196.5,-409.2 196.5,-409.2 196.5,-378.9 196.5,-378.9 196.5,-372.9 202.5,-366.9 208.5,-366.9 208.5,-366.9 396.57,-366.9 396.57,-366.9 402.57,-366.9 408.57,-372.9 408.57,-378.9 408.57,-378.9 408.57,-409.2 408.57,-409.2 408.57,-415.2 402.57,-421.2 396.57,-421.2" />
+<text text-anchor="middle" x="302.54" y="-385.9" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:collection</text>
+</g>
+
+<g id="module-m12" class="node">
+<title>m12</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M595.2,-421.2C595.2,-421.2 449.88,-421.2 449.88,-421.2 443.88,-421.2 437.88,-415.2 437.88,-409.2 437.88,-409.2 437.88,-378.9 437.88,-378.9 437.88,-372.9 443.88,-366.9 449.88,-366.9 449.88,-366.9 595.2,-366.9 595.2,-366.9 601.2,-366.9 607.2,-372.9 607.2,-378.9 607.2,-378.9 607.2,-409.2 607.2,-409.2 607.2,-415.2 601.2,-421.2 595.2,-421.2" />
+<text text-anchor="middle" x="522.54" y="-385.9" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:forge</text>
+</g>
+
+<g id="module-m13" class="node">
+<title>m13</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M1242.2,-421.2C1242.2,-421.2 1072.88,-421.2 1072.88,-421.2 1066.88,-421.2 1060.88,-415.2 1060.88,-409.2 1060.88,-409.2 1060.88,-378.9 1060.88,-378.9 1060.88,-372.9 1066.88,-366.9 1072.88,-366.9 1072.88,-366.9 1242.2,-366.9 1242.2,-366.9 1248.2,-366.9 1254.2,-372.9 1254.2,-378.9 1254.2,-378.9 1254.2,-409.2 1254.2,-409.2 1254.2,-415.2 1248.2,-421.2 1242.2,-421.2" />
+<text text-anchor="middle" x="1157.54" y="-385.9" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:records</text>
+</g>
+
+<g id="module-m14" class="node">
+<title>m14</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M1019.45,-421.2C1019.45,-421.2 869.63,-421.2 869.63,-421.2 863.63,-421.2 857.63,-415.2 857.63,-409.2 857.63,-409.2 857.63,-378.9 857.63,-378.9 857.63,-372.9 863.63,-366.9 869.63,-366.9 869.63,-366.9 1019.45,-366.9 1019.45,-366.9 1025.45,-366.9 1031.45,-372.9 1031.45,-378.9 1031.45,-378.9 1031.45,-409.2 1031.45,-409.2 1031.45,-415.2 1025.45,-421.2 1019.45,-421.2" />
+<text text-anchor="middle" x="944.54" y="-385.9" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:home</text>
+</g>
+
+<g id="module-m15" class="node">
+<title>m15</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M816.45,-421.2C816.45,-421.2 648.63,-421.2 648.63,-421.2 642.63,-421.2 636.63,-415.2 636.63,-409.2 636.63,-409.2 636.63,-378.9 636.63,-378.9 636.63,-372.9 642.63,-366.9 648.63,-366.9 648.63,-366.9 816.45,-366.9 816.45,-366.9 822.45,-366.9 828.45,-372.9 828.45,-378.9 828.45,-378.9 828.45,-409.2 828.45,-409.2 828.45,-415.2 822.45,-421.2 816.45,-421.2" />
+<text text-anchor="middle" x="732.54" y="-385.9" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:explore</text>
+</g>
+
+<g id="module-m16" class="node">
+<title>m16</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M1466.32,-421.2C1466.32,-421.2 1294.75,-421.2 1294.75,-421.2 1288.75,-421.2 1282.75,-415.2 1282.75,-409.2 1282.75,-409.2 1282.75,-378.9 1282.75,-378.9 1282.75,-372.9 1288.75,-366.9 1294.75,-366.9 1294.75,-366.9 1466.32,-366.9 1466.32,-366.9 1472.32,-366.9 1478.32,-372.9 1478.32,-378.9 1478.32,-378.9 1478.32,-409.2 1478.32,-409.2 1478.32,-415.2 1472.32,-421.2 1466.32,-421.2" />
+<text text-anchor="middle" x="1380.54" y="-385.9" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:settings</text>
+</g>
+
+<g id="module-m17" class="node">
+<title>m17</title>
+<path fill="#111d34" stroke="#344563" stroke-width="1.4" d="M1794.45,-421.2C1794.45,-421.2 1578.62,-421.2 1578.62,-421.2 1572.62,-421.2 1566.62,-415.2 1566.62,-409.2 1566.62,-409.2 1566.62,-378.9 1566.62,-378.9 1566.62,-372.9 1572.62,-366.9 1578.62,-366.9 1578.62,-366.9 1794.45,-366.9 1794.45,-366.9 1800.45,-366.9 1806.45,-372.9 1806.45,-378.9 1806.45,-378.9 1806.45,-409.2 1806.45,-409.2 1806.45,-415.2 1800.45,-421.2 1794.45,-421.2" />
+<text text-anchor="middle" x="1686.54" y="-385.9" font-family="Arial" font-size="22.00" fill="#edf6ff">:feature:membership</text>
+</g>
+</g>
+</svg>
