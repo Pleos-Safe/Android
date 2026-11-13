@@ -2,23 +2,30 @@ package io.issac.pleosandroid.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-/** PRISM/raw palette. UI code consumes semantic colors through PleosTheme.colors. */
+/** Hyundai CI reference colors and derived dark vehicle tones; UI consumes semantic aliases. */
 internal object PleosReferenceColors {
-    val navy950 = Color(0xFF080C19)
-    val navy975 = Color(0xFF070A15)
-    val navy850 = Color(0xFF111B38)
-    val navy900 = Color(0xFF111D34)
-    val navy800 = Color(0xFF1B2A45)
-    val navy820 = Color(0xFF17253D)
-    val navy880 = Color(0xFF101B30)
-    val navy700 = Color(0xFF20354A)
-    val ink100 = Color(0xFFEDF6FF)
-    val ink300 = Color(0xFFA9B8D2)
-    val ink500 = Color(0xFF7F92B2)
-    val line600 = Color(0xFF344563)
-    val line500 = Color(0xFF3B4E6D)
-    val mint200 = Color(0xFFA6FFF0)
-    val lilac300 = Color(0xFFB6A7F4)
-    val amber300 = Color(0xFFEDCBA1)
-    val rose300 = Color(0xFFE7B2C4)
+    // Official reference: https://www.hyundai.com/kr/ko/info/ci/ci-color
+    val hyundaiBlue = Color(0xFF002C5F)
+    val activeBlue = Color(0xFF00AAD2)
+    val skyBlue = Color(0xFFAACAE6)
+    val white = Color(0xFFFFFFFF)
+    val lightSand = Color(0xFFF6F3F2)
+
+    // App-derived tones, not additional official CI colors. Backgrounds mix Hyundai Blue with black;
+    // muted text and borders blend the blue references for separation on the dark vehicle surface.
+    val backgroundBlueBlack = Color(0xFF000F21)
+    val shellBlueBlack = Color(0xFF000B18)
+    val shellBlue = Color(0xFF001A39)
+    val surfaceBlue = Color(0xFF001630)
+    val secondaryBlue = Color(0xFF00234C)
+    val disabledBlue = Color(0xFF001F43)
+    val chipBlue = Color(0xFF001834)
+    val mutedBlueText = Color(0xFF7795B1)
+    val borderBlue = Color(0xFF294B70)
+    val controlBorderBlue = Color(0xFF527699)
+
+    // Feature meaning is independent of branding: visit progress and warning signals retain color.
+    val visitPurple = Color(0xFFB6A7F4)
+    val pendingAmber = Color(0xFFEDCBA1)
+    val attentionRose = Color(0xFFE7B2C4)
 }

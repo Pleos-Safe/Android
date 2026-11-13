@@ -128,7 +128,7 @@ internal fun DrivingRegionMap(
                 }
                 for (region in regions) {
                     val earned = (regionVisitPackCounts[region.id] ?: 0) > 0
-                    val edge = if (earned) colors.accentLilac else colors.borderControl
+                    val edge = if (earned) colors.visitedRegionOutline else colors.borderControl
                     val width = if (earned) 1.5.dp else 1.dp
                     drawPath(region.boundary, edge, style = Stroke(width.toPx() / scale))
                 }
