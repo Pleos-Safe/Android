@@ -28,7 +28,7 @@ internal fun PlusPass(modifier: Modifier = Modifier) {
     val colors = PleosTheme.colors
     val type = PleosTextStyles
     val cut = CutCornerShape(topStart = 18.dp * type.scale, bottomEnd = 18.dp * type.scale)
-    val foil = Brush.linearGradient(listOf(colors.actionPrimary, colors.accentLilac, colors.statusPending))
+    val foil = Brush.linearGradient(listOf(colors.actionPrimary, colors.accentSecondary, colors.accentHighlight))
     Column(
         modifier.fillMaxWidth().clip(cut)
             .background(Brush.linearGradient(listOf(colors.shellStart, colors.actionSecondary, colors.chipSelected)))
@@ -53,7 +53,7 @@ internal fun PlusPass(modifier: Modifier = Modifier) {
                     close()
                 }
                 val sheen = Brush.linearGradient(
-                    listOf(colors.actionPrimary, colors.accentLilac, colors.statusPending),
+                    listOf(colors.actionPrimary, colors.accentSecondary, colors.accentHighlight),
                     Offset(cx - 3 * unit, cy - 3 * unit),
                     Offset(cx + 3 * unit, cy + 3 * unit),
                 )
@@ -70,7 +70,7 @@ internal fun PlusPass(modifier: Modifier = Modifier) {
             Alignment.CenterVertically,
         ),
     ) {
-        Text("MILESTONE PLUS", style = type.section, color = colors.actionPrimary)
+        Text("차곡차곡 PLUS", style = type.section, color = colors.actionPrimary)
         Column {
             Text(
                 "1.5배",

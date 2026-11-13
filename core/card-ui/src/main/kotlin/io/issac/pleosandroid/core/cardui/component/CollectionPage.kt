@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -100,16 +99,16 @@ fun VaultStage(modifier: Modifier = Modifier, highlighted: Boolean = true, conte
     val foil = if (highlighted) {
         listOf(
             colors.actionPrimary,
-            colors.accentLilac,
-            colors.statusAttention,
-            colors.statusPending,
+            colors.accentSecondary,
+            colors.accentHighlight,
+            colors.accentSecondary,
             colors.actionPrimary,
         )
     } else {
         listOf(colors.borderControl, colors.borderDefault)
     }
     Box(
-        modifier.clip(VaultShape).background(Brush.linearGradient(listOf(Color(0xFF1D2B4B), Color(0xFF0B1226))))
+        modifier.clip(VaultShape).background(Brush.linearGradient(listOf(colors.actionSecondary, colors.background)))
             .border(1.dp, Brush.linearGradient(foil), VaultShape)
             .drawBehind {
                 val glint = Path().apply {
@@ -118,7 +117,7 @@ fun VaultStage(modifier: Modifier = Modifier, highlighted: Boolean = true, conte
                     lineTo(size.width, size.height * .53f)
                     close()
                 }
-                drawPath(glint, colors.accentLilac.copy(alpha = .045f))
+                drawPath(glint, colors.accentSecondary.copy(alpha = .045f))
             },
         propagateMinConstraints = true,
     ) {
