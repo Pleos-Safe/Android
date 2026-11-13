@@ -33,13 +33,15 @@ internal fun rememberPackFace(pack: ReceivedPack): Bitmap {
         PackType.Busan -> R.drawable.pack_busan
         PackType.Jeju -> R.drawable.pack_jeju
         PackType.Hyundai -> R.drawable.pack_hyundai
-        null -> DesignR.drawable.milestone_common_back
+        null -> DesignR.drawable.chagok_common_back
     }
     return remember(res, art) { PackFaces.load(res, art) }
 }
 
 /** Share the nodpi print between shelf entries and the tear mesh, releasing unused textures under memory pressure. */
 private object PackFaces {
+    private const val VECTOR_MAX_WIDTH = 720
+    private const val VECTOR_MAX_HEIGHT = 1080
     private val cache = SparseArray<WeakReference<Bitmap>>()
 
     @Synchronized
@@ -51,7 +53,7 @@ private object PackFaces {
             inMutable = hyundai
             inPreferredConfig = Bitmap.Config.ARGB_8888
         }
-        val face = checkNotNull(BitmapFactory.decodeResource(res, art, options))
+        val face = BitmapFactory.decodeResource(res, art, options) ?: renderDrawable(res, art)
         if (hyundai) {
             val logo = res.getDrawable(R.drawable.hyundai_pack_emblem, null).mutate()
             val width = (face.width * .155f).roundToInt()
@@ -64,6 +66,20 @@ private object PackFaces {
         }
         cache.put(art, WeakReference(face))
         return face
+    }
+
+    private fun renderDrawable(res: Resources, art: Int): Bitmap {
+        val drawable = res.getDrawable(art, null).mutate()
+        val intrinsicWidth = drawable.intrinsicWidth.takeIf { it > 0 } ?: VECTOR_MAX_WIDTH
+        val intrinsicHeight = drawable.intrinsicHeight.takeIf { it > 0 } ?: VECTOR_MAX_HEIGHT
+        // Bound pixels independently of resource density while preserving the drawable's aspect ratio.
+        val scale = minOf(VECTOR_MAX_WIDTH.toFloat() / intrinsicWidth, VECTOR_MAX_HEIGHT.toFloat() / intrinsicHeight)
+        val width = (intrinsicWidth * scale).roundToInt().coerceIn(1, VECTOR_MAX_WIDTH)
+        val height = (intrinsicHeight * scale).roundToInt().coerceIn(1, VECTOR_MAX_HEIGHT)
+        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also { bitmap ->
+            drawable.setBounds(0, 0, width, height)
+            drawable.draw(Canvas(bitmap))
+        }
     }
 }
 

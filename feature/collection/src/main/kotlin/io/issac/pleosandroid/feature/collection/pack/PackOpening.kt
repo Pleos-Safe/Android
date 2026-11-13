@@ -200,7 +200,7 @@ internal fun PackOpeningPrint(
                 }
                 if (!showFront) {
                     Image(
-                        painterResource(DesignR.drawable.milestone_common_back),
+                        painterResource(DesignR.drawable.chagok_common_back),
                         if (torn && !shown) "카드 뒷면" else null,
                         Modifier.fillMaxSize(),
                         contentScale = ContentScale.FillBounds,

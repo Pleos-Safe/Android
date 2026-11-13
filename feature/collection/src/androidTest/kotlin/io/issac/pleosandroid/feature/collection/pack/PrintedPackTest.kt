@@ -1,19 +1,23 @@
 package io.issac.pleosandroid.feature.collection.pack
 
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color as Pixel
+import android.util.DisplayMetrics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import io.issac.pleosandroid.core.cardui.testing.PrintSurfaceTest
@@ -23,11 +27,46 @@ import io.issac.pleosandroid.feature.collection.R
 import java.io.File
 import java.time.Instant
 import kotlin.math.abs
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PrintedPackTest : PrintSurfaceTest() {
     private val pack = ReceivedPack("pack", PackType.Busan, "방문 보상", Instant.EPOCH)
+
+    @Test fun legacyVectorBackIsDensityBoundedAndOpaqueInsideItsRoundedCorners() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val config = Configuration(context.resources.configuration).apply {
+            densityDpi = DisplayMetrics.DENSITY_XXHIGH
+        }
+        val resources = context.createConfigurationContext(config).resources
+        val legacy = pack.copy(id = "legacy:existing-card")
+        lateinit var printed: Bitmap
+        compose.setContent {
+            CompositionLocalProvider(LocalResources provides resources) {
+                printed = rememberPackFace(legacy)
+                Box(Modifier.requiredSize(240.dp, 360.dp)) {
+                    PackArtwork(legacy, Modifier.fillMaxSize())
+                }
+            }
+        }
+        compose.runOnIdle {
+            assertEquals(720, printed.width)
+            assertEquals(1080, printed.height)
+            assertEquals(Bitmap.Config.ARGB_8888, printed.config)
+            for ((x, y) in listOf(0 to 0, 719 to 0, 0 to 1079, 719 to 1079)) {
+                assertEquals("Only rounded outer corners are transparent", 0, Pixel.alpha(printed.getPixel(x, y)))
+            }
+            val pixels = IntArray(printed.width * printed.height)
+            printed.getPixels(pixels, 0, printed.width, 0, 0, printed.width, printed.height)
+            assertTrue(
+                "The complete interior, including the seal's negative space, must stay opaque",
+                (32 until printed.height - 32).all { y ->
+                    (32 until printed.width - 32).all { x -> Pixel.alpha(pixels[y * printed.width + x]) == 255 }
+                },
+            )
+        }
+    }
 
     @Test fun hyundaiEmblemIsPrintedOnTheSameSurfaceShownAtTheStartOfTheTear() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
