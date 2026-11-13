@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -16,6 +17,7 @@ import io.issac.pleosandroid.core.designsystem.component.PleosBottomTabs
 import io.issac.pleosandroid.core.designsystem.component.PleosHeader
 import io.issac.pleosandroid.core.designsystem.component.PleosTab
 import io.issac.pleosandroid.core.designsystem.component.pleosShellBackground
+import io.issac.pleosandroid.core.navigation.LocalNavigationRouter
 import io.issac.pleosandroid.core.navigation.NavEntryFactory
 import io.issac.pleosandroid.core.navigation.NavigationRouter
 import io.issac.pleosandroid.core.navigation.SettingsRoute
@@ -86,7 +88,11 @@ internal fun MainTabs(
         )
         Box(Modifier.weight(1f)) {
             if (restricted) {
-                restrictedContent()
+                // Home and the tab host observe vehicle state independently. Home can briefly render
+                // its parked content here while the host still applies the restriction.
+                CompositionLocalProvider(LocalNavigationRouter provides routers.getValue(PleosTab.Travel)) {
+                    restrictedContent()
+                }
             } else {
                 // At another tab's root, predictive Back previews the travel destination we will return to.
                 val home = entries.getValue(PleosTab.Travel)
