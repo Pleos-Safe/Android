@@ -178,7 +178,7 @@ private fun MotionTile(choice: MotionChoice, posterHeight: Dp?, onPlay: (CardMot
 private fun MotionThumbnail(scene: CardMotionRoute) {
     when (scene) {
         is PackMotionRoute -> if (scene.flipOnly) {
-            Image(painterResource(DesignR.drawable.milestone_common_back), null, Modifier.fillMaxSize())
+            Image(painterResource(DesignR.drawable.chagok_common_back), null, Modifier.fillMaxSize())
         } else {
             PackArtwork(remember(scene) { previewPackCard(scene.region, scene.grade).pack }, Modifier.fillMaxSize())
         }

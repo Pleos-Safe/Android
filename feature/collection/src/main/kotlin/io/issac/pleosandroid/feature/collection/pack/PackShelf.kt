@@ -147,7 +147,7 @@ private fun PackStage(pack: ReceivedPack, drawn: Boolean, modifier: Modifier) {
 private fun ShelfArtwork(pack: ReceivedPack, drawn: Boolean, modifier: Modifier) {
     if (drawn) {
         Image(
-            painterResource(DesignR.drawable.milestone_common_back),
+            painterResource(DesignR.drawable.chagok_common_back),
             "앞면 미확인 카드",
             modifier,
             contentScale = ContentScale.Fit,
