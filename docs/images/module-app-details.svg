@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="760" viewBox="0 0 2100 760" role="img" aria-labelledby="title desc">
+<title id="title">앱이 실제 코드를 사용하는 모듈</title><desc id="desc">앱에서 사용하는 UI, 도메인과 내비게이션 코드를 코드 사용 예와 함께 표시한다.</desc>
+<defs><marker id="arrow-normal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 1 L8 5 L0 9" fill="#A9B8D2"/></marker><marker id="arrow-api" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 1 L8 5 L0 9" fill="#A6FFF0"/></marker></defs>
+<rect x="0" y="0" width="2100" height="760" rx="0" fill="#080C19" stroke="#080C19"/>
+<text x="64" y="57" fill="#A6FFF0" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="22" font-weight="600" text-anchor="start">APP / SOURCE REFERENCES</text>
+<text x="64" y="112" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="40" font-weight="650" text-anchor="start">앱이 직접 사용하는 코드</text>
+<text x="64" y="151" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="24" font-weight="400" text-anchor="start">화면 호출·주행 기록·디자인 토큰·내비게이션 계약 등 사용처가 있는 참조만 표시</text>
+<rect x="64" y="354" width="370" height="130" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="88" y="393" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="34" font-weight="600" text-anchor="start">:app</text>
+<text x="88" y="432" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">화면 조립 · 기록 서비스</text>
+<path d="M434 419 H710 V235 H1110" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<rect x="1110" y="211" width="460" height="48" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="1134" y="244.0" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="26" font-weight="600" text-anchor="start">:core:designsystem</text>
+<text x="1610" y="244" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">PleosWindowTheme</text>
+<path d="M434 419 H710 V308 H1110" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<rect x="1110" y="284" width="460" height="48" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="1134" y="317.0" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="26" font-weight="600" text-anchor="start">:core:domain</text>
+<text x="1610" y="317" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">DrivingRecorder</text>
+<path d="M434 419 H710 V381 H1110" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<rect x="1110" y="357" width="460" height="48" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="1134" y="390.0" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="26" font-weight="600" text-anchor="start">:core:navigation</text>
+<text x="1610" y="390" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">ProvideCollectionFocus</text>
+<path d="M434 419 H710 V454 H1110" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<rect x="1110" y="430" width="460" height="48" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="1134" y="463.0" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="26" font-weight="600" text-anchor="start">:feature:main</text>
+<text x="1610" y="463" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">PleosMain</text>
+<path d="M434 419 H710 V527 H1110" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<rect x="1110" y="503" width="460" height="48" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="1134" y="536.0" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="26" font-weight="600" text-anchor="start">:feature:home</text>
+<text x="1610" y="536" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">HomeFeatureProvider</text>
+<path d="M434 419 H710 V600 H1110" fill="none" stroke="#A9B8D2" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow-normal)"/>
+<rect x="1110" y="576" width="460" height="48" rx="16" fill="#111D34" stroke="#B6A7F4"/>
+<text x="1134" y="609.0" fill="#EDF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="26" font-weight="600" text-anchor="start">:feature:collection</text>
+<text x="1610" y="609" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">CollectionHomeCard</text>
+<text x="64" y="713" fill="#A9B8D2" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,Arial,sans-serif" font-size="23" font-weight="400" text-anchor="start">기능을 등록하기 위한 app → feature 연결과 DI 구현 제공용 app → data / vehicle 연결은 이 그림에서 생략합니다.</text>
+</svg>
