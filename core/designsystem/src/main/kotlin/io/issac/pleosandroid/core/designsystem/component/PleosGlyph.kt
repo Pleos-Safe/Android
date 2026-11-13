@@ -30,7 +30,6 @@ import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 internal enum class PleosSymbol(val outline: String) {
     Arrow("M2 12H22M15 5L22 12L15 19"),
     Back("M22 12H2M9 5L2 12L9 19"),
-    Mark("M1 19V1H5L12 13L19 1H23V19"),
     Search("M17 17L23 23M10 2A8 8 0 1 0 10 18A8 8 0 1 0 10 2Z"),
     Close("M5 5L19 19M19 5L5 19"),
     Settings(
@@ -48,11 +47,9 @@ internal enum class PleosSymbol(val outline: String) {
 @Composable
 internal fun PleosGlyph(symbol: PleosSymbol, tint: Color, modifier: Modifier = Modifier) {
     val path = remember(symbol) { PathParser().parsePathString(symbol.outline).toPath() }
-    val accent = PleosTheme.colors.actionPrimary
     Canvas(modifier.size(PleosSpacing.space24)) {
         withTransform({ scale(size.width / 24f, size.height / 24f, Offset.Zero) }) {
             drawPath(path, tint, style = Stroke(1.6f, cap = StrokeCap.Round, join = StrokeJoin.Round))
-            if (symbol == PleosSymbol.Mark) drawLine(accent, Offset(1f, 23f), Offset(23f, 23f), 1.4f)
         }
     }
 }

@@ -1,6 +1,7 @@
 package io.issac.pleosandroid.core.designsystem.component
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -70,13 +72,18 @@ fun PleosHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space12),
             ) {
-                PleosGlyph(PleosSymbol.Mark, colors.textPrimary, Modifier.size(30.dp * scale))
+                Image(
+                    painterResource(R.drawable.ic_chagok_brand_on_dark),
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp * scale, 32.dp * scale),
+                )
                 Text(
                     stringResource(R.string.pleos_brand),
-                    Modifier.weight(1f),
-                    style = PleosTextStyles.body.copy(fontWeight = FontWeight.Medium, letterSpacing = .8.sp),
+                    Modifier.weight(1f).testTag("brand-wordmark"),
+                    style = PleosTextStyles.body.copy(fontWeight = FontWeight.Medium, letterSpacing = 0.sp),
                     color = colors.textPrimary,
                     maxLines = 1,
+                    softWrap = false,
                 )
                 if (!restricted) {
                     PleosIconButton(

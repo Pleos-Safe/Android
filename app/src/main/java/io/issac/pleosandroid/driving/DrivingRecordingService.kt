@@ -131,7 +131,7 @@ class DrivingRecordingService : Service() {
         )
         return Notification.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_driving_record)
-            .setContentTitle("MILESTONE · 여정 기록")
+            .setContentTitle(getString(R.string.driving_recording_notification_title, getString(R.string.app_name)))
             .setContentText(message)
             .setContentIntent(content)
             .setOngoing(true)

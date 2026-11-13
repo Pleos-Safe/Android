@@ -40,7 +40,7 @@ import androidx.compose.ui.util.lerp
 import io.issac.pleosandroid.core.cardui.component.CollectionBack
 import io.issac.pleosandroid.core.cardui.print.CardPrintView
 import io.issac.pleosandroid.core.designsystem.component.PleosTextLink
-import io.issac.pleosandroid.core.designsystem.component.rememberMilestoneCardLight
+import io.issac.pleosandroid.core.designsystem.component.rememberCardLight
 import io.issac.pleosandroid.core.domain.cards.CardCopy
 import io.issac.pleosandroid.core.domain.cards.ForgeReceipt
 import kotlin.math.roundToInt
@@ -81,7 +81,7 @@ internal fun ForgePresentation(
     }
     val playing by remember(progress, ownsPlayback) { derivedStateOf { ownsPlayback && progress.value < 1f } }
     val displayLevel = if (receipt != null && playing) receipt.before else card.level
-    val light = rememberMilestoneCardLight(displayLevel >= 10 || card.grade.ordinal > 0)
+    val light = rememberCardLight(displayLevel >= 10 || card.grade.ordinal > 0)
     val solar by rememberEclipseCorona(!reduced && maxOf(card.level, receipt?.before ?: 0) >= 25)
     var origin by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
     var source by remember { mutableStateOf(Rect.Zero) }

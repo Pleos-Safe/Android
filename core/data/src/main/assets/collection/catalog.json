@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "places": [
     {
       "id": "haeundae",
@@ -10,7 +10,7 @@
       "longitude": 129.1604,
       "radiusMeters": 250,
       "minimumDwellSeconds": 60,
-      "imageKey": "milestone_art_haeundae",
+      "imageKey": "chagok_art_haeundae",
       "regionId": "KR-26",
       "rewardPack": "Busan",
       "cardPrintId": "busan-haeundae"
