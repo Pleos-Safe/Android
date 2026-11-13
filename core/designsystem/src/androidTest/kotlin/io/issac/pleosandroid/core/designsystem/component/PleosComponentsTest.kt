@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,11 +28,14 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -49,13 +53,17 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.modifier.customClickable
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -244,6 +252,46 @@ class PleosComponentsTest {
         compose.onNodeWithText("조작 제한").assertExists()
         compose.onAllNodesWithText("컬렉션").assertCountEquals(0)
         compose.onNodeWithContentDescription("설정").assertDoesNotExist()
+    }
+
+    @Test
+    fun chagokWordmarkStaysOnOneLineInFullAndFiveTwentyDpHeaders() {
+        var width by mutableStateOf(1216.dp)
+        var fontScale by mutableStateOf(1f)
+        var restricted by mutableStateOf(false)
+        compose.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) {
+                PleosTheme {
+                    Box(Modifier.requiredWidth(width)) {
+                        PleosHeader(PleosTab.Travel, {}, {}, restricted)
+                    }
+                }
+            }
+        }
+        val cases = listOf(
+            Triple(1216.dp, 1f, false),
+            Triple(520.dp, 1f, false),
+            Triple(520.dp, 1f, true),
+            Triple(520.dp, 1.5f, false),
+            Triple(520.dp, 1.5f, true),
+        )
+        for ((targetWidth, targetFontScale, targetRestricted) in cases) {
+            compose.runOnIdle {
+                width = targetWidth
+                fontScale = targetFontScale
+                restricted = targetRestricted
+            }
+            val wordmark = compose.onNodeWithTag("brand-wordmark").assertIsDisplayed()
+            val layouts = mutableListOf<TextLayoutResult>()
+            wordmark.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+            assertTrue(layouts.isNotEmpty())
+            layouts.forEach { layout ->
+                assertEquals("차곡차곡", layout.layoutInput.text.text)
+                assertEquals(1, layout.lineCount)
+                assertFalse("Brand clipped at $targetWidth / font scale $targetFontScale", layout.hasVisualOverflow)
+            }
+        }
     }
 
     @Test

@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.issac.pleosandroid.core.cardui.R
-import io.issac.pleosandroid.core.designsystem.component.rememberMilestoneCardLight
+import io.issac.pleosandroid.core.designsystem.component.rememberCardLight
 import io.issac.pleosandroid.core.designsystem.theme.PleosFontFamily
 import io.issac.pleosandroid.core.domain.cards.CardCopy
 import io.issac.pleosandroid.core.domain.cards.CardGrade
@@ -141,7 +141,7 @@ fun CardPrintView(
     val frontAngle = flipAngle?.let { angle ->
         remember(angle) { derivedStateOf { angle.value.coerceAtLeast(90f) } }
     }
-    val light = illumination ?: rememberMilestoneCardLight(inspectable && (stage >= 2 || stockStyle.plateIndex > 0))
+    val light = illumination ?: rememberCardLight(inspectable && (stage >= 2 || stockStyle.plateIndex > 0))
     var tilt by remember(card.id) { mutableFloatStateOf(0f) }
     var dragging by remember(card.id) { mutableStateOf(false) }
     val resting by androidx.compose.animation.core.animateFloatAsState(if (dragging) tilt else 0f, label = "카드 각도")
@@ -238,7 +238,7 @@ fun CardPrintView(
             PrintLabel(card.grade.name, unit, 15, ink, unit.field(274, 34, 95), TextAlign.End)
             if (card.variant) PrintLabel("변종", unit, 11, ink, unit.field(295, 58, 73), TextAlign.End)
             PrintCaption(card, unit, titleInk, levelChange)
-            PrintLabel("MILESTONE", unit, 10, ink, unit.field(230, 543, 138), TextAlign.End)
+            PrintLabel("차곡차곡", unit, 10, ink, unit.field(230, 543, 138), TextAlign.End)
             PrintLabel(card.print.serial, unit, 10, ink, unit.field(230, 559, 138), TextAlign.End)
             if (card.level % 5 != 0 && stage < 5) {
                 Row(Modifier.offset(unit * 120, unit * 561), horizontalArrangement = Arrangement.spacedBy(unit * 4)) {

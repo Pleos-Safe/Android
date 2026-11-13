@@ -14,7 +14,7 @@ import kotlinx.coroutines.isActive
 
 /** Share this light across a card's waiting, reveal and inspection states without restarting its reflection. */
 @Composable
-fun rememberMilestoneCardLight(ambient: Boolean, initialAngle: Float = -4f): State<Float> {
+fun rememberCardLight(ambient: Boolean, initialAngle: Float = -4f): State<Float> {
     val angle = remember { mutableFloatStateOf(initialAngle) }
     val motion = rememberCoroutineScope().coroutineContext[MotionDurationScale]
     val durationScale = motion?.scaleFactor ?: 1f

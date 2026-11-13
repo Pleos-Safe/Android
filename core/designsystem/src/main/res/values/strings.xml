@@ -1,5 +1,5 @@
 <resources>
-    <string name="pleos_brand" translatable="false">MILESTONE</string>
+    <string name="pleos_brand" translatable="false">차곡차곡</string>
     <string name="pleos_tab_travel">홈</string>
     <string name="pleos_tab_explore">탐색</string>
     <string name="pleos_tab_enhance">강화</string>

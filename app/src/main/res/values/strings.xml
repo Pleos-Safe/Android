@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">PleosAndroid</string>
+    <string name="app_name">차곡차곡</string>
+    <string name="driving_recording_notification_title">%1$s · 여정 기록</string>
 </resources>

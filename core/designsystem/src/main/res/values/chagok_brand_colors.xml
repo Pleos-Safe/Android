@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="chagok_brand_primary">#002C5F</color>
+    <color name="chagok_brand_accent">#00AAD2</color>
+    <color name="chagok_brand_on_dark">#FFFFFF</color>
+</resources>
