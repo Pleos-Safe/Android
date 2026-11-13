@@ -7,9 +7,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -82,77 +84,83 @@ internal fun DrivingRegionMap(
     }.joinToString(", ").ifEmpty { resources.getString(R.string.driving_region_map_no_visit_packs) }
     val description = stringResource(R.string.driving_region_map_description, locationLabel, packDescription)
 
-    Column(
-        modifier = modifier.background(colors.background).padding(PleosLayout.panelPadding),
-        verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap),
-    ) {
-        Text(title, color = colors.textSecondary, style = PleosTextStyles.meta)
-        Canvas(
-            Modifier.fillMaxWidth().weight(1f)
-                .semantics { contentDescription = description },
+    BoxWithConstraints(modifier.background(colors.background)) {
+        // Keep the viewport useful when recommendation and safety panels leave a short map slot.
+        val compact = maxHeight < 300.dp * PleosTextStyles.scale
+        val contentPadding = if (compact) PleosSpacing.space8 * PleosTextStyles.scale else PleosLayout.panelPadding
+        val gap = if (compact) PleosSpacing.space4 * PleosTextStyles.scale else PleosLayout.itemGap
+        Column(
+            modifier = Modifier.fillMaxSize().padding(contentPadding),
+            verticalArrangement = Arrangement.spacedBy(gap),
         ) {
-            val padding = 14.dp.toPx()
-            val scale = minOf(
-                (size.width - padding * 2) / KoreaRegionProjection.width,
-                (size.height - padding * 2) / KoreaRegionProjection.height,
-            )
-            if (scale <= 0) return@Canvas
+            Text(title, color = colors.textSecondary, style = PleosTextStyles.meta)
+            Canvas(
+                Modifier.fillMaxWidth().weight(1f)
+                    .semantics { contentDescription = description },
+            ) {
+                val padding = 14.dp.toPx()
+                val scale = minOf(
+                    (size.width - padding * 2) / KoreaRegionProjection.width,
+                    (size.height - padding * 2) / KoreaRegionProjection.height,
+                )
+                if (scale <= 0) return@Canvas
 
-            drawRect(
-                brush = Brush.radialGradient(
-                    colors = listOf(colors.actionSecondary.copy(alpha = 0.60f), Color.Transparent),
-                    center = center,
-                    radius = size.maxDimension * 0.55f,
-                ),
-            )
-            val gridColor = colors.borderDefault.copy(alpha = 0.34f)
-            for (division in 1..3) {
-                val x = size.width * division / 4
-                val y = size.height * division / 4
-                drawLine(gridColor, Offset(x, 0f), Offset(x, size.height), 1.dp.toPx())
-                drawLine(gridColor, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
-            }
+                drawRect(
+                    brush = Brush.radialGradient(
+                        colors = listOf(colors.actionSecondary.copy(alpha = 0.60f), Color.Transparent),
+                        center = center,
+                        radius = size.maxDimension * 0.55f,
+                    ),
+                )
+                val gridColor = colors.borderDefault.copy(alpha = 0.34f)
+                for (division in 1..3) {
+                    val x = size.width * division / 4
+                    val y = size.height * division / 4
+                    drawLine(gridColor, Offset(x, 0f), Offset(x, size.height), 1.dp.toPx())
+                    drawLine(gridColor, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
+                }
 
-            val mapOrigin = Offset(
-                (size.width - KoreaRegionProjection.width * scale) / 2,
-                (size.height - KoreaRegionProjection.height * scale) / 2,
-            )
-            withTransform({
-                translate(mapOrigin.x, mapOrigin.y)
-                scale(scale, scale, pivot = Offset.Zero)
-            }) {
-                for (region in regions) {
-                    val count = regionVisitPackCounts[region.id] ?: 0
-                    val fill = VisitPackMapPalette.colorFor(count, colors.actionSecondary)
-                    drawPath(region.boundary, fill)
+                val mapOrigin = Offset(
+                    (size.width - KoreaRegionProjection.width * scale) / 2,
+                    (size.height - KoreaRegionProjection.height * scale) / 2,
+                )
+                withTransform({
+                    translate(mapOrigin.x, mapOrigin.y)
+                    scale(scale, scale, pivot = Offset.Zero)
+                }) {
+                    for (region in regions) {
+                        val count = regionVisitPackCounts[region.id] ?: 0
+                        val fill = VisitPackMapPalette.colorFor(count, colors.actionSecondary)
+                        drawPath(region.boundary, fill)
+                    }
+                    for (region in regions) {
+                        val earned = (regionVisitPackCounts[region.id] ?: 0) > 0
+                        val edge = if (earned) colors.visitedRegionOutline else colors.borderControl
+                        val width = if (earned) 1.5.dp else 1.dp
+                        drawPath(region.boundary, edge, style = Stroke(width.toPx() / scale))
+                    }
                 }
-                for (region in regions) {
-                    val earned = (regionVisitPackCounts[region.id] ?: 0) > 0
-                    val edge = if (earned) colors.visitedRegionOutline else colors.borderControl
-                    val width = if (earned) 1.5.dp else 1.dp
-                    drawPath(region.boundary, edge, style = Stroke(width.toPx() / scale))
+                marker?.let { point ->
+                    val pixel = mapOrigin + point * scale
+                    drawCircle(colors.actionPrimary.copy(alpha = 0.19f), 13.dp.toPx(), pixel)
+                    drawCircle(colors.background, 7.dp.toPx(), pixel)
+                    drawCircle(colors.actionPrimary, 5.dp.toPx(), pixel)
                 }
             }
-            marker?.let { point ->
-                val pixel = mapOrigin + point * scale
-                drawCircle(colors.actionPrimary.copy(alpha = 0.19f), 13.dp.toPx(), pixel)
-                drawCircle(colors.background, 7.dp.toPx(), pixel)
-                drawCircle(colors.actionPrimary, 5.dp.toPx(), pixel)
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space16),
+                verticalArrangement = Arrangement.spacedBy(PleosSpacing.space8),
+            ) {
+                DrivingMapLegend(
+                    label = locationLabel,
+                    color = if (target != null) colors.actionPrimary else colors.textDisabled,
+                )
+                DrivingMapLegend(
+                    label = stringResource(R.string.driving_region_map_visit_pack_scale),
+                    color = VisitPackMapPalette.colors.first(),
+                )
             }
-        }
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space16),
-            verticalArrangement = Arrangement.spacedBy(PleosSpacing.space8),
-        ) {
-            DrivingMapLegend(
-                label = locationLabel,
-                color = if (target != null) colors.actionPrimary else colors.textDisabled,
-            )
-            DrivingMapLegend(
-                label = stringResource(R.string.driving_region_map_visit_pack_scale),
-                color = VisitPackMapPalette.colors.first(),
-            )
         }
     }
 }

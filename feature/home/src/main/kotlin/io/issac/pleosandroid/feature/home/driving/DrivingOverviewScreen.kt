@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.issac.pleosandroid.core.designsystem.component.PleosInfoPanel
@@ -37,6 +38,8 @@ import io.issac.pleosandroid.core.domain.place.DrivingSafetyMessage
 import io.issac.pleosandroid.feature.home.JourneyProgressDisplay
 import io.issac.pleosandroid.feature.home.R
 import io.issac.pleosandroid.feature.home.journey.JourneyProgressRows
+import io.issac.pleosandroid.feature.home.journey.journeyDistance
+import io.issac.pleosandroid.feature.home.journey.journeyDuration
 
 @Composable
 internal fun DrivingOverviewScreen(
@@ -50,16 +53,17 @@ internal fun DrivingOverviewScreen(
 ) {
     BoxWithConstraints(modifier.fillMaxSize().pleosShellBackground()) {
         val wide = maxWidth >= WideOverviewMinWidth * PleosTextStyles.scale
+        val gap = if (wide) PleosLayout.sectionGap else PleosSpacing.space8 * PleosTextStyles.scale
         Column(
             modifier = Modifier.fillMaxSize().padding(
                 horizontal = PleosLayout.horizontalPadding(wide),
-                vertical = PleosLayout.sectionGap,
+                vertical = gap,
             ),
-            verticalArrangement = Arrangement.spacedBy(PleosLayout.sectionGap),
+            verticalArrangement = Arrangement.spacedBy(gap),
         ) {
             DrivingOverviewHeading(isMoving, wide, recording = progress != null)
             if (!wide) {
-                DrivingOverviewMetrics(progress, destination)
+                CompactDrivingOverviewMetrics(progress, destination)
             }
             if (wide) {
                 Row(
@@ -79,7 +83,7 @@ internal fun DrivingOverviewScreen(
             } else {
                 // The map uses the space remaining after the recommendation and its action are measured.
                 DrivingOverviewMap(map, Modifier.weight(1f).fillMaxWidth())
-                DrivingOverviewRecommendation(recommendation)
+                DrivingOverviewRecommendation(recommendation, compact = true)
                 safetyMessage?.let { DrivingSafetyBanner(it) }
             }
         }
@@ -146,6 +150,50 @@ private fun DrivingOverviewMetrics(progress: JourneyProgressDisplay?, destinatio
 }
 
 @Composable
+private fun CompactDrivingOverviewMetrics(progress: JourneyProgressDisplay?, destination: String?) {
+    if (progress == null && destination == null) return
+    val colors = PleosTheme.colors
+    Column(
+        modifier = Modifier.fillMaxWidth()
+            .background(colors.surface, PleosShape.inset)
+            .border(1.dp, colors.borderDefault, PleosShape.inset)
+            .padding(horizontal = PleosSpacing.space12, vertical = PleosSpacing.space8),
+        verticalArrangement = Arrangement.spacedBy(PleosSpacing.space4),
+    ) {
+        destination?.let {
+            Text(
+                it,
+                style = PleosTextStyles.body,
+                color = colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        progress?.let {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PleosSpacing.space12)) {
+                Text(
+                    "거리 ${journeyDistance(it.distanceMeters)}",
+                    Modifier.weight(1f),
+                    style = PleosTextStyles.meta,
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    "주행 ${journeyDuration(it.movingMillis)}",
+                    Modifier.weight(1f),
+                    style = PleosTextStyles.meta,
+                    color = colors.textSecondary,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun DrivingOverviewMap(map: @Composable (Modifier) -> Unit, modifier: Modifier = Modifier) {
     val colors = PleosTheme.colors
     Box(
@@ -158,22 +206,24 @@ private fun DrivingOverviewMap(map: @Composable (Modifier) -> Unit, modifier: Mo
 }
 
 @Composable
-private fun DrivingOverviewRecommendation(recommendation: @Composable () -> Unit) {
+private fun DrivingOverviewRecommendation(recommendation: @Composable () -> Unit, compact: Boolean = false) {
     val colors = PleosTheme.colors
     Column(
         modifier = Modifier.fillMaxWidth()
             .background(colors.surface, PleosShape.inset)
             .border(1.dp, colors.borderDefault, PleosShape.inset)
-            .padding(PleosLayout.panelPadding),
+            .padding(if (compact) PleosSpacing.space8 * PleosTextStyles.scale else PleosLayout.panelPadding),
         verticalArrangement = Arrangement.spacedBy(PleosLayout.itemGap),
     ) {
-        Text(
-            text = stringResource(R.string.driving_overview_recommendation),
-            color = colors.textPrimary,
-            style = PleosTextStyles.meta,
-            modifier = Modifier.semantics { heading() },
-        )
-        HorizontalDivider(color = colors.borderDefault)
+        if (!compact) {
+            Text(
+                text = stringResource(R.string.driving_overview_recommendation),
+                color = colors.textPrimary,
+                style = PleosTextStyles.meta,
+                modifier = Modifier.semantics { heading() },
+            )
+            HorizontalDivider(color = colors.borderDefault)
+        }
         recommendation()
     }
 }

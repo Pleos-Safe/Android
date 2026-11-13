@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -16,12 +18,14 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
@@ -45,6 +49,76 @@ import org.junit.Test
 class DrivingOverviewCaptureTest {
     @get:Rule
     val compose = createComposeRule()
+
+    @Test
+    fun compactMetricsKeepMapAndRecommendationVisibleAtLargeFontSizes() {
+        val fontScale = mutableStateOf(1f)
+        val operation = mutableStateOf(PlaceNavigationOperation.Applied)
+        val safetyMessage = mutableStateOf<DrivingSafetyMessage?>(null)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        compose.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale.value)) {
+                PleosWindowTheme(Modifier.requiredSize(520.dp, 760.dp)) {
+                    Column(Modifier.fillMaxSize().testTag(CAPTURE_TAG)) {
+                        PleosHeader(PleosTab.Travel, {}, {}, restricted = true)
+                        DrivingOverviewScreen(
+                            isMoving = true,
+                            modifier = Modifier.weight(1f),
+                            progress = JourneyProgressDisplay(2_400, 198_000),
+                            destination = "해운대 해변 방면",
+                            safetyMessage = safetyMessage.value,
+                            map = { DrivingRegionMap(CapturePosition, VisitPackCounts, true, it) },
+                            recommendation = {
+                                DrivingRecommendation(
+                                    placeName = "광안리 해변",
+                                    hasDestination = true,
+                                    operation = operation.value,
+                                    onRequest = {},
+                                    onRecheck = {},
+                                    distanceKm = 1.8,
+                                )
+                            },
+                        )
+                    }
+                }
+            }
+        }
+        val cases = listOf(
+            PlaceNavigationOperation.Applied to null,
+            PlaceNavigationOperation.Idle to DrivingSafetyMessage.Acceleration,
+        )
+        for ((targetOperation, targetSafety) in cases) {
+            for (targetFontScale in listOf(1f, 1.5f)) {
+                compose.runOnIdle {
+                    fontScale.value = targetFontScale
+                    operation.value = targetOperation
+                    safetyMessage.value = targetSafety
+                }
+                val map = compose.onNodeWithContentDescription("대한민국 주행 위치 지도", substring = true)
+                    .assertIsDisplayed().getUnclippedBoundsInRoot()
+                assertTrue("Map canvas collapsed at font scale $targetFontScale: $map", map.bottom - map.top >= 80.dp)
+                for (label in listOfNotNull(
+                    "해운대 해변 방면",
+                    "거리 ${context.getString(R.string.journey_distance_km, 2.4)}",
+                    "주행 ${context.getString(R.string.journey_duration_minutes_seconds, 3, 18)}",
+                    context.getString(R.string.driving_recommendation_applied)
+                        .takeIf { targetOperation == PlaceNavigationOperation.Applied },
+                    context.getString(R.string.driving_overview_acceleration).takeIf { targetSafety != null },
+                    "광안리 해변",
+                )) {
+                    compose.onNodeWithText(label, useUnmergedTree = true).assertIsDisplayed()
+                }
+                val action = compose.onNodeWithText(context.getString(R.string.place_map_add_waypoint))
+                    .assertIsDisplayed().assertIsEnabled().getUnclippedBoundsInRoot()
+                val viewport = compose.onNodeWithTag(CAPTURE_TAG).getUnclippedBoundsInRoot()
+                assertTrue(
+                    "Recommendation action is clipped at font scale $targetFontScale",
+                    action.bottom <= viewport.bottom,
+                )
+            }
+        }
+    }
 
     @Test
     fun captureOverviewStates() {
