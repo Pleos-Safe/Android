@@ -48,7 +48,6 @@ internal fun PackShelf(
     onBack: () -> Unit,
     open: (String) -> Unit,
     chances: () -> Unit,
-    demoControl: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier.fillMaxSize().pleosShellBackground()) {
@@ -66,7 +65,6 @@ internal fun PackShelf(
                 val note = "미개봉 ${album.inbox.size - awaiting}개" + if (awaiting == 0) "" else " · 앞면 대기 ${awaiting}개"
                 AlbumHeading("팩 보관함", wide, note, onBack)
             }
-            item(span = { GridItemSpan(maxLineSpan) }) { demoControl() }
             if (album.inbox.isEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     AlbumPanel {

@@ -5,7 +5,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.issac.pleosandroid.core.domain.cards.CardActionException
 import io.issac.pleosandroid.core.domain.cards.CardAlbumRepository
 import io.issac.pleosandroid.core.domain.cards.CardProblem
-import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.core.ui.flow.collectUiState
 import io.issac.pleosandroid.core.ui.mvi.BaseViewModel
@@ -21,10 +20,8 @@ import kotlinx.coroutines.launch
 internal class CollectionViewModel @Inject constructor(
     private val repository: CardAlbumRepository,
     private val vehicle: VehicleRepository,
-    private val demo: CollectionDemoRepository,
 ) : BaseViewModel<CollectionState, CollectionIntent, UiEffect>(CollectionState()) {
     private val refresh = MutableStateFlow(0)
-    val demoAvailable get() = demo.available
 
     init {
         viewModelScope.launch {
@@ -51,7 +48,6 @@ internal class CollectionViewModel @Inject constructor(
             is CollectionIntent.Open -> mutate { repository.open(intent.id, it) }
             is CollectionIntent.Reveal -> mutate { repository.reveal(intent.id, it) }
             is CollectionIntent.Feature -> mutate { repository.feature(intent.id, it) }
-            is CollectionIntent.SetDemo -> if (demo.available) mutate { demo.setEnabled(intent.enabled) }
             CollectionIntent.Retry -> refresh.update { it + 1 }
             CollectionIntent.Dismiss -> updateState { copy(message = null) }
         }

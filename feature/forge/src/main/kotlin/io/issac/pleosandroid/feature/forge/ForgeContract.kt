@@ -16,7 +16,6 @@ internal sealed interface ForgeIntent : UiIntent {
     data class Enhance(val card: CardCopy, val requestId: String) : ForgeIntent
     data class Restore(val trace: CardCopy, val material: String, val requestId: String) : ForgeIntent
     data class Acknowledge(val id: String) : ForgeIntent
-    data class SetDemo(val enabled: Boolean) : ForgeIntent
     data object Retry : ForgeIntent
     data object Dismiss : ForgeIntent
 }

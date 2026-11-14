@@ -118,7 +118,6 @@ class CollectionFlowCaptureTest {
                                 {},
                                 { scene = Scene.Pack },
                                 {},
-                                {},
                                 modifier = content,
                             )
 
@@ -138,7 +137,6 @@ class CollectionFlowCaptureTest {
                                 {},
                                 { scene = Scene.Detail },
                                 { scene = Scene.Inbox },
-                                {},
                                 {},
                                 content,
                             )

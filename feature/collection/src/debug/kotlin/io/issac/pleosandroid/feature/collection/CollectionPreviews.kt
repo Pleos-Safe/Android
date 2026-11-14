@@ -15,7 +15,7 @@ private val regions = PackType.entries.map { ReceivedPack(it.name, it, "방문 �
 @Preview(name = "컬렉션 팩 보관함", widthDp = 1216, heightDp = 680)
 @Composable
 private fun PackShelfPreview() {
-    PleosTheme { PackShelf(AlbumSnapshot(0L, null, regions, emptyList(), emptyList()), {}, {}, {}, {}) }
+    PleosTheme { PackShelf(AlbumSnapshot(0L, null, regions, emptyList(), emptyList()), {}, {}, {}) }
 }
 
 @Preview(name = "밀봉 팩 · 전체", widthDp = 1216, heightDp = 680)

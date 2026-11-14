@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModelStore
 import io.issac.pleosandroid.core.domain.collection.model.ConfirmedVisit
 import io.issac.pleosandroid.core.domain.collection.model.HistoryQuery
 import io.issac.pleosandroid.core.domain.collection.model.JourneyRecord
-import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.collection.repository.HistoryRepository
 import io.issac.pleosandroid.core.domain.points.PointRepository
 import io.issac.pleosandroid.core.domain.points.PointSpendResult
@@ -13,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -69,10 +67,9 @@ class DrivingReportViewModelTest {
     }
 
     @Test
-    fun `retry recovers a failed subscription and demo switching preserves one active collector`() = runTest {
+    fun `retry recovers a failed subscription and preserves one active collector`() = runTest {
         val history = TrackingHistory().apply { failNextCollection = true }
-        val demo = FakeDemo()
-        val viewModel = viewModel(history, demo)
+        val viewModel = viewModel(history)
         viewModel.handleIntent(ReportIntent.Load("journey"))
         runCurrent()
         assertTrue(viewModel.state.value.error)
@@ -85,17 +82,12 @@ class DrivingReportViewModelTest {
         assertFalse(viewModel.state.value.loading)
         assertEquals(1, history.activeCollectors)
 
-        demo.enabled.value = true
-        runCurrent()
-        assertTrue(viewModel.state.value.demo)
-        assertFalse(viewModel.state.value.error)
-        assertEquals(listOf("journey", "journey", "journey"), history.requests)
-        assertEquals(1, history.activeCollectors)
+        assertEquals(listOf("journey", "journey"), history.requests)
         assertEquals(1, history.maximumCollectors)
     }
 
-    private fun viewModel(history: TrackingHistory, demo: FakeDemo = FakeDemo()): DrivingReportViewModel {
-        val viewModel = DrivingReportViewModel(history, demo, FakePoints())
+    private fun viewModel(history: TrackingHistory): DrivingReportViewModel {
+        val viewModel = DrivingReportViewModel(history, FakePoints())
         stores += ViewModelStore().apply { put("report", viewModel) }
         return viewModel
     }
@@ -127,15 +119,6 @@ private class TrackingHistory : HistoryRepository {
 
     override fun observeJourneys() = flowOf(emptyList<JourneyRecord>())
     override fun observeVisits(query: HistoryQuery) = flowOf(emptyList<ConfirmedVisit>())
-}
-
-private class FakeDemo : CollectionDemoRepository {
-    override val available = true
-    override val enabled = MutableStateFlow(false)
-    override suspend fun setEnabled(enabled: Boolean) {
-        this.enabled.value = enabled
-    }
-    override suspend fun resetDemo() = Unit
 }
 
 private class FakePoints : PointRepository {

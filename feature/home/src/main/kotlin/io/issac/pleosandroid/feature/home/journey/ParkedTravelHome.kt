@@ -49,7 +49,6 @@ internal fun ParkedTravelHome(
     onOpenMap: (() -> Unit)? = null,
     onOpenRecords: () -> Unit = {},
     pointBalance: Long? = null,
-    demoWallet: Boolean = false,
 ) {
     val colors = PleosTheme.colors
     PleosScreen(title = stringResource(R.string.journey_home_title), modifier = modifier) {
@@ -101,7 +100,7 @@ internal fun ParkedTravelHome(
                     )
                     if (pointBalance != null) {
                         Text(
-                            if (demoWallet) "체험용 강화 포인트" else "보유 강화 포인트",
+                            "보유 강화 포인트",
                             style = PleosTextStyles.meta,
                             color = colors.textSecondary,
                         )

@@ -40,7 +40,6 @@ import io.issac.pleosandroid.feature.records.points.RecordPoints
 @Composable
 internal fun DrivingReportScreen(
     journey: JourneyRecord,
-    demo: Boolean,
     onBack: () -> Unit,
     onDataStatus: () -> Unit,
     onCollection: () -> Unit,
@@ -51,7 +50,6 @@ internal fun DrivingReportScreen(
     if (journey.assessment != AssessmentStatus.Complete || journey.score == null) {
         DrivingDataStatusScreen(
             journey,
-            demo,
             onBack,
             onReport = null,
             modifier = modifier,
@@ -61,7 +59,7 @@ internal fun DrivingReportScreen(
         return
     }
     val scale = PleosTextStyles.scale
-    val subtitle = journey.dateLabel() + if (demo) " · 체험 기록" else ""
+    val subtitle = journey.dateLabel()
     RecordsPage("이번 여정의 운전습관", modifier, subtitle, onBack) { wide ->
         RecordColumns(
             wide,
@@ -85,7 +83,7 @@ internal fun DrivingReportScreen(
                         }
                         QuietPlate(contentPadding = 16.dp) { Score(journey, compact = true) }
                     }
-                    JourneyPointsCard(journey, points, demo, onPointsRetry)
+                    JourneyPointsCard(journey, points, onPointsRetry)
                 }
             },
             trailing = {

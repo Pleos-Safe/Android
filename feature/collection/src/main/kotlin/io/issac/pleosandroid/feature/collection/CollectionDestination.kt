@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.issac.pleosandroid.core.cardui.component.CardAlbumContent
-import io.issac.pleosandroid.core.cardui.component.CardDemoControl
 import io.issac.pleosandroid.core.cardui.component.CollectionStatusScreen
 import io.issac.pleosandroid.core.domain.cards.CopyStatus
 import io.issac.pleosandroid.core.navigation.AppRoute
@@ -51,13 +50,6 @@ internal fun CollectionDestination(
             }
         }
         val inbox: () -> Unit = { router.replaceAll(BadgesRoute, PackShelfRoute) }
-        val modeControl: @Composable () -> Unit = {
-            if (viewModel.demoAvailable) {
-                CardDemoControl(album.demo, state.busy) {
-                    send(CollectionIntent.SetDemo(it))
-                }
-            }
-        }
         when (route) {
             BadgesRoute -> CollectionShelfScreen(
                 album = album,
@@ -73,7 +65,6 @@ internal fun CollectionDestination(
                 },
                 openInbox = inbox,
                 openGallery = { router.navigate(MotionGalleryRoute()) },
-                modeControl = modeControl,
                 modifier = modifier,
             )
 
@@ -82,7 +73,6 @@ internal fun CollectionDestination(
                 back,
                 open = { router.navigate(OpenPackRoute(it)) },
                 chances = { router.navigate(PackOddsRoute) },
-                demoControl = modeControl,
                 modifier = modifier,
             )
 

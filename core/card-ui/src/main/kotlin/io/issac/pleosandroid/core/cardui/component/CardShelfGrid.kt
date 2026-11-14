@@ -50,7 +50,6 @@ fun CardShelfGrid(
     sectionTitle: String,
     onCard: (CardCopy) -> Unit,
     onPreviewMotions: () -> Unit,
-    modeControl: @Composable () -> Unit,
     caption: (CardCopy) -> String,
     modifier: Modifier = Modifier,
     balance: String? = null,
@@ -95,7 +94,6 @@ fun CardShelfGrid(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 val previewLink: @Composable () -> Unit = {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(gap)) {
-                        modeControl()
                         PleosTextLink("연출 모아보기", onPreviewMotions, Modifier.testTag("open-motion-gallery"))
                     }
                 }

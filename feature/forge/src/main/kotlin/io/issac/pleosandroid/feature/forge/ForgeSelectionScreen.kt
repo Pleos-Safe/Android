@@ -14,7 +14,6 @@ internal fun ForgeSelectionScreen(
     onCard: (CardCopy) -> Unit,
     openGallery: () -> Unit,
     openInbox: () -> Unit,
-    modeControl: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     CardShelfGrid(
@@ -26,7 +25,6 @@ internal fun ForgeSelectionScreen(
         balance = formatHalfPoints(album.balanceHalfPoints),
         onCard = onCard,
         onPreviewMotions = openGallery,
-        modeControl = modeControl,
         caption = { card -> "${card.grade} · 1회 ${formatHalfPoints(CardRules.cost(card.grade, card.level))}" },
         openEmptyInbox = openInbox.takeIf { album.inbox.isNotEmpty() },
         modifier = modifier,

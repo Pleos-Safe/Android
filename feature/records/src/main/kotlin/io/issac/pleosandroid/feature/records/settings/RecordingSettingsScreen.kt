@@ -66,7 +66,7 @@ internal fun RecordingSettingsScreen(
                             Switch(
                                 checked = state.enabled,
                                 onCheckedChange = { onIntent(RecordsIntent.SetEnabled(it)) },
-                                enabled = !state.loading && !state.busy && (!state.demo || state.enabled),
+                                enabled = !state.loading && !state.busy,
                                 modifier = Modifier.scale(scale).semantics { contentDescription = "여정 기록 저장" },
                                 colors = SwitchDefaults.colors(
                                     checkedTrackColor = colors.actionPrimary,
@@ -81,7 +81,6 @@ internal fun RecordingSettingsScreen(
                     RecordDivider()
                     RecordBody("위치 권한 없이도 운전습관을 기록해요. 위치를 허용하면 목적지나 경유지로 등록한 여행지에 주차한 뒤 방문팩을 받을 수 있어요.")
                     RecordCaption("방문을 확인한 장소와 시각을 함께 저장해요. 기록을 끄면 진행 중인 여정의 저장이 중단돼요.")
-                    if (state.demo) RecordCaption("실제 주행을 기록하려면 컬렉션에서 체험 모드를 종료해 주세요.", accent = true)
                 }
             },
         )
