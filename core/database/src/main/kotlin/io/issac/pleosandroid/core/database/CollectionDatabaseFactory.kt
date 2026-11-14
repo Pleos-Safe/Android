@@ -13,8 +13,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
-interface CollectionDatabaseProvider {
-    fun create(demo: Boolean = false): CollectionDatabase
+fun interface CollectionDatabaseProvider {
+    fun create(): CollectionDatabase
 }
 
 @Singleton
@@ -22,8 +22,8 @@ class CollectionDatabaseFactory @Inject constructor(@param:ApplicationContext pr
     CollectionDatabaseProvider {
     private val keys = DatabaseKeyStore(context)
 
-    override fun create(demo: Boolean): CollectionDatabase {
-        val name = if (demo) "collection-demo.db" else "collection.db"
+    override fun create(): CollectionDatabase {
+        val name = "collection.db"
         // Room calls create on the DB executor; Keystore and disk access stay off the UI thread.
         val factory = SupportSQLiteOpenHelper.Factory { configuration ->
             System.loadLibrary("sqlcipher")

@@ -45,7 +45,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -82,11 +81,10 @@ internal class DefaultDrivingRecorder @Inject constructor(
 
     override suspend fun setEnabled(enabled: Boolean): MutationResult = mutex.withLock {
         if (enabled && !vehicle.state.value.allowsTabNavigation) return@withLock MutationResult.Restricted
-        if (enabled && store.demoMode.value) return@withLock MutationResult.Restricted
         withContext(Dispatchers.IO) {
             if (enabled && preferences.getBoolean("discard_checkpoint", false)) {
                 val discarded = storageResult(false) {
-                    store.realTransaction { clearDrivingDraft() }
+                    store.transaction { clearDrivingDraft() }
                     true
                 }
                 if (!discarded) return@withContext MutationResult.StorageFailure
@@ -105,7 +103,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
                 mutableState.value = RecordingState(RecordingPhase.Disabled)
                 // Turning storage off discards an unfinished trip, never backfills it later.
                 return@withContext storageResult(MutationResult.StorageFailure) {
-                    store.realTransaction { clearDrivingDraft() }
+                    store.transaction { clearDrivingDraft() }
                     MutationResult.Success
                 }
             }
@@ -115,23 +113,17 @@ internal class DefaultDrivingRecorder @Inject constructor(
 
     override suspend fun monitor(): Unit = owner.withLock {
         try {
-            combine(enabled, store.demoMode) { enabled, demo -> enabled to demo }.collectLatest { (enabled, demo) ->
+            enabled.collectLatest { recordingEnabled ->
                 mutex.withLock {
                     active = null
                     pending = null
                     sawPark = false
-                    if (!enabled || demo) journeys.discardRecovery()
+                    if (!recordingEnabled) journeys.discardRecovery()
                     mutableState.value = RecordingState(
-                        if (demo) {
-                            RecordingPhase.Demo
-                        } else if (enabled) {
-                            RecordingPhase.Waiting
-                        } else {
-                            RecordingPhase.Disabled
-                        },
+                        if (recordingEnabled) RecordingPhase.Waiting else RecordingPhase.Disabled,
                     )
                 }
-                if (!enabled || demo) return@collectLatest
+                if (!recordingEnabled) return@collectLatest
                 mutex.withLock { safely { recover() } }
                 coroutineScope {
                     launch {
@@ -173,7 +165,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
     }
 
     private suspend fun recover(): MutationResult {
-        val draft = store.realTransaction {
+        val draft = store.transaction {
             drivingDraft()?.takeIf { it.generation == userState()?.generation }.also {
                 if (it == null) clearDrivingDraft()
             }
@@ -240,7 +232,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
         if (active == null && sample != null && value.motion.motion == VehicleMotion.Moving &&
             (value.gear == VehicleGear.Drive || value.gear == VehicleGear.Reverse)
         ) {
-            val generation = store.realTransaction { checkNotNull(userState()).generation }
+            val generation = store.transaction { checkNotNull(userState()).generation }
             active = ActiveJourney(
                 session,
                 generation,
@@ -264,7 +256,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
         if (!session.paused && sample != null) {
             // Purchases and renewal changes can only be made in Park. A scheduled expiry can occur on the road.
             if (!current.membershipLoaded) {
-                current.membership = store.realTransaction { latestMembership()?.toDomain() }
+                current.membership = store.transaction { latestMembership()?.toDomain() }
                 current.membershipLoaded = true
             }
             val kind = current.add(sample, clock.now().minusNanos(now - sample.timestampNanos))
@@ -309,7 +301,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
             payload = current.record(now, clock.now(), interrupted).encodeDraft(),
             finished = finished,
         )
-        return store.realTransaction {
+        return store.transaction {
             if (!enabled.value || current.generation != userState()?.generation) {
                 active = null
                 sawPark = false
@@ -329,7 +321,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
         if (!journeys.finish()) return@withLock MutationResult.NotFound
         val finished = journeys.state.value.lastFinished
         val current = active?.takeIf { it.id == finished?.id }
-        if (current == null || !enabled.value || store.demoMode.value) return@withLock MutationResult.Success
+        if (current == null || !enabled.value) return@withLock MutationResult.Success
         current.session = checkNotNull(finished)
         storageResult(MutationResult.StorageFailure) { finishLocked(clock.elapsedNanos()) }.also { result ->
             if (result == MutationResult.StorageFailure) showStorageError()
@@ -337,15 +329,15 @@ internal class DefaultDrivingRecorder @Inject constructor(
     }
 
     override suspend fun continueRecoveredJourney(): MutationResult = mutex.withLock {
-        if (!isSafelyParked() || !enabled.value || store.demoMode.value) {
+        if (!isSafelyParked() || !enabled.value) {
             return@withLock MutationResult.Restricted
         }
         val current = active?.takeIf { it.session.recoveryRequired } ?: return@withLock MutationResult.NotFound
         storageResult(MutationResult.StorageFailure) {
-            if (store.realTransaction { userState()?.generation } != current.generation) {
+            if (store.transaction { userState()?.generation } != current.generation) {
                 journeys.discardRecovery()
                 active = null
-                store.realTransaction { clearDrivingDraft() }
+                store.transaction { clearDrivingDraft() }
                 mutableState.value = RecordingState(RecordingPhase.Waiting)
                 return@storageResult MutationResult.Stale
             }
@@ -376,7 +368,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
     }
 
     override suspend fun retrySave(): MutationResult = mutex.withLock {
-        if (!vehicle.state.value.allowsTabNavigation || !enabled.value || store.demoMode.value) {
+        if (!vehicle.state.value.allowsTabNavigation || !enabled.value) {
             return@withLock MutationResult.Restricted
         }
         storageResult(MutationResult.StorageFailure) {
@@ -393,7 +385,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
 
     private suspend fun savePending(): MutationResult {
         val draft = pending ?: return MutationResult.NotFound
-        if (!enabled.value || store.demoMode.value) return MutationResult.Restricted
+        if (!enabled.value) return MutationResult.Restricted
         val record = decodeDraft(draft.payload)
         mutableState.value = RecordingState(RecordingPhase.Saving, record.id)
         // This stable ID makes a crash between commit and checkpoint deletion harmless.
@@ -403,7 +395,7 @@ internal class DefaultDrivingRecorder @Inject constructor(
             )
         ) {
             is RecordProgressResult.Applied, is RecordProgressResult.AlreadyProcessed -> {
-                store.realTransaction { clearDrivingDraft() }
+                store.transaction { clearDrivingDraft() }
                 pending = null
                 mutableState.value = RecordingState(RecordingPhase.Saved, record.id)
                 MutationResult.Success
@@ -413,14 +405,14 @@ internal class DefaultDrivingRecorder @Inject constructor(
                 val deleted = result.reason == ProgressRejection.DeletedSource ||
                     (
                         result.reason == ProgressRejection.StaleGeneration &&
-                            store.realTransaction { userState()?.generation } != draft.generation
+                            store.transaction { userState()?.generation } != draft.generation
                         )
                 if (!deleted) {
                     mutableState.value = RecordingState(RecordingPhase.Error, record.id)
                     return MutationResult.StorageFailure
                 }
                 // A reset/deletion cannot resurrect or award an old recording.
-                store.realTransaction { clearDrivingDraft() }
+                store.transaction { clearDrivingDraft() }
                 pending = null
                 sawPark = false
                 mutableState.value = RecordingState(RecordingPhase.Waiting)

@@ -5,7 +5,6 @@ import android.os.SystemClock
 import io.issac.pleosandroid.core.domain.collection.model.PlaceQuery
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimRequest
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimResult
-import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.collection.repository.PlaceRepository
 import io.issac.pleosandroid.core.domain.collection.repository.ProgressRepository
 import io.issac.pleosandroid.core.domain.collection.repository.VisitLocation
@@ -44,7 +43,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -66,7 +64,6 @@ internal class PlaceSessionRuntime(
     visitLocation: VisitLocationSource,
     private val visitPacks: VisitPackRepository,
     private val progress: ProgressRepository,
-    private val profiles: CollectionDemoRepository,
 ) : AutoCloseable {
     private val location = PlaceMapLocation(context, scope)
     private val visitArrival = MutableStateFlow<VisitArrival?>(null)
@@ -120,9 +117,8 @@ internal class PlaceSessionRuntime(
         journeys.state,
         vehicleRepository.state,
         recorder.enabled,
-        profiles.enabled,
-    ) { journey, vehicle, enabled, demo ->
-        journey.session?.takeIf { it.paused && !it.recoveryRequired && enabled && !demo && vehicle.allowsTabNavigation }
+    ) { journey, vehicle, enabled ->
+        journey.session?.takeIf { it.paused && !it.recoveryRequired && enabled && vehicle.allowsTabNavigation }
     }.stateIn(scope, SharingStarted.Eagerly, null)
     private val visitFix = parkedVisit.flatMapLatest { session ->
         if (session == null) {
@@ -229,10 +225,9 @@ internal class PlaceSessionRuntime(
         if (claimJob?.isActive == true) return
         claimJob = scope.launch {
             mutableVisitResult.value = try {
-                val demo = profiles.enabled.first()
                 val route = VisitRouteEvidence(navigation.state.value.routePlaceIds, visitArrival.value)
                 val candidate = eligibleVisit(visitFix.value, route, listOf(visit.place))
-                if (!demo && candidate?.first == visit.journeyId) {
+                if (candidate?.first == visit.journeyId) {
                     visitPacks.claim(
                         VisitPackClaimRequest(
                             visit.journeyId,

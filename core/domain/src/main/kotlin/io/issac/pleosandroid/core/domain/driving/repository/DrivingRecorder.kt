@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 
-enum class RecordingPhase { Disabled, Waiting, Recording, Saving, Saved, Error, Unavailable, Demo }
+enum class RecordingPhase { Disabled, Waiting, Recording, Saving, Saved, Error, Unavailable }
 
 data class RecordingState(
     val phase: RecordingPhase = RecordingPhase.Disabled,

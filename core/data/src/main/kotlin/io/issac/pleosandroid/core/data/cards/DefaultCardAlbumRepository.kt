@@ -26,7 +26,7 @@ internal class DefaultCardAlbumRepository(private val store: CollectionStore, pr
     CardAlbumRepository {
     @Inject constructor(store: CollectionStore) : this(store, Random.Default)
 
-    override fun observe() = store.observeProfile { db, demo ->
+    override fun observe() = store.observeDatabase { db ->
         val tables =
             arrayOf(
                 "album_pack",
@@ -42,7 +42,7 @@ internal class DefaultCardAlbumRepository(private val store: CollectionStore, pr
         db.invalidationTracker.createFlow(*tables).map {
             db.withTransaction {
                 val profile = db.collectionDao()
-                db.albumDao().snapshot(profile.balanceHalfPoints(), checkNotNull(profile.userState()).generation, demo)
+                db.albumDao().snapshot(profile.balanceHalfPoints(), checkNotNull(profile.userState()).generation)
             }
         }
     }

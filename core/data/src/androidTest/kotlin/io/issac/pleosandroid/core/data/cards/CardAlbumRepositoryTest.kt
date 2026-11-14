@@ -52,9 +52,9 @@ class CardAlbumRepositoryTest {
 
     private fun connect() {
         val provider = object : CollectionDatabaseProvider {
-            override fun create(demo: Boolean) = db
+            override fun create() = db
         }
-        repository = DefaultCardAlbumRepository(CollectionStore(context, provider, catalog), random)
+        repository = DefaultCardAlbumRepository(CollectionStore(provider, catalog), random)
     }
 
     private fun oldDefinition(place: String) = io.issac.pleosandroid.core.database.entity.CardDefinitionEntity(
@@ -62,7 +62,6 @@ class CardAlbumRepositoryTest {
     )
 
     @Before fun setup() {
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().remove("enabled").commit()
         db = Room.inMemoryDatabaseBuilder(context, CollectionDatabase::class.java).build()
         connect()
     }
@@ -174,9 +173,8 @@ class CardAlbumRepositoryTest {
         }
         repository = DefaultCardAlbumRepository(
             CollectionStore(
-                context,
                 object : CollectionDatabaseProvider {
-                    override fun create(demo: Boolean) = db
+                    override fun create() = db
                 },
                 catalog,
             ),

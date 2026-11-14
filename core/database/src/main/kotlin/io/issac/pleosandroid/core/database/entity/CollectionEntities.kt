@@ -14,6 +14,7 @@ data class UserDataStateEntity(
     @PrimaryKey val id: Int = 1,
     val generation: String,
     val revision: Long = 0,
+    // Kept for the existing v7 Room schema. No active profile uses this flag.
     @ColumnInfo(defaultValue = "0") val demoSeeded: Boolean = false,
 )
 

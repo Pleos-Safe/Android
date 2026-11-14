@@ -88,7 +88,6 @@ data class AlbumSnapshot(
     val copies: List<CardCopy>,
     val history: List<ForgeReceipt>,
     val generation: String? = null,
-    val demo: Boolean = false,
 ) {
     val pending = history.filterNot { it.acknowledged }.associateBy { it.copyId }
     fun materialsFor(trace: CardCopy) = collection.filter { it.id !in pending && trace.canRestoreWith(it) }

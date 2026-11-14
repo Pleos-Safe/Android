@@ -25,7 +25,6 @@ data class PointWallet(
     val balanceHalfPoints: Long = 0,
     val transactions: List<PointTransaction> = emptyList(),
     val dataGeneration: String? = null,
-    val demo: Boolean = false,
 )
 
 sealed interface PointSpendResult {
