@@ -19,16 +19,24 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.room.withTransaction
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.issac.pleosandroid.MainActivity
+import io.issac.pleosandroid.core.database.CollectionDatabase
+import io.issac.pleosandroid.core.database.entity.CopyEntity
+import io.issac.pleosandroid.core.database.entity.PackEntity
+import io.issac.pleosandroid.core.domain.cards.CardGrade
 import io.issac.pleosandroid.core.domain.cards.CardRules
 import io.issac.pleosandroid.core.domain.cards.CopyStatus
 import io.issac.pleosandroid.core.domain.cards.ForgeOutcome
 import io.issac.pleosandroid.core.domain.cards.PackType
-import io.issac.pleosandroid.debug.CollectionDebugEntryPoint
+import io.issac.pleosandroid.testing.CollectionTestEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -42,22 +50,23 @@ import org.junit.runner.RunWith
 
 /** Run with the Pleos emulator parked, without changing any vehicle properties. */
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class MainActivityFlowTest {
+    @get:Rule(order = -1)
+    val hilt = HiltAndroidRule(this)
+
     private val graph get() = EntryPointAccessors.fromApplication(
         ApplicationProvider.getApplicationContext<Context>(),
-        CollectionDebugEntryPoint::class.java,
+        CollectionTestEntryPoint::class.java,
     )
-    private var previousProfile: Boolean? = null
 
-    @After fun restoreProfile() = runBlocking<Unit> {
-        previousProfile?.let { graph.demo().setEnabled(it) }
-    }
+    @Inject lateinit var database: CollectionDatabase
 
-    @Before
-    fun prepareIsolatedDemoDatabase() = runBlocking {
-        previousProfile = graph.demo().enabled.first()
-        graph.demo().setEnabled(true)
-        graph.demo().resetDemo()
+    @Before fun inject() = hilt.inject()
+
+    @After fun closeDatabase() {
+        compose.activityRule.scenario.close()
+        database.close()
     }
 
     @get:Rule(order = 0)
@@ -142,19 +151,18 @@ class MainActivityFlowTest {
     }
 
     @Test fun regionFilterAndCardDetailsSurviveRecreation() {
+        val card = runBlocking {
+            val album = graph.album()
+            val id = album.open(album.receivePack("test-busan", PackType.Busan, "방문 보상"))
+            album.reveal(id)
+            album.observe().first().collection.single()
+        }
         openCollection()
         compose.onNodeWithText("제주").performClick()
         waitFor("이 지역에서 모은 카드가 없어요.")
         compose.activityRule.scenario.recreate()
         compose.onNodeWithText("제주").assertIsOn()
         compose.onNodeWithText("부산").performClick()
-        val card = runBlocking {
-            val album = graph.album().observe().first()
-            album.collection.first {
-                it.print.packType == PackType.Busan && it.status == CopyStatus.Owned &&
-                    it.id !in album.pending
-            }
-        }
         openCard(card.id)
         waitFor("카드 상세")
         compose.activityRule.scenario.recreate()
@@ -252,9 +260,29 @@ class MainActivityFlowTest {
     }
 
     @Test fun aTraceIsRestoredWithOnlyTheSelectedMatchingCopy() {
+        runBlocking {
+            graph.album().observe().first()
+            database.withTransaction {
+                val dao = database.albumDao()
+                val now = System.currentTimeMillis()
+                for (status in listOf(CopyStatus.Trace, CopyStatus.Owned)) {
+                    val trace = status == CopyStatus.Trace
+                    val id = if (trace) "test-trace" else "test-material"
+                    val packId = "pack-$id"
+                    dao.grant(PackEntity(packId, PackType.Busan.name, "방문 보상", now))
+                    dao.add(
+                        CopyEntity(
+                            id = id, packId = packId, printId = "busan-gwangalli", variant = false,
+                            level = if (trace) 7 else 0, highest = if (trace) 12 else 0, status = status.name,
+                            revision = 0, acquiredAt = now, seenAt = now,
+                        ),
+                    )
+                }
+            }
+        }
         openCollection()
         compose.onNodeWithText("흔적 1").performClick()
-        openCard("demo:trace")
+        openCard("test-trace")
         waitFor("흔적 복구")
         val before = runBlocking { graph.album().observe().first() }
         compose.onNodeWithText("복구 재료 선택 · 1장").performScrollTo().performClick()
@@ -263,37 +291,23 @@ class MainActivityFlowTest {
         waitFor("복구 완료")
         val after = runBlocking { graph.album().observe().first() }
         assertEquals(before.balanceHalfPoints, after.balanceHalfPoints)
-        assertEquals(ForgeOutcome.Restored, after.pending.getValue("demo:trace").outcome)
-        assertEquals(7, after.collection.single { it.id == "demo:trace" }.level)
-        assertEquals(CopyStatus.Spent, after.copies.single { it.id == "demo:material" }.status)
+        assertEquals(ForgeOutcome.Restored, after.pending.getValue("test-trace").outcome)
+        assertEquals(7, after.collection.single { it.id == "test-trace" }.level)
+        assertEquals(CopyStatus.Spent, after.copies.single { it.id == "test-material" }.status)
         compose.onNodeWithText("컬렉션에서 보기").performScrollTo().performClick()
-        waitTag("album-copy-demo:trace")
-        compose.onNodeWithTag("album-copy-demo:trace").assertIsDisplayed()
+        waitTag("album-copy-test-trace")
+        compose.onNodeWithTag("album-copy-test-trace").assertIsDisplayed()
         waitFor("방금 확인한 카드")
         compose.onNodeWithTag("album-grid").performScrollToNode(hasText("부산"))
         compose.onNodeWithText("부산").assertIsOn()
-        assertFalse(runBlocking { "demo:trace" in graph.album().observe().first().pending })
+        assertFalse(runBlocking { "test-trace" in graph.album().observe().first().pending })
     }
 
-    @Test fun hyundaiCardsAndPackArePlayableInDemoAndSwitchingLeavesTheRealShelfAlone() {
+    @Test fun hyundaiVisitPackRevealsASpecialGradeCard() {
+        val packId = runBlocking { graph.album().receivePack("test-goyang", PackType.Hyundai, "방문 보상") }
         openCollection()
-        compose.onNodeWithText("현대").performClick()
-        openCard("demo:studio")
-        waitFor("카드 상세")
-        compose.onNodeWithContentDescription("현대 모터스튜디오 고양, HH, +10").assertExists()
-        systemBack()
-        openCard("demo:epit")
-        waitFor("카드 상세")
-        compose.onNodeWithContentDescription("부산 동백공원 E-pit, H, +5").assertExists()
-        systemBack()
-        compose.onNodeWithTag("album-grid").performScrollToNode(hasText("체험 모드 종료"))
-        compose.onNodeWithText("체험 모드 종료").performClick()
-        waitFor("체험 모드 시작")
-        val real = runBlocking { graph.album().observe().first { !it.demo } }
-        compose.onNodeWithText("체험 모드 시작").performClick()
-        waitFor("체험 모드 종료")
         compose.onNodeWithTag("album-open-inbox").performClick()
-        val tag = "album-pack-demo:Hyundai:0"
+        val tag = "album-pack-$packId"
         compose.onNodeWithTag("pack-shelf-grid").performScrollToNode(hasTestTag(tag))
         compose.onNodeWithTag(tag).performClick()
         waitEnabled("album-open-seal")
@@ -301,13 +315,10 @@ class MainActivityFlowTest {
         waitEnabled("album-flip")
         compose.onNodeWithTag("album-flip").performScrollTo().performClick()
         waitTag("album-show-copy")
-        val card = runBlocking { graph.album().observe().first().byPack.getValue("demo:Hyundai:0") }
+        val card = runBlocking { graph.album().observe().first().byPack.getValue(packId) }
         assertFalse(card.variant)
         assertTrue(card.seen)
-        runBlocking {
-            graph.demo().setEnabled(false)
-            assertEquals(real, graph.album().observe().first { !it.demo })
-        }
+        assertTrue(card.grade == CardGrade.H || card.grade == CardGrade.HH)
     }
 
     @Test fun packOddsRemainAccessibleAndBackKeepsTheInventory() {

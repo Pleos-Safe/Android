@@ -12,6 +12,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.lifecycle.Lifecycle
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.issac.pleosandroid.MainActivity
 import io.issac.pleosandroid.core.domain.collection.model.AssessmentStatus
 import io.issac.pleosandroid.core.domain.collection.model.DeleteHistoryRequest
@@ -21,7 +23,7 @@ import io.issac.pleosandroid.core.domain.collection.model.ProgressEvent
 import io.issac.pleosandroid.core.domain.collection.model.RecordProgressResult
 import io.issac.pleosandroid.core.domain.driving.model.DrivingAssessment
 import io.issac.pleosandroid.core.domain.driving.repository.RecordingPhase
-import io.issac.pleosandroid.debug.CollectionDebugEntryPoint
+import io.issac.pleosandroid.testing.CollectionTestEntryPoint
 import java.time.Instant
 import java.util.UUID
 import kotlinx.coroutines.flow.first
@@ -33,7 +35,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
+@HiltAndroidTest
 class DrivingHabitFlowTest {
+    @get:Rule(order = -1)
+    val hilt = HiltAndroidRule(this)
+
     @get:Rule(order = 0)
     val permission: GrantPermissionRule = GrantPermissionRule.grant(
         "android.car.permission.CAR_SPEED",
@@ -46,23 +52,19 @@ class DrivingHabitFlowTest {
     val compose = createAndroidComposeRule<MainActivity>()
     private val entry get() = EntryPointAccessors.fromApplication(
         compose.activity.applicationContext,
-        CollectionDebugEntryPoint::class.java,
+        CollectionTestEntryPoint::class.java,
     )
     private val reportId = "driving-ui-${UUID.randomUUID()}"
     private var generation: String? = null
-    private var previousDemo: Boolean? = null
     private var previousEnabled: Boolean? = null
 
     @After fun restore() = runBlocking<Unit> {
         generation?.let { entry.progress().deleteHistory(DeleteHistoryRequest(HistoryKind.Journey, reportId, it)) }
         previousEnabled?.let { entry.recorder().setEnabled(it) }
-        previousDemo?.let { entry.demo().setEnabled(it) }
     }
 
     @Test fun savedReportSurvivesRecreationAndOpensCardCollection() {
         runBlocking {
-            previousDemo = entry.demo().enabled.first()
-            entry.demo().setEnabled(true)
             generation = entry.progress().getDataGeneration()
             val end = Instant.ofEpochMilli(System.currentTimeMillis())
             val record = JourneyRecord(
@@ -106,9 +108,7 @@ class DrivingHabitFlowTest {
 
     @Test fun optInStartsForegroundRecordingAndConstantSpeedHasFreshTimestamps() {
         runBlocking {
-            previousDemo = entry.demo().enabled.first()
             previousEnabled = entry.recorder().enabled.value
-            entry.demo().setEnabled(false)
             entry.recorder().setEnabled(false)
         }
         waitFor("기록")

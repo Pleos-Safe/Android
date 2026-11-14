@@ -13,6 +13,8 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.issac.pleosandroid.MainActivity
 import java.io.File
 import org.junit.Assume.assumeTrue
@@ -22,7 +24,11 @@ import org.junit.runner.RunWith
 
 /** Opt in with `-e pleosMapCapture true` while the Pleos emulator is parked. */
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class TravelMapCaptureTest {
+    @get:Rule(order = -1)
+    val hilt = HiltAndroidRule(this)
+
     @get:Rule(order = 0)
     val permission: GrantPermissionRule = GrantPermissionRule.grant(VEHICLE_SPEED_PERMISSION)
 

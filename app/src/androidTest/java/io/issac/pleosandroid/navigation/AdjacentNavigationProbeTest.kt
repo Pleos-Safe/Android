@@ -8,15 +8,22 @@ import android.os.SystemClock
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.issac.pleosandroid.MainActivity
 import java.io.File
 import org.junit.Assume.assumeTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /** Opt in with `-e pleosAdjacentProbe true` on a parked Pleos emulator with built-in navigation. */
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class AdjacentNavigationProbeTest {
+    @get:Rule(order = -1)
+    val hilt = HiltAndroidRule(this)
+
     @Test
     fun captureAdjacentNavigationRequest() {
         assumeTrue(InstrumentationRegistry.getArguments().getString("pleosAdjacentProbe") == "true")

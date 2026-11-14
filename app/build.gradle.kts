@@ -10,6 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "io.issac.pleosandroid"
+        testInstrumentationRunner = "io.issac.pleosandroid.testing.PleosTestRunner"
         versionCode = 1
         versionName = "1.0"
     }
@@ -45,6 +46,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     testImplementation(libs.junit)
     androidTestImplementation(project(":feature:nav"))
+    androidTestImplementation(project(":core:database"))
+    androidTestImplementation(libs.room.runtime)
+    androidTestImplementation(libs.hilt.android.testing)
+    add("kspAndroidTest", libs.hilt.compiler)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.rules)
