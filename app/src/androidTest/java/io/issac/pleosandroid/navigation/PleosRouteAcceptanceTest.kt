@@ -16,6 +16,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.issac.pleosandroid.MainActivity
 import java.io.File
 import org.junit.Assume.assumeTrue
@@ -27,7 +29,11 @@ import org.junit.runners.model.Statement
 
 /** Opt in only on an isolated, parked Pleos emulator with no destination set. */
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class PleosRouteAcceptanceTest {
+    @get:Rule(order = -1)
+    val hilt = HiltAndroidRule(this)
+
     @get:Rule(order = 0)
     val isolatedEmulator: TestRule = TestRule { base, _ ->
         object : Statement() {
