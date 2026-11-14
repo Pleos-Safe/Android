@@ -4,17 +4,19 @@
 
 # 차곡차곡
 
-**주행은 포인트로, 방문은 카드로.**
+**차와 함께한 시간을 차곡차곡, 매일의 운전을 카드 수집과 성장의 즐거움으로 바꾸는 서비스**
 
-달린 거리로 포인트를 모으고, 다녀온 곳에서 얻은 카드를 한 장씩 키우는 차량용 앱입니다.
-
-[주요 기능](#features) · [시연 영상](#demo) · [차량에서의 사용](#in-car-experience) · [아키텍처와 구현](#engineering) · [빌드 및 실행](#build--run)
-
-<img src="docs/qa/chagok-2026-11-13/z01-restarted-home-wallet-and-featured-card.png" width="960" alt="차곡차곡 홈: 해운대 해변, 보유 포인트 1,622P, 대표 카드 북항의 부캉이 +2">
-
-<sub>Pleos Connect 2.1.0 · 주차 후 홈에서 본 추천 장소와 나의 대표 카드</sub>
+[제출용 APK 다운로드](apk/가차_차곡차곡_release.apk?raw=true) · [주요 기능](#features) · [시연 영상](#demo) · [차량에서의 사용](#in-car-experience) · [아키텍처와 구현](#engineering) · [빌드 및 실행](#build--run)
 
 </div>
+
+<table>
+  <tr><th width="50%">홈 · 오늘의 추천 장소와 대표 카드</th><th width="50%">컬렉션 · 내가 모은 카드</th></tr>
+  <tr>
+    <td align="center"><img src="docs/qa/chagok-2026-11-13/z01-restarted-home-wallet-and-featured-card.png" width="440" alt="해운대 해변과 대표 카드 북항의 부캉이가 보이는 홈"></td>
+    <td align="center"><img src="docs/qa/chagok-2026-11-13/z04-restarted-four-actual-cards.png" width="440" alt="컬렉션에 나란히 놓인 네 장의 장소 카드"></td>
+  </tr>
+</table>
 
 ## Overview
 
@@ -26,34 +28,39 @@
 
 ### 01 — 주행과 방문 보상
 
-출발 전 탐색에서 목적지나 경유지를 등록하면 차량의 기본 내비게이션에 반영됩니다. **방문 보상과 주행 정산은 별개**입니다. 등록한 장소에 도착하면 P단에 주차해 여정을 끝내기 전에 방문팩을 받고, 주행을 종료하면 거리와 안전점수에 따라 포인트를 받습니다. 장소를 방문하지 않은 일상 주행도 적립 대상입니다.
+탐색에서 등록한 목적지와 경유지는 차량의 기본 내비게이션에 표시됩니다. 등록한 장소에 도착해 P단에 주차하면 해당 지역의 방문팩을 받을 수 있습니다. 주행을 마치면 달린 거리와 안전점수에 따라 포인트가 쌓입니다. 장소를 방문하지 않은 일상 주행도 적립 대상입니다.
 
-<img src="docs/demo/verification/01-first-drive.gif" alt="실제 화면 캡처 순서. 첫 실행과 권한 설정, 경복궁 목적지 등록, 주차 후 서울팩, 7.4km 정산 221P, 별도 1.8km 여정의 0P 기록">
-
-실제 화면 캡처를 순서대로 담았습니다. 경복궁에서는 주차 후 서울 방문팩을 받고, 여정을 종료해 **7.4km · 안전점수 100점으로 221P**를 적립했습니다. 별도로 기록한 1.8km 여정은 2km 미만이라 포인트가 0P였습니다.
+<table>
+  <tr><th width="50%">첫 주행과 서울 방문팩</th><th width="50%">경유지 등록과 PLUS 적립</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/verification/01-first-drive.gif" width="440" alt="경복궁에서 서울 방문팩을 받고 7.4km 주행으로 221P를 적립하는 화면"></td>
+    <td align="center"><img src="docs/demo/verification/02-waypoints-and-plus.gif" width="440" alt="두 경유지를 등록하고 방문 지도를 확인한 뒤 PLUS를 포함해 651P를 적립하는 화면"></td>
+  </tr>
+</table>
 
 ### 02 — 카드팩 개봉과 컬렉션
 
-서울·부산·제주·현대, 네 종류의 팩에 **45종의 기본 도안**이 있습니다. 처음에는 서울 선물팩 하나와 1,000P로 시작합니다. 팩 보관함에서 봉투를 뜯고, 나온 카드의 뒷면을 직접 뒤집어 그림과 등급을 확인합니다.
+서울·부산·제주·현대, 네 종류의 팩에 **45종의 기본 도안**이 있습니다. 처음에는 서울 선물팩 하나와 1,000P로 시작합니다. 팩 보관함에서 봉투를 뜯고 카드를 뒤집어 그림과 등급을 확인합니다. 방문 지도에는 팩을 받은 지역이 칠해집니다.
 
-<img src="docs/qa/chagok-2026-11-13/actual-busan-bukangi-opening.gif" width="960" alt="부산 방문팩의 봉투를 뜯고 파란 뒷면을 뒤집어 Rare 북항의 부캉이 카드를 얻는 실제 개봉 장면">
-
-광안리에서 받은 부산 팩을 열었더니 ‘북항의 부캉이’(Rare)가 나왔습니다. 카드의 장소와 방문한 곳이 달라도, 지도에는 팩을 받은 지역이 칠해집니다.
-
-<details>
-<summary>재실행 후 홈 · 주행 기록 · 컬렉션 보기</summary>
-
-![재실행 뒤 홈에 표시된 1,622P와 대표 카드 부캉이 +2, 주행 기록 3건, 컬렉션의 실제 획득 카드 4장을 차례로 보여 주는 화면 캡처](docs/demo/verification/03-after-restart.gif)
-
-</details>
+<table>
+  <tr><th width="50%">부산 팩 개봉 · 북항의 부캉이</th><th width="50%">등급별 카드 공개</th></tr>
+  <tr>
+    <td align="center"><img src="docs/qa/chagok-2026-11-13/actual-busan-bukangi-opening.gif" width="440" alt="부산 방문팩에서 나온 카드를 뒤집자 Rare 북항의 부캉이가 드러나는 장면"></td>
+    <td align="center"><img src="docs/demo/grades/card-reveal-by-grade.gif" width="440" alt="Common, Rare, Epic, H, HH 카드가 뒤집힐 때의 반사광 차이"></td>
+  </tr>
+</table>
 
 ### 03 — 카드 강화
 
 컬렉션에서 마음에 드는 카드를 골라 주행 포인트를 씁니다. **+5·+10·+15·+20·+25**마다 프레임과 재질이 바뀌고, **+15부터는 원화가 카드 전체를 덮습니다.** 카드를 기울이면 포일과 프리즘의 반사광도 각도에 따라 움직입니다.
 
-<img src="docs/qa/chagok-2026-11-13/actual-bukangi-great-success.gif" width="960" alt="부산 팩에서 얻은 북항의 부캉이에 150P를 써서 강화하고 대성공으로 +0에서 +2가 되는 장면">
-
-위에서 얻은 부캉이에 **150P**를 썼고, 대성공으로 **+0 → +2**가 됐습니다. 다시 실행한 뒤에도 강화 수치와 대표 카드 선택이 그대로 홈에 표시됩니다.
+<table>
+  <tr><th width="50%">부캉이 강화 · +0 → +2</th><th width="50%">재실행 후 대표 카드와 기록</th></tr>
+  <tr>
+    <td align="center"><img src="docs/qa/chagok-2026-11-13/actual-bukangi-great-success.gif" width="440" alt="북항의 부캉이가 강화 대성공으로 +0에서 +2가 되는 장면"></td>
+    <td align="center"><img src="docs/demo/verification/03-after-restart.gif" width="440" alt="다시 연 홈의 대표 카드 부캉이 +2와 저장된 주행 기록, 컬렉션"></td>
+  </tr>
+</table>
 
 <a id="demo-membership"></a>
 
@@ -61,14 +68,13 @@
 
 상점에서 PLUS(월 2,900원)를 시작하면 **구독이 적용된 주행 구간**의 포인트가 1.5배가 됩니다. 설정에서 자동 갱신을 꺼도 이미 시작한 이용 기간까지 혜택이 유지됩니다. 결제는 모의 처리하며 실제 청구는 없습니다.
 
-![차곡차곡 홈에서 상점 탭을 열고 월 2,900원 PLUS의 모의 결제를 확인한 뒤 구독 중으로 바뀌는 장면](docs/demo/membership/subscribe.gif)
-
-<details>
-<summary>설정에서 구독 해지를 예약하고 자동 갱신을 다시 켜는 장면</summary>
-
-![설정의 PLUS 구독 관리에서 해지 예약 후 이용 종료일을 확인하고, 자동 갱신을 재개해 구독 중으로 돌아오는 장면](docs/demo/membership/cancel-and-resume.gif)
-
-</details>
+<table>
+  <tr><th width="50%">상점에서 PLUS 구독</th><th width="50%">설정에서 해지 예약 · 갱신 재개</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/membership/subscribe.gif" width="440" alt="상점에서 PLUS 결제를 확인한 뒤 구독 중으로 바뀐 화면"></td>
+    <td align="center"><img src="docs/demo/membership/cancel-and-resume.gif" width="440" alt="설정에서 자동 갱신을 끄고 이용 종료일을 확인한 뒤 갱신을 다시 켜는 화면"></td>
+  </tr>
+</table>
 
 <a id="demo"></a>
 
@@ -80,111 +86,133 @@
 
 ### 첫 팩에서 주행 보상과 강화까지
 
-Pleos Connect 2.1.0에서 차곡차곡의 첫 실행부터 방문 카드 강화까지 촬영했습니다. 목적지 설정과 주행·정산은 기본 내비게이션과 계기판이 함께 보이는 차량 전체 화면입니다.
+<table>
+  <tr><th width="50%">첫 실행 · 차량 및 위치 권한</th><th width="50%">서울 선물팩 · 창경궁의 뜰</th></tr>
+  <tr>
+    <td align="center"><img src="docs/qa/chagok-2026-11-13/00-fresh-profile-first-screen.png" width="440" alt="처음 실행했을 때 차량과 위치 권한을 요청하는 화면"></td>
+    <td align="center"><img src="docs/demo/journey/01-seoul-welcome-pack.gif" width="440" alt="서울 선물팩을 뜯고 창경궁의 뜰 카드를 뒤집는 장면"></td>
+  </tr>
+</table>
 
-**첫 카드**　새 프로필로 시작해 서울 선물팩을 뜯고 첫 카드 ‘창경궁의 뜰’을 뒤집습니다.
+<table>
+  <tr><th width="50%">출발 전 PLUS 구독</th><th width="50%">목적지 설정 · 현대 모터스튜디오 고양</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/journey/02-plus-subscription.gif" width="440" alt="출발 전 상점에서 PLUS에 가입하는 화면"></td>
+    <td align="center"><img src="docs/demo/journey/03-navigation-and-destination.gif" width="440" alt="차곡차곡에서 선택한 현대 모터스튜디오 고양이 기본 내비게이션에 표시된 분할 화면"></td>
+  </tr>
+</table>
 
-![새 프로필의 홈에서 서울 선물팩을 뜯고 창경궁의 뜰 카드를 뒤집는 장면](docs/demo/journey/01-seoul-welcome-pack.gif)
+<table>
+  <tr><th width="50%">주행 기록과 경로 안내</th><th width="50%">도착 · 현대 방문팩과 238.5P</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/journey/04-driving-in-split-screen.gif" width="440" alt="계기판, 차곡차곡의 주행 기록, 기본 내비게이션의 경로 안내가 나란히 보이는 모습"></td>
+    <td align="center"><img src="docs/demo/journey/05-park-claim-and-settle.gif" width="440" alt="고양에 주차해 현대 방문팩을 받고 주행 종료 후 238.5P를 적립하는 화면"></td>
+  </tr>
+</table>
 
-**출발 준비**　상점에서 월 2,900원 PLUS를 구독합니다.
-
-![상점에서 PLUS의 모의 결제를 확인하고 구독 중으로 바뀌는 화면](docs/demo/journey/02-plus-subscription.gif)
-
-**목적지 설정**　앱과 기본 내비게이션을 나란히 띄운 뒤, 탐색에서 현대 모터스튜디오 고양을 목적지로 보냅니다.
-
-![차량 시스템을 포함한 전체 화면에서 창을 반으로 나누고 현대 모터스튜디오 고양 경로를 기본 내비게이션에 등록](docs/demo/journey/03-navigation-and-destination.gif)
-
-**주행**　계기판의 속도가 올라가면서 앱이 주행 기록 화면으로 바뀝니다. 긴 이동 구간은 원본 녹화에서 생략했습니다.
-
-![계기판 속도, 차곡차곡의 주행 기록, 기본 내비게이션의 경로 안내를 한 화면에 표시](docs/demo/journey/04-driving-in-split-screen.gif)
-
-**도착과 보상**　고양에서 P단으로 주차해 현대 팩을 받고 주행을 종료합니다. 5.3km를 달려 안전점수 100점을 받았습니다. 기본 159P에 PLUS 79.5P가 더해져 **238.5P**가 적립됐습니다.
-
-![차량과 내비게이션이 보이는 분할 화면에서 주차 후 현대 방문팩을 받고, 주행을 끝내 238.5P를 정산한 뒤 앱 창을 펼치는 과정](docs/demo/journey/05-park-claim-and-settle.gif)
-
-**현대 팩 개봉**　주차 후 앱 창을 펼치고, 받은 현대 팩에서 ‘현대 서초 UX 스튜디오’(HH)를 공개합니다.
-
-![현대 팩을 열고 카드 뒷면을 뒤집어 서초 UX 스튜디오 HH 카드를 확인](docs/demo/journey/06-open-hyundai-visit-pack.gif)
-
-**주행 포인트로 첫 강화**　225P를 써서 방금 얻은 카드를 강화합니다. 이번 시도는 대성공으로 **+0 → +2**가 됐고, 잔액은 1,238.5P에서 1,013.5P로 줄었습니다.
-
-![서초 UX 스튜디오 HH 카드를 선택해 225P를 쓰고 대성공으로 +0에서 +2가 되는 장면](docs/demo/journey/07-enhance-with-driving-points.gif)
+<table>
+  <tr><th width="50%">현대 팩 개봉 · 서초 UX 스튜디오</th><th width="50%">주행 포인트로 첫 강화</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/journey/06-open-hyundai-visit-pack.gif" width="440" alt="현대 방문팩에서 나온 서초 UX 스튜디오 HH 카드를 뒤집는 장면"></td>
+    <td align="center"><img src="docs/demo/journey/07-enhance-with-driving-points.gif" width="440" alt="적립한 포인트로 서초 UX 스튜디오 카드를 +2로 강화하는 장면"></td>
+  </tr>
+</table>
 
 <a id="demo-collection"></a>
 
 ### 부캉이 팩 개봉과 컬렉션
 
-| 봉투 열기 | 카드 공개와 상세 보기 |
-| --- | --- |
-| ![부산 컬렉션 팩의 윗부분이 찢어지고 봉투에서 카드 뒷면이 나오는 장면](docs/demo/01-open-busan-pack.gif) | ![부캉이 카드를 뒤집어 공개한 뒤 컬렉션에서 획득 정보와 강화 기록을 여는 장면](docs/demo/02-reveal-and-collect.gif) |
-
-<details>
-<summary>Common · Rare · Epic · H · HH의 카드 공개 연출 비교</summary>
-
-![Common, Rare, Epic, H, HH 순서로 카드 뒷면을 뒤집어 각 등급의 반사광과 원화를 보여 주는 시연](docs/demo/grades/card-reveal-by-grade.gif)
-
-</details>
+<table>
+  <tr><th width="50%">봉투 열기</th><th width="50%">카드 공개와 상세 보기</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/01-open-busan-pack.gif" width="440" alt="부산 컬렉션 팩의 윗부분이 찢어지고 봉투에서 카드 뒷면이 나오는 장면"></td>
+    <td align="center"><img src="docs/demo/02-reveal-and-collect.gif" width="440" alt="부캉이 카드를 뒤집어 공개한 뒤 컬렉션에서 획득 정보와 강화 기록을 여는 장면"></td>
+  </tr>
+</table>
 
 <a id="demo-forge"></a>
 
 ### 강화 단계와 결과
 
-다음 두 GIF는 ‘북항의 부캉이’의 강화 수치와 결과를 고정해 촬영했습니다.
-
-| +1 · +10 · +25 외형 비교 | 대성공 · 하락 · 잔액 부족 · 흔적 복구 |
-| --- | --- |
-| ![같은 부캉이 카드의 +0 → +1, +9 → +10, +24 → +25 성공 화면과 프레임·포일 비교](docs/demo/03-forge-milestones.gif) | ![부캉이의 +8 → +10 대성공, +10 → +9 하락, 포인트 부족과 +0 사본으로 흔적을 복구하는 화면](docs/demo/04-forge-outcomes-and-recovery.gif) |
+<table>
+  <tr><th width="50%">부캉이 외형 · +1, +10, +25</th><th width="50%">강화 결과와 흔적 복구</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/03-forge-milestones.gif" width="440" alt="같은 부캉이 카드의 +0 → +1, +9 → +10, +24 → +25 성공 화면과 프레임·포일 비교"></td>
+    <td align="center"><img src="docs/demo/04-forge-outcomes-and-recovery.gif" width="440" alt="부캉이의 +8 → +10 대성공, +10 → +9 하락, 포인트 부족과 +0 사본으로 흔적을 복구하는 화면"></td>
+  </tr>
+</table>
 
 <details>
-<summary>프레임과 재질이 바뀌는 순간 · +5, +10, +15, +20, +25</summary>
+<summary>단계별 강화 · +5부터 +30까지</summary>
 
-| +4 → +5 · 메탈 프레임 | +9 → +10 · 프리즘 장식 |
-| --- | --- |
-| ![해운대의 파도 +4 → +5 강화에서 메탈 프레임 디자인이 드러나는 연출](docs/demo/stages/plus-05.gif) | ![해운대의 파도 +9 → +10 강화에서 프리즘 장식 디자인이 드러나는 연출](docs/demo/stages/plus-10.gif) |
+<table>
+  <tr><th width="50%">+4 → +5 · 메탈 프레임</th><th width="50%">+9 → +10 · 프리즘 장식</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/stages/plus-05.gif" width="440" alt="해운대의 파도 +4 → +5 강화에서 메탈 프레임 디자인이 드러나는 연출"></td>
+    <td align="center"><img src="docs/demo/stages/plus-10.gif" width="440" alt="해운대의 파도 +9 → +10 강화에서 프리즘 장식 디자인이 드러나는 연출"></td>
+  </tr>
+</table>
 
-| +14 → +15 · 풀커버 원화 | +19 → +20 · 크라운 |
-| --- | --- |
-| ![해운대의 파도 +14 → +15 강화에서 풀커버 원화 디자인이 드러나는 연출](docs/demo/stages/plus-15.gif) | ![해운대의 파도 +19 → +20 강화에서 크라운 디자인이 드러나는 연출](docs/demo/stages/plus-20.gif) |
+<table>
+  <tr><th width="50%">+14 → +15 · 풀커버 원화</th><th width="50%">+19 → +20 · 크라운</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/stages/plus-15.gif" width="440" alt="해운대의 파도 +14 → +15 강화에서 풀커버 원화 디자인이 드러나는 연출"></td>
+    <td align="center"><img src="docs/demo/stages/plus-20.gif" width="440" alt="해운대의 파도 +19 → +20 강화에서 크라운 디자인이 드러나는 연출"></td>
+  </tr>
+</table>
 
-**+24 → +25 · 월계 프레임**
+<table>
+  <tr><th width="50%">+24 → +25 · 월계 프레임</th><th width="50%">+25 → +26</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/stages/plus-25.gif" width="440" alt="해운대의 파도 +24 → +25 강화에서 드러나는 월계 프레임"></td>
+    <td align="center"><img src="docs/demo/stages/plus-26.gif" width="440" alt="해운대의 파도 +25 → +26 강화 연출과 결과"></td>
+  </tr>
+</table>
 
-![해운대의 파도 +24 → +25 강화에서 월계 프레임 디자인이 드러나는 연출](docs/demo/stages/plus-25.gif)
+<table>
+  <tr><th width="50%">+26 → +27</th><th width="50%">+27 → +28</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/stages/plus-27.gif" width="440" alt="해운대의 파도 +26 → +27 강화 연출과 결과"></td>
+    <td align="center"><img src="docs/demo/stages/plus-28.gif" width="440" alt="해운대의 파도 +27 → +28 강화 연출과 결과"></td>
+  </tr>
+</table>
+
+<table>
+  <tr><th width="50%">+28 → +29</th><th width="50%">+29 → +30</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/stages/plus-29.gif" width="440" alt="해운대의 파도 +28 → +29 강화 연출과 결과"></td>
+    <td align="center"><img src="docs/demo/stages/plus-30.gif" width="440" alt="해운대의 파도 +29 → +30 강화 연출과 결과"></td>
+  </tr>
+</table>
 
 </details>
 
 <details>
-<summary>+25 이후 한 단계씩 · +26, +27, +28, +29, +30</summary>
+<summary>강화 결과와 흔적 복구</summary>
 
-| +25 → +26 | +26 → +27 |
-| --- | --- |
-| ![해운대의 파도 +25 → +26 강화 연출과 결과](docs/demo/stages/plus-26.gif) | ![해운대의 파도 +26 → +27 강화 연출과 결과](docs/demo/stages/plus-27.gif) |
+<table>
+  <tr><th width="50%">성공 · +12 → +13</th><th width="50%">대성공 · +14 → +16</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/outcomes/success.gif" width="440" alt="강화 성공으로 한 단계 상승"></td>
+    <td align="center"><img src="docs/demo/outcomes/great-success.gif" width="440" alt="첫 성공에 이어 한 단계 더 오르는 대성공"></td>
+  </tr>
+</table>
 
-| +27 → +28 | +28 → +29 |
-| --- | --- |
-| ![해운대의 파도 +27 → +28 강화 연출과 결과](docs/demo/stages/plus-28.gif) | ![해운대의 파도 +28 → +29 강화 연출과 결과](docs/demo/stages/plus-29.gif) |
+<table>
+  <tr><th width="50%">유지 · +15</th><th width="50%">하락 · +15 → +14</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/outcomes/hold.gif" width="440" alt="강화 수치가 +15에 머무는 유지 판정"></td>
+    <td align="center"><img src="docs/demo/outcomes/drop.gif" width="440" alt="카드의 강화 수치가 한 단계 하락"></td>
+  </tr>
+</table>
 
-**+29 → +30**
-
-![해운대의 파도 +29 → +30 강화 연출과 결과](docs/demo/stages/plus-30.gif)
-
-</details>
-
-<details>
-<summary>강화 결과 5종과 흔적 복구 · 성공, 대성공, 유지, 하락, 파괴</summary>
-
-유지와 파괴는 현재 일반 강화에서 확률이 0%입니다. 아래 여섯 GIF는 차곡차곡의 연출 미리보기에서 결과를 지정해 촬영했습니다. +15 카드가 파괴되면 +10 흔적이 되고, 같은 카드의 +0 사본을 사용해 +10으로 복구합니다.
-
-| 성공 · +12 → +13 | 대성공 · +14 → +16 |
-| --- | --- |
-| ![강화 성공으로 한 단계 상승](docs/demo/outcomes/success.gif) | ![첫 성공에 이어 한 단계 더 오르는 대성공](docs/demo/outcomes/great-success.gif) |
-
-| 유지 · +15 | 하락 · +15 → +14 |
-| --- | --- |
-| ![강화 수치가 +15에 머무는 유지 판정](docs/demo/outcomes/hold.gif) | ![카드의 강화 수치가 한 단계 하락](docs/demo/outcomes/drop.gif) |
-
-| 파괴 · +15 → 흔적 +10 | 복구 · 흔적 +10 → +10 |
-| --- | --- |
-| ![카드가 깨지고 다섯 단계 낮은 흔적으로 남는 순간](docs/demo/outcomes/destroy.gif) | ![같은 카드의 +0 사본으로 흔적을 +10 카드로 복구](docs/demo/outcomes/restore.gif) |
+<table>
+  <tr><th width="50%">파괴 · +15 → 흔적 +10</th><th width="50%">복구 · 흔적 +10 → +10</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/outcomes/destroy.gif" width="440" alt="카드가 깨지고 다섯 단계 낮은 흔적으로 남는 순간"></td>
+    <td align="center"><img src="docs/demo/outcomes/restore.gif" width="440" alt="같은 카드의 +0 사본으로 흔적을 +10 카드로 복구"></td>
+  </tr>
+</table>
 
 </details>
 
@@ -192,26 +220,40 @@ Pleos Connect 2.1.0에서 차곡차곡의 첫 실행부터 방문 카드 강화�
 
 ### 한 장으로 +30까지
 
-현대 모터스튜디오 고양(HH) 한 장이 +0에서 +30까지 변하는 모습입니다. 현대 방문팩이 보관함에 들어온 상태에서 시작하며, 이 시연에서는 뽑히는 카드와 각 강화의 성공 결과를 고정했습니다.
-
 <details>
-<summary>현대 팩 개봉 · 카드 공개 · +0부터 +30까지 전 구간</summary>
+<summary>현대 모터스튜디오 고양(HH) · 팩 개봉부터 +30까지</summary>
 
-| 방문팩 보관함 → 개봉 → 카드 상세 | +0 → +4 |
-| --- | --- |
-| ![보관함의 현대 방문팩을 뜯고 고양 카드를 뒤집어 컬렉션에서 획득 장소를 확인](docs/demo/growth/01-pack-and-collection.gif) | ![처음 네 차례 연속 강화](docs/demo/growth/02-plus-00-to-04.gif) |
+<table>
+  <tr><th width="50%">현대 팩 개봉 · 카드 상세</th><th width="50%">+0 → +4</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/growth/01-pack-and-collection.gif" width="440" alt="보관함의 현대 방문팩을 뜯고 고양 카드를 뒤집어 컬렉션에서 획득 장소를 확인"></td>
+    <td align="center"><img src="docs/demo/growth/02-plus-00-to-04.gif" width="440" alt="처음 네 차례 연속 강화"></td>
+  </tr>
+</table>
 
-| +4 → +9 | +9 → +14 |
-| --- | --- |
-| ![+5 메탈 프레임부터 +9까지](docs/demo/growth/03-plus-04-to-09.gif) | ![+10 프리즘 장식부터 +14까지](docs/demo/growth/04-plus-09-to-14.gif) |
+<table>
+  <tr><th width="50%">+4 → +9</th><th width="50%">+9 → +14</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/growth/03-plus-04-to-09.gif" width="440" alt="+5 메탈 프레임부터 +9까지"></td>
+    <td align="center"><img src="docs/demo/growth/04-plus-09-to-14.gif" width="440" alt="+10 프리즘 장식부터 +14까지"></td>
+  </tr>
+</table>
 
-| +14 → +19 | +19 → +24 |
-| --- | --- |
-| ![+15에서 풀커버로 변하고 +19까지 강화](docs/demo/growth/05-plus-14-to-19.gif) | ![+20 크라운 장식부터 +24까지](docs/demo/growth/06-plus-19-to-24.gif) |
+<table>
+  <tr><th width="50%">+14 → +19</th><th width="50%">+19 → +24</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/growth/05-plus-14-to-19.gif" width="440" alt="+15에서 풀커버로 변하고 +19까지 강화"></td>
+    <td align="center"><img src="docs/demo/growth/06-plus-19-to-24.gif" width="440" alt="+20 크라운 장식부터 +24까지"></td>
+  </tr>
+</table>
 
-| +24 → +28 | +28 → +30 |
-| --- | --- |
-| ![+25 월계 프레임과 이후 세 번의 강화](docs/demo/growth/07-plus-24-to-28.gif) | ![+29와 마지막 +30 강화 및 결과 확인](docs/demo/growth/08-plus-28-to-30.gif) |
+<table>
+  <tr><th width="50%">+24 → +28</th><th width="50%">+28 → +30</th></tr>
+  <tr>
+    <td align="center"><img src="docs/demo/growth/07-plus-24-to-28.gif" width="440" alt="+25 월계 프레임과 이후 세 번의 강화"></td>
+    <td align="center"><img src="docs/demo/growth/08-plus-28-to-30.gif" width="440" alt="+29와 마지막 +30 강화 및 결과 확인"></td>
+  </tr>
+</table>
 
 </details>
 
@@ -221,9 +263,15 @@ Pleos Connect 2.1.0에서 차곡차곡의 첫 실행부터 방문 카드 강화�
 
 **달릴 때와 주차했을 때의 화면이 다릅니다.** 주행 중에는 기본 내비게이션 옆에서 기록 상태와 주변 추천 장소를 확인할 수 있습니다. 일반 탭 이동, 팩 개봉과 강화는 제한되며, D단에서 속도만 0이 되어도 이 제한은 풀리지 않습니다.
 
-![실제 화면 캡처 순서. 주행 중 두 경유지, 부산 재방문의 14일 제한, 네 지역 방문 지도와 PLUS 포함 651P 정산](docs/demo/verification/02-waypoints-and-plus.gif)
+<table>
+  <tr><th width="50%">주행 중 · 내비게이션과 주행 기록</th><th width="50%">주차 후 · 방문팩 수령</th></tr>
+  <tr>
+    <td align="center"><img src="docs/qa/chagok-2026-11-13/b07-two-waypoints-confirmed-limit-state.png" width="440" alt="주행 중 계기판과 내비게이션 옆에 나란히 표시된 주행 기록"></td>
+    <td align="center"><img src="docs/qa/chagok-2026-11-13/a09-gyeongbokgung-visit-pack-received.png" width="440" alt="경복궁에 주차한 뒤 서울 방문팩 수령을 확인하는 화면"></td>
+  </tr>
+</table>
 
-부산에서 두 경유지를 등록하고 고양을 거쳐 협재까지 달린 이 여정에서는 **기본 434P + PLUS 217P = 651P**를 받았습니다. 방문 지도에는 팩을 수령한 지역이 남습니다. P단 주차 후 팩을 받거나 여정을 끝낼 때는 화면 진입 시와 실행 시 모두 속도·기어 신호와 **Car UX Restrictions**를 확인합니다.
+P단 주차 후 팩을 받거나 여정을 끝낼 때는 화면 진입 시와 실행 시 모두 속도·기어 신호와 **Car UX Restrictions**를 확인합니다.
 
 ### Platform integration
 
@@ -397,6 +445,18 @@ Epic / HH   ×2.25
 
 ## Build & run
 
+### 제출용 APK
+
+[차곡차곡 1.0 서명 APK 다운로드](apk/가차_차곡차곡_release.apk?raw=true) (84.4 MiB)
+
+Pleos Connect 에뮬레이터를 실행한 뒤, APK를 내려받은 폴더에서 설치합니다.
+
+```bash
+adb install -r '가차_차곡차곡_release.apk'
+```
+
+### 소스에서 빌드하기
+
 **Requirements**
 
 - Android Studio — AGP `9.4.1` 지원 버전
@@ -423,7 +483,7 @@ adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
 
 `local.properties`에는 로컬 Android SDK 경로를 설정합니다. 위치 및 내비게이션 연동은 실행 환경의 서비스 연결과 인터넷이 필요합니다.
 
-### Test environment & APK
+### Test environment
 
 | Environment | Verified configuration |
 | --- | --- |
@@ -431,12 +491,6 @@ adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
 | OS / ABI | Android Automotive · Android 14 / API 34 · ARM64-v8a |
 | Display | `2560 × 1440px` · `160dpi` |
 | Window | 차량 시스템과 앱 영역 · 내비게이션과 앱의 분할 창 |
-
-**서명된 제출용 Release APK는 아직 등록 전입니다.** 아래는 팀명 확정 후 사용할 예정 경로입니다.
-
-```text
-apk/<팀명>_차곡차곡_release.apk
-```
 
 ### Tests & checks
 
