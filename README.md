@@ -1,107 +1,107 @@
 <div align="center">
 
-<sub>PLEOS CONNECT · ANDROID AUTOMOTIVE</sub>
+<img src="docs/brand/car-logo-app-icon.svg" width="72" alt="차곡차곡 앱 아이콘">
 
 # 차곡차곡
 
 **주행은 포인트로, 방문은 카드로.**
 
-운전한 거리와 다녀온 장소를 모아 나만의 카드 컬렉션을 만드는 차량용 앱.
+달린 거리로 포인트를 모으고, 다녀온 곳에서 얻은 카드를 한 장씩 키우는 차량용 앱입니다.
 
-[Features](#features) · [In-car](#in-car-experience) · [Engineering](#engineering) · [Demo](#demo) · [Build](#build--run)
+[주요 기능](#features) · [시연 영상](#demo) · [차량에서의 사용](#in-car-experience) · [아키텍처와 구현](#engineering) · [빌드 및 실행](#build--run)
 
-<br>
+<img src="docs/qa/chagok-2026-11-13/z01-restarted-home-wallet-and-featured-card.png" width="960" alt="차곡차곡 홈: 해운대 해변, 보유 포인트 1,622P, 대표 카드 북항의 부캉이 +2">
 
-<img src="docs/images/hero.jpg" width="960" alt="Pleos Connect 에뮬레이터에서 실행 중인 차곡차곡의 홈 화면">
-
-<sub>Pleos Connect 2.1.0 emulator · Android Automotive · 개발 화면의 working title은 MILESTONE</sub>
+<sub>Pleos Connect 2.1.0 · 주차 후 홈에서 본 추천 장소와 나의 대표 카드</sub>
 
 </div>
 
-<br>
-
 ## Overview
 
-어디를 다녀왔는지는 기억해도, 그곳까지 달린 시간은 쉽게 잊힙니다. **차곡차곡**은 그 이동을 포인트와 카드로 남깁니다.
-
-주행 거리와 운전 기록으로 포인트를 얻고, 목적지에 방문하면 지역 카드팩을 수집합니다. 카드팩을 열어 새로운 카드를 만나고, 모은 포인트로 좋아하는 카드를 강화합니다. 달리는 동안에는 주행 정보만 보여주고, 수집과 강화는 차를 세운 뒤에 진행합니다.
-
-`DRIVE` 주행 기록 → `DISCOVER` 장소 방문 → `COLLECT` 카드 수집 → `ENHANCE` 카드 강화
-
+어디를 다녀왔는지는 기억해도, 그곳까지 달린 시간은 쉽게 잊힙니다. **차곡차곡**은 긴 운전 끝에 기다릴 작은 즐거움을 만듭니다. 평소처럼 달린 날에는 강화 포인트가, 새로운 장소를 찾아간 날에는 그 지역의 카드팩이 남습니다. 차를 세우고 봉투를 열면, 다음 주행에서 키우고 싶은 카드가 생깁니다.
 
 <a id="features"></a>
 
 ## Features
 
-### 01 — Drive. 달린 거리만큼 쌓이는 포인트
+### 01 — 주행과 방문 보상
 
-목적지를 설정하면 기본 내비게이션과 연결되고, 주행이 끝나면 거리와 운전 기록을 바탕으로 포인트를 정산합니다. 장소 방문 여부와 관계없이 일상의 주행도 카드 성장에 쓰입니다.
+출발 전 탐색에서 목적지나 경유지를 등록하면 차량의 기본 내비게이션에 반영됩니다. **방문 보상과 주행 정산은 별개**입니다. 등록한 장소에 도착하면 P단에 주차해 여정을 끝내기 전에 방문팩을 받고, 주행을 종료하면 거리와 안전점수에 따라 포인트를 받습니다. 장소를 방문하지 않은 일상 주행도 적립 대상입니다.
 
-<img src="docs/images/journey-rewards.jpg" width="100%" alt="목적지 탐색과 주행 종료 후 포인트 정산 화면">
+<img src="docs/qa/chagok-2026-11-13/a03-destination-registered-adjacent.png" width="960" alt="차량 시스템, 기본 내비게이션, 차곡차곡 탐색 화면에 경복궁이 목적지로 등록된 모습">
 
-### 02 — Discover & Collect. 다녀온 곳에서 얻는 한 장
+경복궁 주행에서는 [주차 후 서울 방문팩을 받고](docs/qa/chagok-2026-11-13/a09-gyeongbokgung-visit-pack-received.png), 여정을 종료해 [7.4km · 안전점수 100점으로 221P를 적립](docs/qa/chagok-2026-11-13/a12-actual-points-settlement.png)했습니다. [1.8km를 달린 여정](docs/qa/chagok-2026-11-13/e03-under-two-km-score100-zero-points.png)은 2km 미만이라 포인트 없이 기록만 남았습니다.
 
-목적지나 경유지에 도착해 주차하면 방문 보상을 받을 수 있습니다. 지역별 카드팩에는 서울·부산·제주·현대 테마의 **45종 기본 도안**이 담겨 있습니다. 개봉은 봉투를 열고 카드를 뒤집는 두 단계로 진행됩니다.
+### 02 — 카드팩 개봉과 컬렉션
 
-<img src="docs/images/pack-opening.jpg" width="100%" alt="지역 카드팩을 개봉하고 카드를 뒤집어 확인하는 화면">
+서울·부산·제주·현대, 네 종류의 팩에 **45종의 기본 도안**이 있습니다. 처음에는 서울 선물팩 하나와 1,000P로 시작합니다. 팩 보관함에서 봉투를 뜯고, 나온 카드의 뒷면을 직접 뒤집어 그림과 등급을 확인합니다.
 
-### 03 — Enhance. 모은 카드에 쌓이는 변화
+<img src="docs/qa/chagok-2026-11-13/actual-busan-bukangi-opening.gif" width="960" alt="부산 방문팩의 봉투를 뜯고 파란 뒷면을 뒤집어 Rare 북항의 부캉이 카드를 얻는 실제 개봉 장면">
 
-주행 포인트로 카드를 강화합니다. **+5·+10·+15·+20·+25에서** 프레임과 재질이 달라지고, **+15부터** 원화가 카드 전체로 확장됩니다. 포일과 프리즘 효과는 카드 기울기에 따라 반응합니다.
-
-<img src="docs/images/foil-evolution.jpg" width="100%" alt="카드의 포일과 프리즘 표현, 강화 성공 장면">
-
-컬렉션에서 카드를 고르고, 강화한 뒤 다시 해당 카드로 돌아오는 흐름까지 연결했습니다. 강화 중 앱을 종료하더라도 확정된 결과와 카드 상태는 보존됩니다.
+광안리에서 받은 부산 팩을 열었더니 **Rare ‘북항의 부캉이’**가 나왔습니다. 카드의 장소와 방문한 곳이 달라도, 지도에는 팩을 받은 지역이 칠해집니다.
 
 <details>
-<summary>Collection & Forge 화면 보기</summary>
+<summary>수집한 카드와 방문 지도 보기</summary>
 
-<br>
+<p><img src="docs/qa/chagok-2026-11-13/z04-restarted-four-actual-cards.png" width="960" alt="앱 재실행 후 컬렉션에 남은 서울·부산·제주·현대 카드 네 장"></p>
 
-<img src="docs/images/collection-forge.jpg" width="100%" alt="컬렉션에서 선택한 카드를 강화 화면으로 가져오는 흐름">
+[방문 지도](docs/qa/chagok-2026-11-13/d12-four-visited-pack-regions-colored.png)에는 서울·부산·경기·제주가 남았습니다. 고양에서 받은 현대 팩에서 대전 E-pit 카드가 나와도 방문 지역은 경기입니다. [같은 부산 지역을 다시 방문했을 때](docs/qa/chagok-2026-11-13/b15-same-busan-region-fourteen-day-limit.png)는 다음 수령까지 14일이 안내됩니다.
 
 </details>
 
-### 04 — PLUS. 주행 보상 확장
+### 03 — 카드 강화
 
-PLUS 이용 기간에는 주행 포인트가 최대 **1.5배** 적립됩니다. 구독 상태와 남은 이용 기간은 정산에 반영됩니다. **결제와 해지는 데모용 모의 처리**이며, 실제 결제 시스템과 연동되어 있지 않습니다.
+컬렉션에서 마음에 드는 카드를 골라 주행 포인트를 씁니다. **+5·+10·+15·+20·+25**마다 프레임과 재질이 바뀌고, **+15부터는 원화가 카드 전체를 덮습니다.** 카드를 기울이면 포일과 프리즘의 반사광도 각도에 따라 움직입니다.
+
+<img src="docs/qa/chagok-2026-11-13/actual-bukangi-great-success.gif" width="960" alt="부산 팩에서 얻은 북항의 부캉이에 150P를 써서 강화하고 대성공으로 +0에서 +2가 되는 장면">
+
+위에서 얻은 부캉이에 **150P**를 썼고, 대성공으로 **+0 → +2**가 됐습니다. 다시 실행한 뒤에도 강화 수치와 대표 카드 선택이 그대로 홈에 표시됩니다.
+
+### 04 — PLUS 구독
+
+상점에서 PLUS(월 2,900원)를 시작하면 **구독이 적용된 주행 구간**의 포인트가 1.5배가 됩니다. 설정에서 자동 갱신을 꺼도 이미 시작한 이용 기간까지 혜택이 유지됩니다. 결제는 모의 처리하며 실제 청구는 없습니다.
+
+부산에서 고양을 거쳐 협재까지 이어진 한 여정에서는 **기본 434P + PLUS 217P = 651P**가 적립됐습니다.
 
 <details>
-<summary>PLUS 화면 보기</summary>
+<summary>PLUS 추가 적립이 표시된 정산 화면 보기</summary>
 
-<br>
-
-<img src="docs/images/plus-shop.jpg" width="88%" alt="PLUS 구독 화면">
+<p><img src="docs/qa/chagok-2026-11-13/r02-multi-region-plus-points-settlement.png" width="960" alt="여러 장소를 들른 14.5km 주행의 안전점수 100점, PLUS 추가 217P, 총 651P 적립"></p>
 
 </details>
 
+<a id="demo"></a>
+
+## Demo
+
+위 GIF 두 편은 에뮬레이터에서 실제로 방문팩을 받아 개봉하고 강화한 기록입니다. 아래 MP4는 같은 부캉이 카드의 여러 단계와 결과를 비교할 수 있도록 장면을 고정해 차량 화면 전체를 촬영했습니다.
+
+| [팩 개봉과 컬렉션 · MP4 · 25초](docs/demo/chagok-pack-and-collection.mp4) | [강화 단계와 결과 · MP4 · 18초](docs/demo/chagok-forge-levels-and-outcomes.mp4) |
+| :--- | :--- |
+| [![부산 팩, 카드 뒷면, 공개된 부캉이 앞면](docs/images/pack-reveal-preview.jpg)](docs/demo/chagok-pack-and-collection.mp4) | [![같은 부캉이 카드의 +0, +10, +25 외형 비교](docs/images/forge-levels-preview.jpg)](docs/demo/chagok-forge-levels-and-outcomes.mp4) |
+| 팩 보관함 → 봉투 개봉 → 카드 뒤집기 → 카드 상세와 성장 기록 | +10·+25 외형 변화, 대성공과 하락, 포인트 부족, 같은 카드로 흔적 복구 |
+| [개봉 영상 다운로드](docs/demo/chagok-pack-and-collection.mp4?raw=1) | [강화 영상 다운로드](docs/demo/chagok-forge-levels-and-outcomes.mp4?raw=1) |
 
 <a id="in-car-experience"></a>
 
 ## In-car experience
 
-차량에서의 사용은 휴대전화와 다릅니다. **주행 중에는 기록을 확인하고, 정차 후에 조작하는 구조**를 기본으로 설계했습니다.
+**달릴 때와 주차했을 때의 화면이 다릅니다.** 주행 중에는 기본 내비게이션 옆에서 기록 상태와 주변 추천 장소를 확인할 수 있습니다. 일반 탭 이동, 팩 개봉과 강화는 제한되며, D단에서 속도만 0이 되어도 이 제한은 풀리지 않습니다.
 
-| Driving | Parked |
-| :---: | :---: |
-| <img src="docs/images/driving-navigation.jpg" alt="주행 중 차량 화면, 기록 및 내비게이션 분할 화면"> | <img src="docs/images/parked-collection.jpg" alt="주차 중 카드 수집 화면"> |
-| 주행 정보 표시 · 수집/강화 조작 제한 | 장소 탐색 · 보상 수령 · 팩 개봉 · 카드 강화 |
+<img src="docs/qa/chagok-2026-11-13/b07-two-waypoints-confirmed-limit-state.png" width="960" alt="D단 90km/h에서 차량 계기, 기본 내비게이션의 경로 안내, 차곡차곡의 주행 기록을 나란히 표시한 화면">
 
-차량의 속도·기어와 **Car UX Restrictions**를 함께 확인합니다. 차량 상태가 불분명하거나 플랫폼에서 조작을 제한하면 기능을 열지 않습니다. 화면에서 버튼을 노출할 때뿐 아니라 **사용자가 액션을 실행하는 시점에도 상태를 다시 검사**합니다.
+P단에 주차하면 방문팩을 받거나 여정을 끝낼 수 있습니다. 속도·기어 신호가 유효하고 **Car UX Restrictions**가 조작을 허용하는지 화면을 열 때와 실제 동작을 실행할 때 모두 검사합니다. [재실행 후 주행 기록](docs/qa/chagok-2026-11-13/z02-restarted-records-three-journeys.png)에서도 저장된 여정 3건과 방문 장소 4곳을 확인할 수 있습니다.
 
 ### Platform integration
 
-| API / SDK | Integration |
+| API / SDK | 사용처 |
 | --- | --- |
-| **Android Automotive Car API** | Speed & gear signals · 주행 감지, 거리 분석, 주차 상태 판단 |
-| **Car UX Restrictions** | 운행 상황에 따른 상호작용 제한 |
-| **Pleos FusedLocation `1.1.3`** | 위치 업데이트 · 방문 범위 검증 |
-| **Pleos NaviHelper `3.0.5`** | 목적지/경유지 등록 · 경로/도착 이벤트 구독 |
+| **Android Automotive Car API** | 속도·기어 수신, 주행 감지, 거리 분석과 주차 판단 |
+| **Car UX Restrictions** | 차량 상태에 따라 허용되는 조작 확인 |
+| **Pleos FusedLocation `1.1.3`** | 위치 업데이트와 방문 범위 검증 |
+| **Pleos NaviHelper `3.0.5`** | 목적지·경유지 등록, 경로·도착 이벤트 구독 |
 
-내비게이션 API 호출이 반환됐다는 이유만으로 목적지 등록을 성공 처리하지 않습니다. **경로 및 목적지 상태를 재조회해 실제 반영을 확인**하며, 실패·시간 초과·확인 중 상태를 구분합니다.
-
-> **Validation scope** — Pleos Connect **2.1.0 에뮬레이터**에서 동작을 확인했습니다. 실차 검증은 진행하지 않았습니다.
-
+목적지나 경유지를 보내고 나면 경로와 목적지 상태를 다시 조회해 실제 반영을 확인합니다. **Pleos Connect 2.1.0 에뮬레이터**에서 검증했으며 실차 검증은 진행하지 않았습니다.
 
 <a id="engineering"></a>
 
@@ -269,7 +269,7 @@ Rare / H    ×1.50
 Epic / HH   ×2.25
 ```
 
-현재 평가용 확률 설정에서는 유지·파괴가 `0%`이며, +20부터 성공 `70%` / 하락 `30%`를 사용합니다. +0–19의 대성공은 +2로 처리합니다. 표시 확률과 결과 추첨은 동일한 `CardRules`를 사용합니다.
+현재 프로토타입에서는 유지·파괴가 `0%`이며, +20부터 성공 `70%` / 하락 `30%`를 사용합니다. +0–19의 대성공은 +2로 처리합니다. 표시 확률과 결과 추첨은 동일한 `CardRules`를 사용합니다.
 
 #### Card rendering pipeline
 
@@ -299,19 +299,6 @@ Epic / HH   ×2.25
 | **Build & Quality** | AGP `9.4.1` · Gradle `9.6.0` · Convention Plugins · JUnit · Compose UI Test · Lint · Spotless / ktlint · GitHub Actions |
 
 
-<a id="demo"></a>
-
-## Demo
-
-| Video | Contents |
-| --- | --- |
-| [Full walkthrough · 1:54](docs/demo/01-journey-pack-to-forge.mp4) | 카드팩 → 목적지 설정 → 주행 정산 → 수집 → 강화 |
-| [Enhancement milestones · 1:19](docs/demo/02-forge-milestones.mp4) | 강화 단계에 따른 프레임·풀커버·포일 변화 |
-| [Enhancement outcomes · 0:58](docs/demo/03-forge-outcomes.mp4) | 성공·대성공·유지·하락·파괴 연출 미리보기 |
-
-결과별 연출 영상에는 현재 설정상 발생 확률이 0%인 **유지·파괴**의 미리보기가 포함되어 있습니다.
-
-
 <a id="build--run"></a>
 
 ## Build & run
@@ -334,9 +321,9 @@ adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 1. Pleos Connect 에뮬레이터를 실행한 뒤 빌드한 APK를 설치합니다.
-2. 차량 홈의 앱 라이브러리에서 **PleosAndroid**를 실행하고, 속도 정보 및 정확한 위치 권한을 허용합니다.
-3. **P 기어·정지 상태**에서 장소 탐색과 카드 수집을 이용합니다.
-4. 빠른 체험은 **컬렉션 → 체험 모드**, 실제 주행 기록은 **기록 → 저장 설정**에서 활성화합니다.
+2. 차량 홈의 앱 라이브러리에서 **차곡차곡**을 열고 [첫 실행 화면](docs/qa/chagok-2026-11-13/00-fresh-profile-first-screen.png)의 안내에 따라 차량 신호와 위치 권한을 허용합니다.
+3. 실제 주행을 기록하려면 출발 전에 **기록 → 저장 설정 → 여정 기록 저장**을 켭니다.
+4. **P 기어·정지 상태**에서 장소를 탐색하거나 선물팩을 열 수 있습니다. 별도 예시 데이터로 살펴보려면 **컬렉션 → 체험 모드 시작**을 선택합니다.
 
 `local.properties`에는 로컬 Android SDK 경로를 설정합니다. 위치 및 내비게이션 연동은 실행 환경의 서비스 연결과 인터넷이 필요합니다.
 
