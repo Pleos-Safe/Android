@@ -32,7 +32,6 @@ internal fun DrivingReportDestination(
 
         showDataStatus -> DrivingDataStatusScreen(
             journey,
-            state.demo,
             onBack,
             { router.navigate(DrivingReportRoute(journeyId)) },
             modifier,
@@ -42,7 +41,6 @@ internal fun DrivingReportDestination(
 
         else -> DrivingReportScreen(
             journey,
-            state.demo,
             onBack,
             { router.navigate(DrivingDataStatusRoute(journeyId)) },
             { router.replaceAll(BadgesRoute) },

@@ -95,7 +95,6 @@ class DrivingRecordingService : Service() {
         RecordingPhase.Recording -> "여정을 기록하고 있어요 · 결과는 주차 후 확인"
         RecordingPhase.Saving -> "이번 여정을 저장하고 있어요"
         RecordingPhase.Error -> "기록 저장을 확인해 주세요"
-        RecordingPhase.Demo -> "데모에서는 실제 주행을 저장하지 않아요"
         else -> "다음 출발부터 운전습관을 기록해요"
     }
 

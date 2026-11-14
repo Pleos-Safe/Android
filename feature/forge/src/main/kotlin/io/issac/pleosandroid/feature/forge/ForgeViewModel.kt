@@ -5,7 +5,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.issac.pleosandroid.core.domain.cards.CardActionException
 import io.issac.pleosandroid.core.domain.cards.CardAlbumRepository
 import io.issac.pleosandroid.core.domain.cards.CardProblem
-import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.repository.VehicleRepository
 import io.issac.pleosandroid.core.ui.flow.collectUiState
 import io.issac.pleosandroid.core.ui.mvi.BaseViewModel
@@ -21,10 +20,8 @@ import kotlinx.coroutines.launch
 internal class ForgeViewModel @Inject constructor(
     private val repository: CardAlbumRepository,
     private val vehicle: VehicleRepository,
-    private val demo: CollectionDemoRepository,
 ) : BaseViewModel<ForgeState, ForgeIntent, UiEffect>(ForgeState()) {
     private val refresh = MutableStateFlow(0)
-    val demoAvailable get() = demo.available
 
     init {
         viewModelScope.launch {
@@ -63,8 +60,6 @@ internal class ForgeViewModel @Inject constructor(
             }
 
             is ForgeIntent.Acknowledge -> mutate { repository.acknowledge(intent.id, it) }
-
-            is ForgeIntent.SetDemo -> if (demo.available) mutate { demo.setEnabled(intent.enabled) }
 
             ForgeIntent.Retry -> refresh.update { it + 1 }
 

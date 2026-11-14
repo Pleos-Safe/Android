@@ -2,7 +2,6 @@ package io.issac.pleosandroid.feature.collection
 
 import androidx.lifecycle.ViewModelStore
 import io.issac.pleosandroid.core.domain.testing.TestCardAlbumRepository
-import io.issac.pleosandroid.core.domain.testing.TestCardDemo
 import io.issac.pleosandroid.core.domain.testing.TestCardVehicle
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +31,7 @@ class CollectionViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel() = CollectionViewModel(repository, vehicle, TestCardDemo()).also { store.put("cards", it) }
+    private fun viewModel() = CollectionViewModel(repository, vehicle).also { store.put("cards", it) }
 
     @Test fun retryReplacesTheObserverAndReleasesItWhenLeaving() = runTest {
         repository.failNextLoad = true

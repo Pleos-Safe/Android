@@ -47,7 +47,6 @@ sealed interface HomeUiState {
         val journeyActionPending: Boolean = false,
         val journeyActionError: Boolean = false,
         val pointBalance: Long? = null,
-        val demoWallet: Boolean = false,
     ) : HomeUiState {
         val canUseTabs: Boolean get() = vehicle.allowsTabNavigation
 

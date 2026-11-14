@@ -85,7 +85,6 @@ class RecordsPointsCaptureTest {
 
                                 Capture.Earned, Capture.RecordOnly -> DrivingReportScreen(
                                     if (fixture == Capture.Earned) earned else recordOnly,
-                                    demo = false,
                                     onBack = {},
                                     onDataStatus = {},
                                     onCollection = {},

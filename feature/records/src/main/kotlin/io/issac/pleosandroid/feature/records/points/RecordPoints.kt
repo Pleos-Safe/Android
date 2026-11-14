@@ -12,7 +12,6 @@ import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Locale
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
@@ -22,8 +21,7 @@ internal sealed interface RecordPoints {
     data class Ready(val wallet: PointWallet) : RecordPoints
 }
 
-internal fun PointRepository.observeRecordPoints(demo: Boolean) = observeWallet()
-    .filter { it.demo == demo }
+internal fun PointRepository.observeRecordPoints() = observeWallet()
     .map<PointWallet, RecordPoints> { RecordPoints.Ready(it) }
     .onStart { emit(RecordPoints.Loading) }
     .catchUiError { emit(RecordPoints.Unavailable) }

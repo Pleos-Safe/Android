@@ -1,14 +1,19 @@
 package io.issac.pleosandroid.feature.forge
 
 import androidx.lifecycle.ViewModelStore
-import io.issac.pleosandroid.core.cardui.preview.previewPackCard
 import io.issac.pleosandroid.core.domain.cards.CardActionException
+import io.issac.pleosandroid.core.domain.cards.CardCopy
+import io.issac.pleosandroid.core.domain.cards.CardGrade
+import io.issac.pleosandroid.core.domain.cards.CardPrint
 import io.issac.pleosandroid.core.domain.cards.CardProblem
+import io.issac.pleosandroid.core.domain.cards.CopyStatus
 import io.issac.pleosandroid.core.domain.cards.PackType
+import io.issac.pleosandroid.core.domain.cards.PrintGroup
+import io.issac.pleosandroid.core.domain.cards.ReceivedPack
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.testing.TestCardAlbumRepository
-import io.issac.pleosandroid.core.domain.testing.TestCardDemo
 import io.issac.pleosandroid.core.domain.testing.TestCardVehicle
+import java.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -36,10 +41,15 @@ class ForgeViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel() = ForgeViewModel(repository, vehicle, TestCardDemo()).also { store.put("cards", it) }
+    private fun viewModel() = ForgeViewModel(repository, vehicle).also { store.put("cards", it) }
 
     @Test fun aQueuedAttemptRechecksParkingAndKeepsTheShownRevisionAndRequest() = runTest {
-        val card = previewPackCard(PackType.Busan).copy(revision = 12)
+        val pack = ReceivedPack("pack", PackType.Busan, "방문 보상", Instant.EPOCH)
+        val print = CardPrint(
+            "busan-haeundae", "해운대의 파도", PackType.Busan, PrintGroup.Beach, CardGrade.Common,
+            "print_busan_haeundae_base", null, "해운대", "BUSAN / 001",
+        )
+        val card = CardCopy("copy", print, false, 0, 0, CopyStatus.Owned, 12, pack, Instant.EPOCH, true)
         var attempts = 0
         repository.onEnhance = { id, revision, request, generation ->
             attempts++
@@ -65,9 +75,9 @@ class ForgeViewModelTest {
         runCurrent()
         assertEquals(1, attempts)
         assertEquals("강화 포인트가 부족해요.", model.state.value.message)
-        repository.album.value = repository.album.value.copy(generation = "demo", demo = true)
+        repository.album.value = repository.album.value.copy(generation = "after-reset")
         runCurrent()
         assertEquals(null, model.state.value.message)
-        assertTrue(model.state.value.album!!.demo)
+        assertEquals("after-reset", model.state.value.album!!.generation)
     }
 }

@@ -19,7 +19,6 @@ internal fun CollectionShelfScreen(
     onCard: (CardCopy) -> Unit,
     openInbox: () -> Unit,
     openGallery: () -> Unit,
-    modeControl: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     CardShelfGrid(
@@ -30,7 +29,6 @@ internal fun CollectionShelfScreen(
         sectionTitle = "보유 카드",
         onCard = onCard,
         onPreviewMotions = openGallery,
-        modeControl = modeControl,
         caption = { card ->
             "${dateOf(card.acquiredAt)} 획득 · ${card.grade}" + if (card.variant) " · 변종" else ""
         },

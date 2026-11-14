@@ -48,7 +48,7 @@ internal fun RecordsScreen(
     modifier: Modifier = Modifier,
 ) {
     val scale = PleosTextStyles.scale
-    RecordsPage("주행 기록", modifier, subtitle = if (state.demo) "체험용 주행 기록" else null) {
+    RecordsPage("주행 기록", modifier) {
         when {
             state.loading -> RecordBody("기록을 불러오고 있어요.")
 
@@ -140,22 +140,17 @@ private fun RecordStat(label: String, value: String, modifier: Modifier = Modifi
 
 @Composable
 private fun PointsOverview(state: RecordsState, onIntent: (RecordsIntent) -> Unit) {
-    val label = when {
-        state.points is RecordPoints.Ready -> {
-            val label = if (state.demo) "체험 포인트" else "보유 포인트"
-            "$label ${state.points.wallet.balanceHalfPoints.pointLabel()}"
-        }
-
-        state.points is RecordPoints.Loading -> "포인트를 확인하고 있어요."
-
-        else -> "포인트를 불러오지 못했어요."
+    val label = when (val points = state.points) {
+        is RecordPoints.Ready -> "보유 포인트 ${points.wallet.balanceHalfPoints.pointLabel()}"
+        RecordPoints.Loading -> "포인트를 확인하고 있어요."
+        RecordPoints.Unavailable -> "포인트를 불러오지 못했어요."
     }
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp * PleosTextStyles.scale),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        RecordCaption(label, Modifier.weight(1f), accent = state.points is RecordPoints.Ready && !state.demo)
+        RecordCaption(label, Modifier.weight(1f), accent = state.points is RecordPoints.Ready)
         PleosTextLink("이번 주 포인트", { onIntent(RecordsIntent.OpenPointsWeek) })
     }
 }
