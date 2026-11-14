@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,7 +18,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -92,25 +89,7 @@ fun CardShelfGrid(
             verticalArrangement = Arrangement.spacedBy(gap),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                val previewLink: @Composable () -> Unit = {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(gap)) {
-                        PleosTextLink("연출 모아보기", onPreviewMotions, Modifier.testTag("open-motion-gallery"))
-                    }
-                }
-                if (wide) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(gap),
-                    ) {
-                        Box(Modifier.weight(1f)) { AlbumHeading(title, wide, balance) }
-                        previewLink()
-                    }
-                } else {
-                    Column {
-                        AlbumHeading(title, wide, balance)
-                        previewLink()
-                    }
-                }
+                CardShelfHeading(title, wide, balance, onPreviewMotions)
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
                 FlowRow(

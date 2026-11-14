@@ -6,7 +6,7 @@ import io.issac.pleosandroid.core.domain.cards.PackType
 import io.issac.pleosandroid.core.navigation.AppRoute
 import kotlinx.serialization.Serializable
 
-// Keep the JVM names used by saved pack and forge previews.
+// Debug restores these keys. Release must deserialize them before removing unavailable previews.
 @Serializable data class MotionGalleryRoute(val startOnForge: Boolean = false) : AppRoute
 
 @Serializable
