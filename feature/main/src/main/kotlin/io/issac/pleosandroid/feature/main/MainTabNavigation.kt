@@ -12,10 +12,12 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import io.issac.pleosandroid.core.designsystem.component.PleosTab
 import io.issac.pleosandroid.core.navigation.BadgesRoute
+import io.issac.pleosandroid.core.navigation.CardMotionRoute
 import io.issac.pleosandroid.core.navigation.EnhancementRoute
 import io.issac.pleosandroid.core.navigation.ExploreRoute
 import io.issac.pleosandroid.core.navigation.MainRoute
 import io.issac.pleosandroid.core.navigation.MainTabRoute
+import io.issac.pleosandroid.core.navigation.MotionGalleryRoute
 import io.issac.pleosandroid.core.navigation.RecordsRoute
 import io.issac.pleosandroid.core.navigation.ShopRoute
 
@@ -73,9 +75,14 @@ internal fun rememberMainTabNavigation(): MainTabNavigation {
         key(tab, "pack-album") { rememberNavBackStack(tab.route) }
     }
     return remember {
+        if (!BuildConfig.DEBUG) stacks.values.forEach(::removeUnavailableCardPreviews)
         selected.value = migrateShopStack(selected.value, stacks)
         MainTabNavigation(selected, stacks)
     }
+}
+
+internal fun removeUnavailableCardPreviews(stack: NavBackStack<NavKey>) {
+    stack.removeAll { it is MotionGalleryRoute || it is CardMotionRoute }
 }
 
 internal fun migrateShopStack(selected: PleosTab, stacks: Map<PleosTab, NavBackStack<NavKey>>): PleosTab {
