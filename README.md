@@ -74,13 +74,146 @@
 
 ## Demo
 
-위 GIF 두 편은 에뮬레이터에서 실제로 방문팩을 받아 개봉하고 강화한 기록입니다. 아래 MP4는 같은 부캉이 카드의 여러 단계와 결과를 비교할 수 있도록 장면을 고정해 차량 화면 전체를 촬영했습니다.
+[주행과 방문 보상](#demo-journey) · [PLUS 가입·해지](#demo-membership) · [팩 개봉과 컬렉션](#demo-collection) · [강화 단계와 결과](#demo-forge) · [한 장으로 +30까지](#demo-growth)
 
-| [팩 개봉과 컬렉션 · MP4 · 25초](docs/demo/chagok-pack-and-collection.mp4) | [강화 단계와 결과 · MP4 · 18초](docs/demo/chagok-forge-levels-and-outcomes.mp4) |
-| :--- | :--- |
-| [![부산 팩, 카드 뒷면, 공개된 부캉이 앞면](docs/images/pack-reveal-preview.jpg)](docs/demo/chagok-pack-and-collection.mp4) | [![같은 부캉이 카드의 +0, +10, +25 외형 비교](docs/images/forge-levels-preview.jpg)](docs/demo/chagok-forge-levels-and-outcomes.mp4) |
-| 팩 보관함 → 봉투 개봉 → 카드 뒤집기 → 카드 상세와 성장 기록 | +10·+25 외형 변화, 대성공과 하락, 포인트 부족, 같은 카드로 흔적 복구 |
-| [개봉 영상 다운로드](docs/demo/chagok-pack-and-collection.mp4?raw=1) | [강화 영상 다운로드](docs/demo/chagok-forge-levels-and-outcomes.mp4?raw=1) |
+<a id="demo-journey"></a>
+
+### 첫 팩에서 주행 보상과 강화까지
+
+Pleos Connect 2.1.0에서 차곡차곡의 첫 실행부터 방문 카드 강화까지 촬영했습니다. 목적지 설정과 주행·정산은 기본 내비게이션과 계기판이 함께 보이는 차량 전체 화면입니다.
+
+**첫 카드**　새 프로필로 시작해 서울 선물팩을 뜯고 첫 카드 ‘창경궁의 뜰’을 뒤집습니다.
+
+![새 프로필의 홈에서 서울 선물팩을 뜯고 창경궁의 뜰 카드를 뒤집는 장면](docs/demo/journey/01-seoul-welcome-pack.gif)
+
+**출발 준비**　상점에서 월 2,900원 PLUS를 구독합니다.
+
+![상점에서 PLUS의 모의 결제를 확인하고 구독 중으로 바뀌는 화면](docs/demo/journey/02-plus-subscription.gif)
+
+**목적지 설정**　앱과 기본 내비게이션을 나란히 띄운 뒤, 탐색에서 현대 모터스튜디오 고양을 목적지로 보냅니다.
+
+![차량 시스템을 포함한 전체 화면에서 창을 반으로 나누고 현대 모터스튜디오 고양 경로를 기본 내비게이션에 등록](docs/demo/journey/03-navigation-and-destination.gif)
+
+**주행**　계기판의 속도가 올라가면서 앱이 주행 기록 화면으로 바뀝니다. 긴 이동 구간은 원본 녹화에서 생략했습니다.
+
+![계기판 속도, 차곡차곡의 주행 기록, 기본 내비게이션의 경로 안내를 한 화면에 표시](docs/demo/journey/04-driving-in-split-screen.gif)
+
+**도착과 보상**　고양에서 P단으로 주차해 현대 팩을 받고 주행을 종료합니다. 5.3km를 달려 안전점수 100점을 받았습니다. 기본 159P에 PLUS 79.5P가 더해져 **238.5P**가 적립됐습니다.
+
+![차량과 내비게이션이 보이는 분할 화면에서 주차 후 현대 방문팩을 받고, 주행을 끝내 238.5P를 정산한 뒤 앱 창을 펼치는 과정](docs/demo/journey/05-park-claim-and-settle.gif)
+
+**현대 팩 개봉**　주차 후 앱 창을 펼치고, 받은 현대 팩에서 ‘현대 서초 UX 스튜디오’(HH)를 공개합니다.
+
+![현대 팩을 열고 카드 뒷면을 뒤집어 서초 UX 스튜디오 HH 카드를 확인](docs/demo/journey/06-open-hyundai-visit-pack.gif)
+
+**주행 포인트로 첫 강화**　225P를 써서 방금 얻은 카드를 강화합니다. 이번 시도는 대성공으로 **+0 → +2**가 됐고, 잔액은 1,238.5P에서 1,013.5P로 줄었습니다.
+
+![서초 UX 스튜디오 HH 카드를 선택해 225P를 쓰고 대성공으로 +0에서 +2가 되는 장면](docs/demo/journey/07-enhance-with-driving-points.gif)
+
+<a id="demo-collection"></a>
+
+### 부캉이 팩 개봉과 컬렉션
+
+| 봉투 열기 | 카드 공개와 상세 보기 |
+| --- | --- |
+| ![부산 컬렉션 팩의 윗부분이 찢어지고 봉투에서 카드 뒷면이 나오는 장면](docs/demo/01-open-busan-pack.gif) | ![부캉이 카드를 뒤집어 공개한 뒤 컬렉션에서 획득 정보와 강화 기록을 여는 장면](docs/demo/02-reveal-and-collect.gif) |
+
+<details>
+<summary>Common · Rare · Epic · H · HH의 카드 공개 연출 비교</summary>
+
+![Common, Rare, Epic, H, HH 순서로 카드 뒷면을 뒤집어 각 등급의 반사광과 원화를 보여 주는 시연](docs/demo/grades/card-reveal-by-grade.gif)
+
+</details>
+
+<a id="demo-forge"></a>
+
+### 강화 단계와 결과
+
+다음 두 GIF는 ‘북항의 부캉이’의 강화 수치와 결과를 고정해 촬영했습니다.
+
+| +1 · +10 · +25 외형 비교 | 대성공 · 하락 · 잔액 부족 · 흔적 복구 |
+| --- | --- |
+| ![같은 부캉이 카드의 +0 → +1, +9 → +10, +24 → +25 성공 화면과 프레임·포일 비교](docs/demo/03-forge-milestones.gif) | ![부캉이의 +8 → +10 대성공, +10 → +9 하락, 포인트 부족과 +0 사본으로 흔적을 복구하는 화면](docs/demo/04-forge-outcomes-and-recovery.gif) |
+
+<details>
+<summary>프레임과 재질이 바뀌는 순간 · +5, +10, +15, +20, +25</summary>
+
+| +4 → +5 · 메탈 프레임 | +9 → +10 · 프리즘 장식 |
+| --- | --- |
+| ![해운대의 파도 +4 → +5 강화에서 메탈 프레임 디자인이 드러나는 연출](docs/demo/stages/plus-05.gif) | ![해운대의 파도 +9 → +10 강화에서 프리즘 장식 디자인이 드러나는 연출](docs/demo/stages/plus-10.gif) |
+
+| +14 → +15 · 풀커버 원화 | +19 → +20 · 크라운 |
+| --- | --- |
+| ![해운대의 파도 +14 → +15 강화에서 풀커버 원화 디자인이 드러나는 연출](docs/demo/stages/plus-15.gif) | ![해운대의 파도 +19 → +20 강화에서 크라운 디자인이 드러나는 연출](docs/demo/stages/plus-20.gif) |
+
+**+24 → +25 · 월계 프레임**
+
+![해운대의 파도 +24 → +25 강화에서 월계 프레임 디자인이 드러나는 연출](docs/demo/stages/plus-25.gif)
+
+</details>
+
+<details>
+<summary>+25 이후 한 단계씩 · +26, +27, +28, +29, +30</summary>
+
+| +25 → +26 | +26 → +27 |
+| --- | --- |
+| ![해운대의 파도 +25 → +26 강화 연출과 결과](docs/demo/stages/plus-26.gif) | ![해운대의 파도 +26 → +27 강화 연출과 결과](docs/demo/stages/plus-27.gif) |
+
+| +27 → +28 | +28 → +29 |
+| --- | --- |
+| ![해운대의 파도 +27 → +28 강화 연출과 결과](docs/demo/stages/plus-28.gif) | ![해운대의 파도 +28 → +29 강화 연출과 결과](docs/demo/stages/plus-29.gif) |
+
+**+29 → +30**
+
+![해운대의 파도 +29 → +30 강화 연출과 결과](docs/demo/stages/plus-30.gif)
+
+</details>
+
+<details>
+<summary>강화 결과 5종과 흔적 복구 · 성공, 대성공, 유지, 하락, 파괴</summary>
+
+유지와 파괴는 현재 일반 강화에서 확률이 0%입니다. 아래 여섯 GIF는 차곡차곡의 연출 미리보기에서 결과를 지정해 촬영했습니다. +15 카드가 파괴되면 +10 흔적이 되고, 같은 카드의 +0 사본을 사용해 +10으로 복구합니다.
+
+| 성공 · +12 → +13 | 대성공 · +14 → +16 |
+| --- | --- |
+| ![강화 성공으로 한 단계 상승](docs/demo/outcomes/success.gif) | ![첫 성공에 이어 한 단계 더 오르는 대성공](docs/demo/outcomes/great-success.gif) |
+
+| 유지 · +15 | 하락 · +15 → +14 |
+| --- | --- |
+| ![강화 수치가 +15에 머무는 유지 판정](docs/demo/outcomes/hold.gif) | ![카드의 강화 수치가 한 단계 하락](docs/demo/outcomes/drop.gif) |
+
+| 파괴 · +15 → 흔적 +10 | 복구 · 흔적 +10 → +10 |
+| --- | --- |
+| ![카드가 깨지고 다섯 단계 낮은 흔적으로 남는 순간](docs/demo/outcomes/destroy.gif) | ![같은 카드의 +0 사본으로 흔적을 +10 카드로 복구](docs/demo/outcomes/restore.gif) |
+
+</details>
+
+<a id="demo-growth"></a>
+
+### 한 장으로 +30까지
+
+현대 모터스튜디오 고양(HH) 한 장이 +0에서 +30까지 변하는 모습입니다. 현대 방문팩이 보관함에 들어온 상태에서 시작하며, 이 시연에서는 뽑히는 카드와 각 강화의 성공 결과를 고정했습니다.
+
+<details>
+<summary>현대 팩 개봉 · 카드 공개 · +0부터 +30까지 전 구간</summary>
+
+| 방문팩 보관함 → 개봉 → 카드 상세 | +0 → +4 |
+| --- | --- |
+| ![보관함의 현대 방문팩을 뜯고 고양 카드를 뒤집어 컬렉션에서 획득 장소를 확인](docs/demo/growth/01-pack-and-collection.gif) | ![처음 네 차례 연속 강화](docs/demo/growth/02-plus-00-to-04.gif) |
+
+| +4 → +9 | +9 → +14 |
+| --- | --- |
+| ![+5 메탈 프레임부터 +9까지](docs/demo/growth/03-plus-04-to-09.gif) | ![+10 프리즘 장식부터 +14까지](docs/demo/growth/04-plus-09-to-14.gif) |
+
+| +14 → +19 | +19 → +24 |
+| --- | --- |
+| ![+15에서 풀커버로 변하고 +19까지 강화](docs/demo/growth/05-plus-14-to-19.gif) | ![+20 크라운 장식부터 +24까지](docs/demo/growth/06-plus-19-to-24.gif) |
+
+| +24 → +28 | +28 → +30 |
+| --- | --- |
+| ![+25 월계 프레임과 이후 세 번의 강화](docs/demo/growth/07-plus-24-to-28.gif) | ![+29와 마지막 +30 강화 및 결과 확인](docs/demo/growth/08-plus-28-to-30.gif) |
+
+</details>
 
 <a id="in-car-experience"></a>
 
