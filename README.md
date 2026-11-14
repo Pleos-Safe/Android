@@ -6,7 +6,7 @@
 
 **차와 함께한 시간을 차곡차곡, 매일의 운전을 카드 수집과 성장의 즐거움으로 바꾸는 서비스**
 
-[제출용 APK 다운로드](apk/가차_차곡차곡_release.apk?raw=true) · [주요 기능](#features) · [시연 영상](#demo) · [차량에서의 사용](#in-car-experience) · [아키텍처와 구현](#engineering) · [빌드 및 실행](#build--run)
+[제출용 APK 다운로드](apk/가차_차곡차곡_release.apk?raw=true) · [제출 정보 및 실행 방법](#build--run) · [주요 기능](#features) · [시연 영상](#demo) · [차량에서의 사용](#in-car-experience) · [아키텍처와 구현](#engineering) · [팀 소개](#team)
 
 </div>
 
@@ -443,54 +443,54 @@ Epic / HH   ×2.25
 
 <a id="build--run"></a>
 
-## Build & run
+## 제출 정보 및 실행 방법
 
 ### 제출용 APK
 
-[차곡차곡 1.0 서명 APK 다운로드](apk/가차_차곡차곡_release.apk?raw=true) (84.4 MiB)
+| 항목 | 내용 |
+| --- | --- |
+| 저장소 내 APK 파일 경로 | `apk/가차_차곡차곡_release.apk` |
+| 다운로드 | [차곡차곡 0.1.0 서명 APK](apk/가차_차곡차곡_release.apk?raw=true) · 84.4 MiB |
 
-Pleos Connect 에뮬레이터를 실행한 뒤, APK를 내려받은 폴더에서 설치합니다.
+### 설치 및 첫 실행
+
+Pleos Connect 에뮬레이터를 켜고, **저장소 최상위 폴더**에서 다음 명령으로 설치합니다.
 
 ```bash
-adb install -r '가차_차곡차곡_release.apk'
+adb devices
+adb install -r 'apk/가차_차곡차곡_release.apk'
 ```
 
-### 소스에서 빌드하기
+APK만 내려받았다면 다운로드 폴더에서 `adb install -r '가차_차곡차곡_release.apk'`를 실행합니다.
 
-**Requirements**
+1. 차량 홈의 앱 라이브러리에서 **차곡차곡**을 열고 [첫 실행 화면](docs/qa/chagok-2026-11-13/00-fresh-profile-first-screen.png)의 **차량 속도 접근 허용**을 누릅니다.
+2. **P단에 주차한 상태**에서 **컬렉션 → 팩 보관함**으로 들어가면 처음 지급된 서울 선물팩을 열 수 있습니다.
+3. 주행 기록과 포인트 적립을 확인하려면 출발 전에 **기록 → 저장 설정 → 여정 기록 저장**을 켭니다. 방문팩도 받으려면 정확한 위치 접근을 허용하고, **탐색**에서 목적지나 경유지로 등록한 장소에 주차합니다.
+
+### 테스트 환경
+
+| 항목 | 검증 환경 |
+| --- | --- |
+| 에뮬레이터 | Pleos Connect `2.1.0` |
+| 운영체제 / ABI | Android Automotive OS · Android 14 (API 34) · `arm64-v8a` |
+| 차량 전체 화면 | 가로 `2560 × 1440 px` · `160 dpi` |
+| 창 모드 | 앱 단독 표시 · 기본 내비게이션과 앱 분할 표시 |
+
+목적지·경유지 연동은 에뮬레이터를 인터넷에 연결한 상태에서 Pleos 기본 내비게이션과 함께 테스트합니다.
+
+### 소스에서 빌드하기
 
 - Android Studio — AGP `9.4.1` 지원 버전
 - JDK `25` (프로젝트 CI 기준)
 - Android SDK Platform `37.0` (`minSdk 28` / `compileSdk 37` / `targetSdk 37`)
-- Pleos Connect emulator `2.1.0` — 검증 환경: Android Automotive / Android 14, API 34, ARM64
 
 ```bash
 git clone https://github.com/Pleos-Safe/Android.git
 cd Android
-./gradlew :app:assembleDebug
-
-# 설치 대상은 adb devices 결과로 확인
-adb devices
-adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:installDebug
 ```
 
-1. Pleos Connect 에뮬레이터를 실행한 뒤 빌드한 APK를 설치합니다.
-2. 차량 홈의 앱 라이브러리에서 **차곡차곡**을 열고 [첫 실행 화면](docs/qa/chagok-2026-11-13/00-fresh-profile-first-screen.png)의 안내에 따라 차량 신호와 위치 권한을 허용합니다.
-3. 실제 주행을 기록하려면 출발 전에 **기록 → 저장 설정 → 여정 기록 저장**을 켭니다.
-4. **P 기어·정지 상태**에서 장소를 탐색하거나 선물팩을 열 수 있습니다.
-
-**연출 모아보기**는 Debug 빌드의 **컬렉션**과 **강화** 탭에서만 열 수 있습니다. 실제 카드나 포인트를 쓰지 않고 팩 개봉과 강화를 미리 볼 수 있으며, 제출용 Release에는 이 메뉴가 없습니다.
-
-`local.properties`에는 로컬 Android SDK 경로를 설정합니다. 위치 및 내비게이션 연동은 실행 환경의 서비스 연결과 인터넷이 필요합니다.
-
-### Test environment
-
-| Environment | Verified configuration |
-| --- | --- |
-| Pleos Connect emulator | `2.1.0` |
-| OS / ABI | Android Automotive · Android 14 / API 34 · ARM64-v8a |
-| Display | `2560 × 1440px` · `160dpi` |
-| Window | 차량 시스템과 앱 영역 · 내비게이션과 앱의 분할 창 |
+SDK 경로를 찾을 수 없으면 `local.properties`의 `sdk.dir`에 로컬 Android SDK 경로를 지정합니다.
 
 ### Tests & checks
 
@@ -501,5 +501,23 @@ adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :build-logic:convention:check
 ```
 
+<a id="team"></a>
+
+## 팀 소개 · 가차(Go Car)
+
+<table>
+  <tr>
+    <th width="25%">이삭</th>
+    <th width="25%">우상욱</th>
+    <th width="25%">윤민성</th>
+    <th width="25%">김민형</th>
+  </tr>
+  <tr>
+    <td align="center" valign="top">서비스 기획<br>와이어프레임 설계 · UI 디자인<br>Android Automotive OS 앱 개발</td>
+    <td align="center" valign="top">서비스 기획<br>와이어프레임 설계 · UI 디자인<br>Android Automotive OS 앱 개발</td>
+    <td align="center" valign="top">서비스 기획<br>요구사항 도출<br>사용 시나리오 설계·검증</td>
+    <td align="center" valign="top">서비스 기획<br>요구사항 도출<br>요구사항 평가·검증</td>
+  </tr>
+</table>
 
 <sub>Developed for the Hyundai Motor Group Pleos Connect vehicle app development competition.</sub>
