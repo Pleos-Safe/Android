@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="486" viewBox="0 0 400 486" role="img" aria-labelledby="title desc">
+  <title id="title">차곡차곡의 주요 모듈과 컴파일 의존 방향</title>
+  <desc id="desc">앱은 main을, main은 nav를 참조한다. 컬렉션과 강화는 카드 UI와 도메인을 참조한다. 데이터와 차량 모듈은 도메인 인터페이스를 구현하고 데이터 모듈은 데이터베이스를 사용한다.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5.5" markerHeight="5.5" orient="auto">
+      <path d="m1 1 6 3-6 3" fill="none" stroke="#55728b" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; }
+      .module { font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; font-size: 17px; font-weight: 650; fill: #152d41; }
+      .caption { font-size: 13px; fill: #425b71; }
+      .link { fill: none; stroke: #55728b; stroke-width: 2; stroke-linecap: round; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect x="0.75" y="0.75" width="398.5" height="484.5" rx="13" fill="#f5f8fa" stroke="#cfdae1"/>
+  <rect x="9" y="9" width="382" height="73" rx="9" fill="#122d44"/>
+  <g class="module" style="font-size:15px;fill:#f5faff">
+    <text x="22" y="39">:app</text>
+    <text x="116" y="39">:feature:main</text>
+    <text x="266" y="39">:feature:nav</text>
+  </g>
+  <g font-size="12" fill="#c9dce8">
+    <text x="22" y="61">앱 진입 · Hilt</text>
+    <text x="116" y="61">탭별 백 스택</text>
+    <text x="266" y="61">Navigation 3</text>
+  </g>
+  <g fill="none" stroke="#91c6d6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M74 39h22m-5-4 5 4-5 4"/>
+    <path d="M238 39h16m-5-4 5 4-5 4"/>
+  </g>
+
+  <text x="15" y="111" font-size="15" fill="#294457" font-weight="650">핵심 모듈 의존성</text>
+  <path d="M207 107h18" class="link"/>
+  <text x="234" y="111" class="caption">참조하는 모듈을 향함</text>
+
+  <path d="M208 169h18" class="link"/>
+  <path d="M105 214v31" class="link"/>
+  <path d="M224 292h-17" class="link"/>
+  <path d="M105 380v-30" class="link"/>
+  <path d="M305 338v38" class="link"/>
+
+  <rect x="12" y="126" width="196" height="88" rx="9" fill="#ffffff" stroke="#b4c8d5"/>
+  <text x="24" y="146" font-size="13" fill="#315872" font-weight="600">카드 화면</text>
+  <text x="24" y="172" class="module" style="font-size:15px">:feature:collection</text>
+  <text x="24" y="195" class="module" style="font-size:15px">:feature:forge</text>
+
+  <rect x="231" y="126" width="157" height="88" rx="9" fill="#ffffff" stroke="#b4c8d5"/>
+  <text x="242" y="157" class="module" style="font-size:15px">:core:card-ui</text>
+  <text x="242" y="180" class="caption">카드 프레임</text>
+  <text x="242" y="198" class="caption">포일 렌더링</text>
+
+  <rect x="12" y="250" width="191" height="96" rx="10" fill="#e1f3ef" stroke="#52988b" stroke-width="1.5"/>
+  <text x="24" y="268" font-size="11" font-weight="650" fill="#216c62">KOTLIN / JVM</text>
+  <text x="24" y="292" class="module" style="font-size:20px;fill:#104c45">:core:domain</text>
+  <text x="24" y="314" class="caption" style="fill:#285b53">Repository 인터페이스</text>
+  <text x="24" y="333" class="caption" style="fill:#285b53">강화 확률 · 주행 적립 정책</text>
+
+  <rect x="226" y="250" width="162" height="88" rx="9" fill="#ffffff" stroke="#b4c8d5"/>
+  <text x="238" y="282" class="module">:core:data</text>
+  <text x="238" y="309" class="caption">카드·포인트 저장소 구현</text>
+
+  <rect x="12" y="382" width="191" height="87" rx="9" fill="#ffffff" stroke="#b4c8d5"/>
+  <text x="24" y="411" class="module">:core:vehicle</text>
+  <text x="24" y="437" class="caption">Car API · Pleos</text>
+  <text x="24" y="455" class="caption">위치·내비 SDK</text>
+
+  <rect x="226" y="382" width="162" height="87" rx="9" fill="#eaf0f4" stroke="#afc1ce"/>
+  <text x="238" y="411" class="module" style="font-size:16px">:core:database</text>
+  <text x="238" y="437" class="caption">Room · SQLCipher</text>
+  <text x="238" y="455" class="caption">Android Keystore</text>
+</svg>
