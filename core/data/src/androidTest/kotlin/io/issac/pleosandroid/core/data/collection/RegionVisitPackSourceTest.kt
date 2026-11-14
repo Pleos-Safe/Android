@@ -8,7 +8,6 @@ import io.issac.pleosandroid.core.data.cards.DefaultCardAlbumRepository
 import io.issac.pleosandroid.core.data.collection.local.CatalogLoader
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
-import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionDemoRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultRegionVisitPackSource
 import io.issac.pleosandroid.core.data.collection.repository.DefaultVisitPackRepository
@@ -38,14 +37,11 @@ import org.junit.runner.RunWith
 class RegionVisitPackSourceTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val real = Room.inMemoryDatabaseBuilder(context, CollectionDatabase::class.java).build()
-    private val demo = Room.inMemoryDatabaseBuilder(context, CollectionDatabase::class.java).build()
     private val catalog = object : CatalogSource {
         override fun load() = CatalogLoader(context).load()
         override fun hasAsset(key: String) = true
     }
-    private val provider = object : CollectionDatabaseProvider {
-        override fun create(demo: Boolean) = if (demo) this@RegionVisitPackSourceTest.demo else real
-    }
+    private val provider = CollectionDatabaseProvider { real }
     private var now = Instant.parse("2026-11-07T04:00:00Z")
     private val clock = object : DrivingClock {
         override fun now() = now
@@ -57,14 +53,11 @@ class RegionVisitPackSourceTest {
     private lateinit var store: CollectionStore
 
     @Before fun init() {
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
-        store = CollectionStore(context, provider, catalog)
+        store = CollectionStore(provider, catalog)
     }
 
     @After fun close() {
         real.close()
-        demo.close()
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
     }
 
     @Test fun claimsCountBeforeOpeningAndSurviveOpeningWhileGiftsAndShopPacksDoNotCount() = runBlocking {
@@ -110,7 +103,7 @@ class RegionVisitPackSourceTest {
     @Test fun countsBelongToTheVisitedPlaceRatherThanTheCardDrawnFromItsPack() = runBlocking {
         val album = DefaultCardAlbumRepository(store, firstRoll)
         val generation = DefaultProgressRepository(store).getDataGeneration()
-        store.realTransaction {
+        store.transaction {
             val studio = checkNotNull(place("hyundai-motorstudio-goyang"))
             putPlaces(
                 listOf(
@@ -143,7 +136,7 @@ class RegionVisitPackSourceTest {
 
     @Test fun aggregationCountsEveryReceiptAndExcludesMissingOrUnmappedPlaces() = runBlocking {
         DefaultProgressRepository(store).getDataGeneration()
-        store.realTransaction {
+        store.transaction {
             val studio = checkNotNull(place("hyundai-motorstudio-goyang"))
             putPlaces(listOf(studio.copy(active = false), studio.copy(id = "unmapped", regionId = null)))
             repeat(3) { insertVisitPack(receipt("goyang-$it", studio.id)) }
@@ -159,28 +152,20 @@ class RegionVisitPackSourceTest {
         assertTrue(real.albumDao().copies().isEmpty())
     }
 
-    @Test fun activeCollectionUpdatesAndProfileSwitchesKeepRealAndDemoReceiptsSeparate() = runBlocking {
-        DefaultProgressRepository(store).getDataGeneration()
-        store.realTransaction { insertVisitPack(receipt("real", "hyundai-motorstudio-goyang")) }
-        val profiles = DefaultCollectionDemoRepository(store)
-        var step = 0
-        val values = withTimeout(10_000) {
-            DefaultRegionVisitPackSource(store).regionVisitPackCounts.onEach {
-                when (step++) {
-                    0 -> profiles.setEnabled(true)
-                    1 -> store.demoTransaction { insertVisitPack(receipt("demo", "haeundae")) }
-                    2 -> profiles.setEnabled(false)
+    @Test fun activeCollectionReceivesNewRegionCountsAndReopenPreservesThem() = runBlocking {
+        val regions = DefaultRegionVisitPackSource(store)
+        val events = withTimeout(10_000) {
+            regions.regionVisitPackCounts.onEach { counts ->
+                when (counts.size) {
+                    0 -> store.transaction { insertVisitPack(receipt("goyang", "hyundai-motorstudio-goyang")) }
+                    1 -> store.transaction { insertVisitPack(receipt("busan", "haeundae")) }
                 }
-            }.take(4).toList()
+            }.take(3).toList()
         }
-        assertEquals(
-            listOf(mapOf("KR-41" to 1), emptyMap(), mapOf("KR-26" to 1), mapOf("KR-41" to 1)),
-            values,
-        )
-        val reopened = CollectionStore(context, provider, catalog)
-        assertEquals(mapOf("KR-41" to 1), DefaultRegionVisitPackSource(reopened).regionVisitPackCounts.first())
-        assertEquals(listOf("real"), real.collectionDao().visitPacks().map { it.id })
-        assertEquals(listOf("demo"), demo.collectionDao().visitPacks().map { it.id })
+        val total = mapOf("KR-41" to 1, "KR-26" to 1)
+        assertEquals(listOf(emptyMap(), mapOf("KR-41" to 1), total), events)
+        val reopened = CollectionStore(provider, catalog)
+        assertEquals(total, DefaultRegionVisitPackSource(reopened).regionVisitPackCounts.first())
     }
 
     private fun receipt(id: String, placeId: String) =

@@ -54,12 +54,7 @@ class BukangiGrowthIntegrationTest {
         override fun load() = CatalogLoader(context).load()
         override fun hasAsset(key: String) = true
     }
-    private val provider = object : CollectionDatabaseProvider {
-        override fun create(demo: Boolean): CollectionDatabase {
-            check(!demo) { "This scenario only uses its isolated real-profile test database" }
-            return database
-        }
-    }
+    private val provider = CollectionDatabaseProvider { database }
     private val endedAt = Instant.parse("2026-11-12T04:00:00Z")
     private val clock = object : DrivingClock {
         override fun now() = endedAt
@@ -71,15 +66,13 @@ class BukangiGrowthIntegrationTest {
     private lateinit var points: DefaultPointRepository
 
     @Before fun init() {
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
-        store = CollectionStore(context, provider, catalog)
+        store = CollectionStore(provider, catalog)
         album = DefaultCardAlbumRepository(store, BukangiThenSuccessRandom())
         points = DefaultPointRepository(store, clock)
     }
 
     @After fun close() {
         database.close()
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
     }
 
     @Test fun haeundaeRewardAndMeasuredJourneyPointsGrowTheSameBukangiToTwentyFive() = runBlocking {
@@ -176,7 +169,7 @@ class BukangiGrowthIntegrationTest {
         )
 
         val reopened =
-            DefaultCardAlbumRepository(CollectionStore(context, provider, catalog), BukangiThenSuccessRandom())
+            DefaultCardAlbumRepository(CollectionStore(provider, catalog), BukangiThenSuccessRandom())
         assertEquals(final, reopened.observe().first())
         checkpoint("repository-reopened", copyId)
         writeEvidence(journey)

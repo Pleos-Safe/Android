@@ -22,7 +22,5 @@ object TestCollectionDatabaseModule {
             .build()
 
     @Provides
-    fun provider(database: CollectionDatabase): CollectionDatabaseProvider = object : CollectionDatabaseProvider {
-        override fun create(demo: Boolean): CollectionDatabase = database
-    }
+    fun provider(database: CollectionDatabase) = CollectionDatabaseProvider { database }
 }

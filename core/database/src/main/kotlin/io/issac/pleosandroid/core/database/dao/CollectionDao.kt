@@ -84,9 +84,6 @@ interface CollectionDao {
     @Query("UPDATE membership_term SET endsAt = :end, revision = revision + 1 WHERE id = :id")
     suspend fun setMembershipEnd(id: Long, end: Long?)
 
-    @Query("DELETE FROM membership_term")
-    suspend fun clearMemberships()
-
     @Query("SELECT * FROM point_transaction ORDER BY occurredAt DESC, operationId DESC")
     suspend fun pointTransactions(): List<PointTransactionEntity>
 

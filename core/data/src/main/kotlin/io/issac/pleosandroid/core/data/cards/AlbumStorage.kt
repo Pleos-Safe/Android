@@ -61,7 +61,7 @@ internal fun ForgeEntity.model() = ForgeReceipt(
     cost, Instant.ofEpochMilli(at), shown, materialId,
 )
 
-internal suspend fun AlbumDao.snapshot(balanceHalfPoints: Long, generation: String, demo: Boolean): AlbumSnapshot {
+internal suspend fun AlbumDao.snapshot(balanceHalfPoints: Long, generation: String): AlbumSnapshot {
     val wallet = checkNotNull(wallet())
     val packs = packs().map { it.model() }.associateBy { it.id }
     val prints = prints().map { it.model() }.associateBy { it.id }
@@ -78,12 +78,11 @@ internal suspend fun AlbumDao.snapshot(balanceHalfPoints: Long, generation: Stri
         },
         actions().map { it.model() },
         generation,
-        demo,
     )
 }
 
 /** Called inside the profile database transaction, including first launch after upgrading v3. */
-internal suspend fun CollectionDatabase.prepareCardAlbum(demo: Boolean) {
+internal suspend fun CollectionDatabase.prepareCardAlbum() {
     val album = albumDao()
     album.removeImportedLevelNotices()
     album.savePrints(regionalPrints.map { it.row() })
@@ -92,20 +91,9 @@ internal suspend fun CollectionDatabase.prepareCardAlbum(demo: Boolean) {
         val type = previous.place(visit.placeId)?.rewardPack ?: continue
         album.grantVisitPack(visit, type)
     }
-    if (album.wallet() != null) {
-        if (demo) album.ensureHyundaiDemoPack()
-        return
-    }
+    if (album.wallet() != null) return
     val now = System.currentTimeMillis()
     album.grant(PackEntity("welcome:seoul", PackType.Seoul.name, "첫 여행 선물", now))
-    if (demo) {
-        for (packType in PackType.entries) {
-            repeat(3) { index ->
-                album.grant(PackEntity("demo:${packType.name}:$index", packType.name, "체험용 방문 보상", now - index - 1))
-            }
-        }
-    }
-    if (demo) album.prepareDemoCopies(now)
     val definitions = previous.definitions().associateBy { it.id }
     val places = previous.places().associateBy { it.id }
     val owned = previous.ownedCards()
@@ -130,7 +118,7 @@ internal suspend fun CollectionDatabase.prepareCardAlbum(demo: Boolean) {
             ),
         )
     }
-    previous.openAlbumBalance(if (demo) 200_000L else 2_000L, Instant.ofEpochMilli(now))
+    previous.openAlbumBalance(2_000L, Instant.ofEpochMilli(now))
     val representative = previous.display()?.cardId
     album.save(
         WalletEntity(
@@ -144,12 +132,12 @@ internal suspend fun AlbumDao.grantVisitPack(visit: VisitPackEntity, type: Strin
     grant(PackEntity(visitAlbumPackId(visit.id), type, "방문 보상", visit.claimedAt, visit.placeTitle, visit.journeyId))
 }
 
-internal suspend fun CollectionDatabase.resetCardAlbum(demo: Boolean) {
+internal suspend fun CollectionDatabase.resetCardAlbum() {
     with(albumDao()) {
         clearActions()
         clearCopies()
         clearPacks()
         clearWallet()
     }
-    prepareCardAlbum(demo)
+    prepareCardAlbum()
 }

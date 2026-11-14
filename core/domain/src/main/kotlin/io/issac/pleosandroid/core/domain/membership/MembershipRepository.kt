@@ -40,7 +40,6 @@ enum class MembershipAction { Subscribe, CancelRenewal, ResumeRenewal }
 
 data class Membership(
     val generation: String,
-    val demo: Boolean,
     val term: MembershipTerm?,
     val status: MembershipStatus,
     /** Renewal, scheduled expiry, or the most recent expiry. */
@@ -50,7 +49,7 @@ data class Membership(
     val hasBenefit get() = status == MembershipStatus.Renewing || status == MembershipStatus.Ending
 
     companion object {
-        fun at(generation: String, demo: Boolean, term: MembershipTerm?, now: Instant, revision: Long = 0): Membership {
+        fun at(generation: String, term: MembershipTerm?, now: Instant, revision: Long = 0): Membership {
             val status = when {
                 term == null || now < term.startedAt -> MembershipStatus.Inactive
                 term.endsAt == null -> MembershipStatus.Renewing
@@ -58,7 +57,7 @@ data class Membership(
                 else -> MembershipStatus.Expired
             }
             val end = if (status == MembershipStatus.Renewing) term?.nextRenewal(now) else term?.endsAt
-            return Membership(generation, demo, term, status, end, revision)
+            return Membership(generation, term, status, end, revision)
         }
     }
 }

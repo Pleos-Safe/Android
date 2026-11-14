@@ -74,7 +74,6 @@ class DrivingRecordingTest {
     private val journeys by lazy { DefaultJourneyRepository(vehicle, clock, sessionScope) }
 
     @Before fun prepare() = runBlocking<Unit> {
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
         context.getSharedPreferences("driving_recording", Context.MODE_PRIVATE).edit().clear().commit()
         db =
             Room.inMemoryDatabaseBuilder(
@@ -86,9 +85,8 @@ class DrivingRecordingTest {
             override fun hasAsset(key: String) = true
         }
         store = CollectionStore(
-            context,
             object : CollectionDatabaseProvider {
-                override fun create(demo: Boolean) = db
+                override fun create() = db
             },
             source,
         )
@@ -416,7 +414,7 @@ class DrivingRecordingTest {
             assertEquals(active.journeyId, visit.journeyId)
             assertTrue(requireNotNull(places.observePlace(place.id).first()).ownedCardIds.isEmpty())
             assertTrue(DefaultRegionVisitPackSource(store).regionVisitPackCounts.first().isEmpty())
-            store.realTransaction {
+            store.transaction {
                 putPlaces(places().map { it.copy(active = false) })
                 touch()
             }

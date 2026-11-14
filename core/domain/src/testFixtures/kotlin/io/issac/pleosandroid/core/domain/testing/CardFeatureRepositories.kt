@@ -4,7 +4,6 @@ import io.issac.pleosandroid.core.domain.cards.AlbumSnapshot
 import io.issac.pleosandroid.core.domain.cards.CardAlbumRepository
 import io.issac.pleosandroid.core.domain.cards.ForgeReceipt
 import io.issac.pleosandroid.core.domain.cards.PackType
-import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.model.MotionAvailability
 import io.issac.pleosandroid.core.domain.model.VehicleGear
 import io.issac.pleosandroid.core.domain.model.VehicleMotion
@@ -80,13 +79,4 @@ class TestCardVehicle : VehicleRepository {
     )
 
     override fun retry() = Unit
-}
-
-class TestCardDemo : CollectionDemoRepository {
-    override val available = true
-    override val enabled = MutableStateFlow(false)
-    override suspend fun setEnabled(enabled: Boolean) {
-        this.enabled.value = enabled
-    }
-    override suspend fun resetDemo(): Unit = error("Unexpected reset")
 }

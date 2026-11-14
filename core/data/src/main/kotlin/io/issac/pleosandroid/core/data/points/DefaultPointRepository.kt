@@ -23,7 +23,7 @@ internal class DefaultPointRepository @Inject constructor(
     private val store: CollectionStore,
     private val clock: DrivingClock,
 ) : PointRepository {
-    override fun observeWallet() = store.observeProfile { db, demo ->
+    override fun observeWallet() = store.observeDatabase { db ->
         val dao = db.collectionDao()
         dao.observeRevision().map {
             db.withTransaction {
@@ -32,7 +32,6 @@ internal class DefaultPointRepository @Inject constructor(
                     balanceHalfPoints = transactions.sumOf { it.deltaHalfPoints },
                     transactions = transactions,
                     dataGeneration = checkNotNull(dao.userState()).generation,
-                    demo = demo,
                 )
             }
         }

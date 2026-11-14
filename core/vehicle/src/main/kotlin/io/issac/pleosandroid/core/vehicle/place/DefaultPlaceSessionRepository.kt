@@ -3,7 +3,6 @@ package io.issac.pleosandroid.core.vehicle.place
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.issac.pleosandroid.core.domain.collection.model.VisitPackClaimResult
-import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.collection.repository.PlaceRepository
 import io.issac.pleosandroid.core.domain.collection.repository.ProgressRepository
 import io.issac.pleosandroid.core.domain.collection.repository.VisitLocationSource
@@ -51,7 +50,6 @@ internal class DefaultPlaceSessionRepository @Inject constructor(
     private val visitLocation: VisitLocationSource,
     private val packs: VisitPackRepository,
     private val progress: ProgressRepository,
-    private val demo: CollectionDemoRepository,
 ) : PlaceSessionRepository,
     JourneyArrivalSource {
     private val owners = PlaceSessionOwners(::newRuntime)
@@ -119,7 +117,6 @@ internal class DefaultPlaceSessionRepository @Inject constructor(
         visitLocation,
         packs,
         progress,
-        demo,
     )
 
     private fun dispatch(action: (PlaceSessionRuntime) -> Unit) {
