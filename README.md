@@ -240,80 +240,41 @@ Pleos Connect 2.1.0에서 차곡차곡의 첫 실행부터 방문 카드 강화�
 
 ## Engineering
 
-### Architecture
-
-**Kotlin + Jetpack Compose**, 18개 모듈을 기능과 책임 중심으로 분리했습니다. `feature`는 화면과 상태를, `core:domain`은 정책과 Repository contract를, `core:data`와 `core:vehicle`은 저장소 및 플랫폼 연동을 담당합니다.
-
-<img src="docs/images/architecture.svg" width="100%" alt="차곡차곡의 모듈 및 데이터 흐름 아키텍처">
-
-- **Unidirectional Data Flow** — UI event는 ViewModel을 거쳐 처리하고, 결과는 `Flow` / `StateFlow`로 Compose에 전달합니다.
-- **Platform-independent domain** — 도메인 정책과 Repository contract를 Android에 의존하지 않는 Kotlin/JVM 모듈에 둡니다.
-- **Feature ownership** — Collection, Forge, Records 등 기능별로 화면과 ViewModel을 관리하며, 공통 카드 렌더링은 `core:card-ui`에서 공유합니다.
-- **Dependency Injection** — Hilt로 구현체를 연결하고 `app` 모듈에서 화면 구성을 조립합니다.
-
-<details>
-<summary>Module layout</summary>
-
-```text
-app
-├── navigation                 Feature registration & home composition
-└── driving                    Foreground service
-
-feature
-├── main / nav                 Tabs, back stacks & navigation host
-├── home                       Driving lifecycle
-├── explore                    Map, place search, route requests
-├── collection                 Packs, gallery & card details
-├── forge                      Enhancement UI & motion
-├── records                    History, scoring & points
-├── membership                 PLUS shop & subscription state
-└── settings                   Preferences
-
-core
-├── domain                     Models, policies & repository contracts
-├── data                       Repository implementations
-├── database                   Room, SQLCipher, migrations
-├── vehicle                    Car API, FusedLocation, NaviHelper
-├── card-ui                    Card rendering & animation
-├── designsystem               Design tokens & shared components
-├── navigation                 Routes & result contracts
-└── ui                         Shared UI state & flow utilities
-
-build-logic                       Gradle Convention Plugins
-```
-
-</details>
-
 <a id="module-dependencies"></a>
 
-### Module dependencies
+### Architecture
 
-이 그래프는 **18개 모듈의 코드 참조 44개**를 표시합니다. Kotlin에서 사용하는 타입·함수·리소스의 소유 모듈을 확인했으며, DI binding과 화면 factory 등록 전용 관계는 그림에서 제외했습니다. 전체 Gradle 선언 56개와 구분한 코드 참조도입니다.
+화면의 ViewModel은 `core:domain`의 인터페이스를 사용합니다. 카드·포인트 저장은 `core:data`가, 차량 신호와 위치·내비게이션 연동은 `core:vehicle`이 구현합니다. 도메인의 강화 확률과 주행 적립 정책은 Android 없이 테스트할 수 있습니다.
 
-![Module dependencies](docs/images/module-graph.svg)
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/images/architecture-compact.svg">
+  <img src="docs/images/architecture.svg" width="960" alt="앱은 feature:main을, main은 feature:nav를 호출합니다. 컬렉션과 강화는 card-ui와 domain을 참조하고, data와 vehicle은 domain 인터페이스를 구현합니다. data는 database에 저장합니다.">
+</picture>
 
-#### Feature references
+**카드 강화 한 번의 흐름:** `ForgeViewModel`이 `CardAlbumRepository.enhance()`를 호출하면 포인트 차감과 강화 결과가 하나의 Room 트랜잭션으로 확정됩니다. 새 앨범 상태는 Flow로 컬렉션과 강화 화면에 반영됩니다.
 
-![Feature module dependency map](docs/images/module-feature-details.svg)
+<details>
+<summary>18개 모듈의 직접 코드 참조 보기</summary>
 
+왼쪽 모듈이 오른쪽 모듈의 타입·함수·리소스를 사용합니다. 테스트와 DI 바인딩·화면 팩토리 등록만을 위한 의존은 제외했습니다. 같은 참조를 가진 모듈은 한 행에 묶었습니다.
 
-#### App references
+| 참조하는 모듈 | 코드에서 직접 사용하는 모듈 |
+| --- | --- |
+| `:app` | `feature:main`, `feature:home`, `feature:collection`, `core:designsystem`, `core:navigation`, `core:domain` |
+| `feature:main` | `feature:nav`, `core:designsystem`, `core:navigation`, `core:domain`, `core:ui` |
+| `feature:nav` | `core:designsystem`, `core:navigation` |
+| `feature:home`, `feature:explore`, `feature:records` | `core:designsystem`, `core:navigation`, `core:domain`, `core:ui` |
+| `feature:collection`, `feature:forge` | `core:card-ui`, `core:designsystem`, `core:navigation`, `core:domain`, `core:ui` |
+| `feature:membership` | `core:designsystem`, `core:domain`, `core:navigation` |
+| `feature:settings` | `core:designsystem`, `core:navigation` |
+| `core:card-ui` | `core:designsystem`, `core:domain` |
+| `core:data` | `core:domain`, `core:database` |
+| `core:vehicle`, `core:navigation` | `core:domain` |
+| `core:domain`, `core:database`, `core:designsystem`, `core:ui` | 다른 프로젝트 모듈을 참조하지 않음 |
 
-![App dependency map](docs/images/module-app-details.svg)
+`app`은 홈에 컬렉션의 대표 카드를 연결합니다. `feature:main`은 `feature:nav`의 `PleosNavDisplay`로 탭을 그리고, 설정·구독 화면은 `core:navigation`의 라우터로 다른 화면을 엽니다. `build-logic:convention`은 별도 Gradle 빌드에 둔 빌드 플러그인입니다.
 
-#### Core references
-
-![Core dependency map](docs/images/module-core-details.svg)
-
-
-`feature:main`은 `feature:nav`의 `PleosNavDisplay`, `rememberPleosNavEntries`를 호출합니다. 나머지 기능은 Domain contract와 공통 UI 모듈을 통해 결합을 줄입니다. `build-logic:convention`은 included build의 Gradle plugin으로 적용됩니다.
-
-#### UI state & effects
-
-- Route/Destination이 Screen에 UI state와 Callback을 연결합니다.
-- `collectAsStateWithLifecycle`을 통해 lifecycle-aware state collection을 수행합니다.
-- 영속적인 카드·잔액·보상은 Database를 단일 진실 공급원으로 사용합니다.
-- Navigation, permission request 같은 일회성 효과는 UI layer가 처리합니다.
+</details>
 
 ### Implementation notes
 
