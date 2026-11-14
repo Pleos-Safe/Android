@@ -39,7 +39,7 @@ internal class DefaultVisitRecorder @Inject constructor(
     override val status = mutableStatus.asStateFlow()
 
     override suspend fun monitor(): Unit = owner.withLock {
-        combine(recorder.enabled, store.demoMode) { enabled, demo -> enabled && !demo }.collectLatest { enabled ->
+        recorder.enabled.collectLatest { enabled ->
             mutableStatus.value = VisitRecordingStatus.Waiting
             if (!enabled) return@collectLatest
             val previousFinished = journeys.state.value.lastFinished?.id
@@ -63,7 +63,7 @@ internal class DefaultVisitRecorder @Inject constructor(
                 val stored = storageResult(false) {
                     if (session?.id != journeyId) {
                         // Capture once per session. Reset/deletion never retokens an old visit.
-                        generation = store.realTransaction { checkNotNull(userState()).generation }
+                        generation = store.transaction { checkNotNull(userState()).generation }
                         journeyId = session?.id
                         tracker = VisitTracker()
                         parkedSinceNanos = null
@@ -73,7 +73,7 @@ internal class DefaultVisitRecorder @Inject constructor(
                     // combine can replay a fix taken before P, or before parking again without moving.
                     val parkedFix = fix?.takeIf { it.elapsedNanos >= (parkedSinceNanos ?: Long.MAX_VALUE) }
                     val saved = if (parked) {
-                        store.realTransaction { journeys().any { it.id == session?.id } }
+                        store.transaction { journeys().any { it.id == session?.id } }
                     } else {
                         false
                     }

@@ -32,11 +32,3 @@ interface HistoryRepository {
     fun observeJourney(journeyId: String): Flow<JourneyRecord?>
     fun observeVisits(query: HistoryQuery = HistoryQuery()): Flow<List<ConfirmedVisit>>
 }
-
-/** Debug implementations use a separate database. Release always reports unavailable. */
-interface CollectionDemoRepository {
-    val available: Boolean
-    val enabled: Flow<Boolean>
-    suspend fun setEnabled(enabled: Boolean)
-    suspend fun resetDemo()
-}

@@ -7,7 +7,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.issac.pleosandroid.core.data.collection.local.CatalogLoader
 import io.issac.pleosandroid.core.data.collection.local.CatalogSource
 import io.issac.pleosandroid.core.data.collection.local.CollectionStore
-import io.issac.pleosandroid.core.data.collection.repository.DefaultCollectionDemoRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultPlaceRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultProgressRepository
 import io.issac.pleosandroid.core.data.collection.repository.DefaultRegionVisitPackSource
@@ -55,14 +54,11 @@ import org.junit.runner.RunWith
 class CardRewardsIntegrationTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val real = Room.inMemoryDatabaseBuilder(context, CollectionDatabase::class.java).build()
-    private val demo = Room.inMemoryDatabaseBuilder(context, CollectionDatabase::class.java).build()
     private val catalog = object : CatalogSource {
         override fun load() = CatalogLoader(context).load()
         override fun hasAsset(key: String) = true
     }
-    private val provider = object : CollectionDatabaseProvider {
-        override fun create(demo: Boolean) = if (demo) this@CardRewardsIntegrationTest.demo else real
-    }
+    private val provider = CollectionDatabaseProvider { real }
 
     @Volatile private var now = Instant.parse("2026-11-07T04:00:00Z")
     private val clock = object : DrivingClock {
@@ -75,14 +71,11 @@ class CardRewardsIntegrationTest {
     private lateinit var store: CollectionStore
 
     @Before fun init() {
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
-        store = CollectionStore(context, provider, catalog)
+        store = CollectionStore(provider, catalog)
     }
 
     @After fun close() {
         real.close()
-        demo.close()
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
     }
 
     @Test fun goyangClaimOpensOnceAndDrivingPaysForTwoForgeAttempts() = runBlocking {
@@ -137,34 +130,33 @@ class CardRewardsIntegrationTest {
         assertEquals(wallet.balanceHalfPoints, album.observe().first().balanceHalfPoints)
     }
 
-    @Test fun switchingProfilesKeepsIndependentWalletsAndRejectsAnOpenFromTheOldShelf() = runBlocking {
+    @Test fun reopeningWithTheOldDemoPreferenceKeepsStoredCardsPointsAndMembership() = runBlocking {
         val album = DefaultCardAlbumRepository(store, firstRoll)
-        val profiles = DefaultCollectionDemoRepository(store)
-        val original = album.observe().first()
-        profiles.setEnabled(true)
-        val trial = album.observe().first()
-        assertTrue(trial.demo)
-        assertTrue(trial.inbox.any { it.packType == PackType.Hyundai })
-        assertTrue(
-            trial.collection.any {
-                it.grade == CardGrade.H
-            } && trial.collection.any { it.grade == CardGrade.HH },
-        )
-        val stale = runCatching { album.open("welcome:seoul", original.generation) }.exceptionOrNull()
-        assertEquals(CardProblem.Changed, (stale as CardActionException).problem)
-        val card = trial.collection.first { it.grade == CardGrade.H }
-        album.enhance(card.id, card.revision, "demo-attempt", trial.generation)
-        val saved = album.observe().first().balanceHalfPoints
-        val reopened = CollectionStore(context, provider, catalog)
-        assertEquals(saved, DefaultPointRepository(reopened, clock).observeWallet().first().balanceHalfPoints)
-        profiles.setEnabled(false)
-        assertEquals(original, album.observe().first())
-        profiles.setEnabled(true)
-        assertEquals(saved, album.observe().first().balanceHalfPoints)
-        profiles.resetDemo()
-        assertTrue(album.observe().first().history.none { it.id == "demo-attempt" })
-        profiles.setEnabled(false)
-        assertEquals(original, album.observe().first())
+        val welcome = album.observe().first()
+        assertEquals(2_000L, welcome.balanceHalfPoints)
+        assertEquals(listOf("welcome:seoul"), welcome.inbox.map { it.id })
+        assertTrue(welcome.collection.isEmpty())
+        val copyId = album.open(welcome.inbox.single().id, welcome.generation)
+        album.reveal(copyId, welcome.generation)
+        album.enhance(copyId, 0, "first-upgrade", welcome.generation)
+        album.feature(copyId, welcome.generation)
+        val saved = album.observe().first()
+        val plus = DefaultMembershipRepository(store, clock)
+        plus.change(MembershipAction.Subscribe, plus.observeMembership().first())
+        val subscribed = plus.observeMembership().first()
+        val obsolete = context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE)
+        try {
+            assertTrue(obsolete.edit().putBoolean("enabled", true).commit())
+            val reopened = CollectionStore(provider, catalog)
+            assertEquals(saved, DefaultCardAlbumRepository(reopened, firstRoll).observe().first())
+            assertEquals(
+                saved.balanceHalfPoints,
+                DefaultPointRepository(reopened, clock).observeWallet().first().balanceHalfPoints,
+            )
+            assertEquals(subscribed, DefaultMembershipRepository(reopened, clock).observeMembership().first())
+        } finally {
+            obsolete.edit().remove("enabled").commit()
+        }
     }
 
     @Test fun plusPersistsAcrossReopenAndGuardsAgainstDuplicateAndStaleChanges() = runBlocking {
@@ -173,19 +165,9 @@ class CardRewardsIntegrationTest {
         val clicks = List(3) { async { plus.change(MembershipAction.Subscribe, initial) } }.awaitAll()
         assertEquals(1, clicks.count { it == MembershipChange.Applied })
         val active = plus.observeMembership().first()
-        val reopened = DefaultMembershipRepository(CollectionStore(context, provider, catalog), clock)
+        val reopened = DefaultMembershipRepository(CollectionStore(provider, catalog), clock)
         assertEquals(active, reopened.observeMembership().first())
         assertEquals(2000L, DefaultPointRepository(store, clock).observeWallet().first().balanceHalfPoints)
-        val profiles = DefaultCollectionDemoRepository(store)
-        profiles.setEnabled(true)
-        assertEquals(MembershipStatus.Inactive, plus.observeMembership().first().status)
-        assertEquals(MembershipChange.Changed, plus.change(MembershipAction.CancelRenewal, active))
-        plus.change(MembershipAction.Subscribe, plus.observeMembership().first())
-        profiles.resetDemo()
-        assertEquals(MembershipStatus.Inactive, plus.observeMembership().first().status)
-        profiles.setEnabled(false)
-        assertEquals(active, plus.observeMembership().first())
-
         assertEquals(MembershipChange.Applied, plus.change(MembershipAction.CancelRenewal, active))
         val ending = reopened.observeMembership().first()
         assertTrue(ending.hasBenefit)
@@ -260,7 +242,7 @@ class CardRewardsIntegrationTest {
         real.collectionDao().insertVisitPack(
             VisitPackEntity("old", "drive", "hyundai-motorstudio-goyang", "고양", "현대", 100, 0),
         )
-        fun restart() = DefaultCardAlbumRepository(CollectionStore(context, provider, catalog), firstRoll)
+        fun restart() = DefaultCardAlbumRepository(CollectionStore(provider, catalog), firstRoll)
         val upgraded = restart()
         val pack = upgraded.observe().first().inbox.single { it.id == "reward:visit:old" }
         val id = upgraded.open(pack.id)

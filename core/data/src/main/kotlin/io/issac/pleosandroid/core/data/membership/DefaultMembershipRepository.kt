@@ -30,7 +30,7 @@ internal class DefaultMembershipRepository @Inject constructor(
     private val clock: DrivingClock,
 ) : MembershipRepository {
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun observeMembership() = store.observeProfile { db, demo ->
+    override fun observeMembership() = store.observeDatabase { db ->
         val dao = db.collectionDao()
         dao.observeRevision().map {
             db.withTransaction { checkNotNull(dao.userState()).generation to dao.latestMembership() }
@@ -38,7 +38,7 @@ internal class DefaultMembershipRepository @Inject constructor(
             val term = row?.toDomain()
             while (true) {
                 val now = clock.now()
-                val state = Membership.at(generation, demo, term, now, row?.revision ?: 0)
+                val state = Membership.at(generation, term, now, row?.revision ?: 0)
                 emit(state)
                 val nextChange = when {
                     state.hasBenefit -> state.periodEnd
@@ -57,7 +57,6 @@ internal class DefaultMembershipRepository @Inject constructor(
                 val row = latestMembership()
                 val actual = Membership.at(
                     checkNotNull(userState()).generation,
-                    store.demoMode.value,
                     row?.toDomain(),
                     now,
                     row?.revision ?: 0,

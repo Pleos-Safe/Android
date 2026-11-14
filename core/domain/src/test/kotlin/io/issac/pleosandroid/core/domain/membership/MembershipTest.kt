@@ -14,8 +14,8 @@ class MembershipTest {
         assertEquals(Instant.parse("2028-03-30T15:30:00Z"), term.nextRenewal(feb))
         assertEquals(Instant.parse("2029-02-27T15:30:00Z"), term.nextRenewal(start.plusSeconds(367L * 86400)))
         val ending = term.copy(endsAt = feb)
-        assertEquals(MembershipStatus.Ending, Membership.at("id", false, ending, feb.minusNanos(1)).status)
-        assertEquals(MembershipStatus.Expired, Membership.at("id", false, ending, feb).status)
+        assertEquals(MembershipStatus.Ending, Membership.at("id", ending, feb.minusNanos(1)).status)
+        assertEquals(MembershipStatus.Expired, Membership.at("id", ending, feb).status)
     }
 
     @Test fun `splits actual observed distance at purchase and expiry boundaries`() {

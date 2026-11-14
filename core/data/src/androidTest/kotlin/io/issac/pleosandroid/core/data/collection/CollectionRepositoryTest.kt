@@ -53,7 +53,6 @@ class CollectionRepositoryTest {
     private val place = Place("beach", "해변", "부산", "자연", 35.0, 129.0, 100.0, 60, "art")
     private val pack = CatalogPack(1, listOf(place))
     private lateinit var db: CollectionDatabase
-    private lateinit var demoDb: CollectionDatabase
     private lateinit var store: CollectionStore
     private lateinit var progress: DefaultProgressRepository
     private lateinit var generation: String
@@ -68,25 +67,19 @@ class CollectionRepositoryTest {
     }
 
     @Before fun setup() = runBlocking<Unit> {
-        context.getSharedPreferences("collection_demo", Context.MODE_PRIVATE).edit().clear().commit()
         db = Room.inMemoryDatabaseBuilder(context, CollectionDatabase::class.java)
             .addCallback(CollectionDatabase.constraints).build()
-        demoDb = Room.inMemoryDatabaseBuilder(context, CollectionDatabase::class.java)
-            .addCallback(CollectionDatabase.constraints).build()
-        connect(object : CollectionDatabaseProvider {
-            override fun create(demo: Boolean) = if (demo) demoDb else db
-        })
+        connect(CollectionDatabaseProvider { db })
         generation = progress.getDataGeneration()
     }
 
     private fun connect(provider: CollectionDatabaseProvider) {
-        store = CollectionStore(context, provider, source)
+        store = CollectionStore(provider, source)
         progress = DefaultProgressRepository(store)
     }
 
     @After fun close() {
         db.close()
-        demoDb.close()
     }
 
     private fun event(id: String = "visit", operation: String = id) = ProgressEvent.VisitConfirmed(
