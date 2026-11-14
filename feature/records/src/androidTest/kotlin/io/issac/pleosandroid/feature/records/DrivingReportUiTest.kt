@@ -59,7 +59,7 @@ class DrivingReportUiTest {
         val points = RecordPoints.Ready(PointWallet(867, listOf(credit)))
         compose.setContent {
             PleosWindowTheme(Modifier.requiredSize(600.dp, 760.dp)) {
-                JourneyPointsCard(journey, points, false) {}
+                JourneyPointsCard(journey, points) {}
             }
         }
         compose.onNodeWithText("주행 적립").assertIsDisplayed()
@@ -80,7 +80,7 @@ class DrivingReportUiTest {
                 Column(Modifier.fillMaxSize().pleosShellBackground().testTag("report-viewport")) {
                     PleosHeader(PleosTab.Records, {}, {}, false)
                     Box(Modifier.weight(1f)) {
-                        DrivingReportScreen(record(), true, { backClicks++ }, { dataClicks++ }, { collectionClicks++ })
+                        DrivingReportScreen(record(), { backClicks++ }, { dataClicks++ }, { collectionClicks++ })
                     }
                     PleosBottomTabs(PleosTab.Records, {}, false)
                 }
@@ -115,7 +115,7 @@ class DrivingReportUiTest {
         )
         compose.setContent {
             PleosWindowTheme(Modifier.requiredSize(1216.dp, 760.dp)) {
-                Box(Modifier.testTag("report-viewport")) { DrivingReportScreen(insufficient, false, {}, {}, {}) }
+                Box(Modifier.testTag("report-viewport")) { DrivingReportScreen(insufficient, {}, {}, {}) }
             }
         }
         compose.onNodeWithText("88").assertDoesNotExist()
@@ -128,7 +128,7 @@ class DrivingReportUiTest {
     @Test fun dataStatusShowsObservedCoverageAndNoInventedContext() {
         compose.setContent {
             PleosWindowTheme(Modifier.requiredSize(1216.dp, 760.dp)) {
-                Box(Modifier.testTag("report-viewport")) { DrivingDataStatusScreen(record(), false, {}, {}) }
+                Box(Modifier.testTag("report-viewport")) { DrivingDataStatusScreen(record(), {}, {}) }
             }
         }
         compose.onNodeWithText("살펴볼 기록이 모였어요").assertIsDisplayed()

@@ -3,7 +3,6 @@ package io.issac.pleosandroid.feature.membership
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -82,17 +80,7 @@ internal fun MembershipScreen(
     val membership = (state.load as? MembershipLoad.Ready)?.membership
     var pending by remember(membership, state.parked) { mutableStateOf<MembershipAction?>(null) }
     PleosScreen(if (managing) "구독 관리" else "상점", modifier) {
-        if (managing || membership?.demo == true) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(PleosLayout.sectionGap),
-                itemVerticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (managing) PleosBackLink("돌아가기", onBack)
-                if (membership?.demo == true) {
-                    Text("체험 모드 · 내 구독과 별도로 이용해요.", style = PleosTextStyles.meta, color = colors.actionPrimary)
-                }
-            }
-        }
+        if (managing) PleosBackLink("돌아가기", onBack)
         BoxWithConstraints(Modifier.fillMaxWidth()) {
             val details: @Composable (Modifier) -> Unit = { panel ->
                 PleosInfoPanel(panel) {
@@ -143,7 +131,7 @@ internal fun MembershipScreen(
                 }
             }
         }
-        if (membership != null && !membership.demo && !state.recordingEnabled) {
+        if (membership != null && !state.recordingEnabled) {
             Text("주행 포인트를 적립하려면 여정 기록 저장을 켜 주세요.", style = PleosTextStyles.body, color = colors.textSecondary)
             PleosTextLink("여정 기록 설정", onRecordingSettings, enabled = state.parked)
         }

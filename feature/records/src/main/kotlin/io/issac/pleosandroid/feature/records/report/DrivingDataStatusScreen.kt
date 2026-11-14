@@ -31,7 +31,6 @@ import io.issac.pleosandroid.feature.records.points.RecordPoints
 @Composable
 internal fun DrivingDataStatusScreen(
     journey: JourneyRecord,
-    demo: Boolean,
     onBack: () -> Unit,
     onReport: (() -> Unit)?,
     modifier: Modifier = Modifier,
@@ -42,7 +41,6 @@ internal fun DrivingDataStatusScreen(
     val data = journey.driving
     val scale = PleosTextStyles.scale
     RecordsPage("운전습관 기록 상태", modifier, journey.dateLabel(), onBack) { wide ->
-        if (demo) RecordCaption("체험용 주행 기록", accent = true)
         RecordColumns(
             wide,
             leading = {
@@ -91,7 +89,7 @@ internal fun DrivingDataStatusScreen(
                 }
             },
         )
-        if (!complete) JourneyPointsCard(journey, points, demo, onPointsRetry)
+        if (!complete) JourneyPointsCard(journey, points, onPointsRetry)
     }
 }
 

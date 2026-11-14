@@ -3,7 +3,6 @@ package io.issac.pleosandroid.feature.records.history
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.issac.pleosandroid.core.domain.collection.model.MutationResult
-import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.collection.repository.HistoryRepository
 import io.issac.pleosandroid.core.domain.collection.repository.VisitPackRepository
 import io.issac.pleosandroid.core.domain.collection.repository.VisitRecorder
@@ -19,22 +18,17 @@ import io.issac.pleosandroid.core.ui.mvi.BaseViewModel
 import io.issac.pleosandroid.feature.records.points.observeRecordPoints
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 internal class RecordsViewModel @Inject constructor(
     private val history: HistoryRepository,
     private val recorder: DrivingRecorder,
-    private val demo: CollectionDemoRepository,
     private val vehicle: VehicleRepository,
     private val points: PointRepository,
     private val packs: VisitPackRepository,
@@ -73,18 +67,14 @@ internal class RecordsViewModel @Inject constructor(
     fun canInteract(): Boolean = vehicle.state.value.allowsTabNavigation
 
     private suspend fun observe() {
-        demo.enabled.flatMapLatest { usingDemo ->
-            observeRecords(usingDemo).onStart {
-                updateState { copy(loading = true, error = false, demo = usingDemo) }
-            }
-        }.collectUiState(
+        observeRecords().collectUiState(
             onLoading = { updateState { copy(loading = true, error = false) } },
             onError = { updateState { copy(loading = false, error = true) } },
             onState = { value -> updateState { value.copy(busy = busy, message = message) } },
         )
     }
 
-    private fun observeRecords(usingDemo: Boolean): Flow<RecordsState> {
+    private fun observeRecords(): Flow<RecordsState> {
         val records = combine(
             history.observeJourneys(),
             recorder.enabled,
@@ -96,7 +86,6 @@ internal class RecordsViewModel @Inject constructor(
                 journeys = journeys.sortedByDescending { it.endedAt },
                 enabled = enabled,
                 recording = recording,
-                demo = usingDemo,
                 visitStatus = visitStatus,
             )
         }
@@ -104,7 +93,7 @@ internal class RecordsViewModel @Inject constructor(
             records,
             history.observeVisits(),
             packs.observeInbox().catchUiError { emit(emptyList()) },
-            points.observeRecordPoints(usingDemo),
+            points.observeRecordPoints(),
         ) { value, confirmedVisits, claimedPacks, wallet ->
             val visitedPlaces = confirmedVisits.mapTo(mutableSetOf()) { it.placeId }
             claimedPacks.mapTo(visitedPlaces) { it.placeId }
@@ -123,7 +112,7 @@ internal class RecordsViewModel @Inject constructor(
                         busy = false,
                         message = when (result) {
                             MutationResult.Success, MutationResult.AlreadyApplied -> null
-                            MutationResult.Restricted -> "주차한 뒤 체험 모드가 꺼져 있는지 확인해 주세요."
+                            MutationResult.Restricted -> "P단에 주차한 뒤 다시 시도해 주세요."
                             MutationResult.Stale -> "기록이 변경됐어요. 다음 여정부터 새로 기록해요."
                             else -> "저장하지 못했어요. 다시 시도해 주세요."
                         },

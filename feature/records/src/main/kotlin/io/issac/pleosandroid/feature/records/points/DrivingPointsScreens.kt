@@ -38,9 +38,9 @@ internal fun journeyPointsLabel(journey: JourneyRecord, points: RecordPoints): S
 }
 
 @Composable
-internal fun JourneyPointsCard(journey: JourneyRecord, points: RecordPoints, demo: Boolean, onRetry: () -> Unit) {
+internal fun JourneyPointsCard(journey: JourneyRecord, points: RecordPoints, onRetry: () -> Unit) {
     QuietPlate(contentPadding = 20.dp) {
-        RecordHeading(if (demo) "체험 포인트 내역" else "포인트 적립 내역")
+        RecordHeading("포인트 적립 내역")
         when {
             points is RecordPoints.Loading -> RecordBody("포인트를 확인하고 있어요.")
 
@@ -118,7 +118,6 @@ internal fun DrivingPointsWeekScreen(
                     wide,
                     leading = {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp * PleosTextStyles.scale)) {
-                            if (state.demo) RecordCaption("체험용 주행 기록", accent = true)
                             RecordCaption(
                                 "${summary.start.format(
                                     WeekDateFormat,

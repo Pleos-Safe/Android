@@ -13,7 +13,6 @@ internal data class RecordsState(
     val loading: Boolean = true,
     val journeys: List<JourneyRecord> = emptyList(),
     val enabled: Boolean = false,
-    val demo: Boolean = false,
     val recording: RecordingState = RecordingState(),
     val visitStatus: VisitRecordingStatus =
         VisitRecordingStatus.Waiting,

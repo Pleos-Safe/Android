@@ -109,7 +109,6 @@ internal class HomeViewModel @Inject constructor(
         ui.copy(
             summary = ui.summary?.withPoints(currentWallet),
             pointBalance = currentWallet?.balanceHalfPoints,
-            demoWallet = currentWallet?.demo == true,
             journeyActionPending = action.pending,
             journeyActionError = action.error,
         )

@@ -9,7 +9,6 @@ import io.issac.pleosandroid.feature.records.points.RecordPoints
 internal data class DrivingReportState(
     val loading: Boolean = true,
     val journey: JourneyRecord? = null,
-    val demo: Boolean = false,
     val error: Boolean = false,
     val points: RecordPoints = RecordPoints.Loading,
 ) : UiState

@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.issac.pleosandroid.core.cardui.component.CardAlbumContent
-import io.issac.pleosandroid.core.cardui.component.CardDemoControl
 import io.issac.pleosandroid.core.cardui.component.CollectionStatusScreen
 import io.issac.pleosandroid.core.navigation.AppRoute
 import io.issac.pleosandroid.core.navigation.BadgesRoute
@@ -43,13 +42,6 @@ internal fun ForgeDestination(route: AppRoute, modifier: Modifier, viewModel: Fo
                 onCard = { router.navigate(WorkshopRoute(it.id)) },
                 openGallery = { router.navigate(MotionGalleryRoute(startOnForge = true)) },
                 openInbox = { router.replaceAll(BadgesRoute, PackShelfRoute) },
-                modeControl = {
-                    if (viewModel.demoAvailable) {
-                        CardDemoControl(album.demo, state.busy) {
-                            send(ForgeIntent.SetDemo(it))
-                        }
-                    }
-                },
                 modifier = modifier,
             )
 

@@ -6,7 +6,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import io.issac.pleosandroid.core.designsystem.component.PleosTextLink
 import io.issac.pleosandroid.core.domain.cards.AlbumSnapshot
 
 @Composable
@@ -35,13 +34,4 @@ fun CardAlbumContent(
             confirmButton = { TextButton(onClick = onDismiss) { Text("확인") } },
         )
     }
-}
-
-@Composable
-fun CardDemoControl(demo: Boolean, busy: Boolean, setDemo: (Boolean) -> Unit) {
-    PleosTextLink(
-        if (demo) "체험 모드 종료" else "체험 모드 시작",
-        { setDemo(!demo) },
-        enabled = !busy,
-    )
 }

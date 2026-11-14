@@ -15,7 +15,6 @@ internal sealed interface CollectionIntent : UiIntent {
     data class Open(val id: String) : CollectionIntent
     data class Reveal(val id: String) : CollectionIntent
     data class Feature(val id: String) : CollectionIntent
-    data class SetDemo(val enabled: Boolean) : CollectionIntent
     data object Retry : CollectionIntent
     data object Dismiss : CollectionIntent
 }
