@@ -11,8 +11,8 @@
 | `feature:records` | 여정 목록·안전 리포트·포인트·기록 저장 설정 |
 | `feature:settings` | 일반 설정 진입 화면 |
 | `feature:membership` | PLUS 상점과 구독 관리 |
-| `feature:collection` | 팩 보관·개봉·뒤집기, 컬렉션·대표 카드, 연출 목록과 개봉 미리보기 |
-| `feature:forge` | 강화 대상 선택, 강화·흔적 복구, 결과 확인과 강화 미리보기 |
+| `feature:collection` | 팩 보관·개봉·뒤집기, 컬렉션·대표 카드, Debug 연출 목록과 개봉 미리보기 |
+| `feature:forge` | 강화 대상 선택, 강화·흔적 복구, 결과 확인, Debug 강화 미리보기 |
 | `core:card-ui` | 두 기능이 사용하는 카드 원화·프레임·재질, 카드 목록과 전시 레이아웃 |
 | `core:domain` | 주행·장소·보상 모델, 정책, 저장소 계약 |
 | `core:vehicle` | 차량·위치·외부 내비 SDK 연결과 공유 장소 세션 |
