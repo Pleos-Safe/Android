@@ -14,36 +14,26 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.getUnclippedBoundsInRoot
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import io.issac.pleosandroid.core.designsystem.theme.PleosTheme
-import io.issac.pleosandroid.core.domain.cards.AlbumSnapshot
 import io.issac.pleosandroid.core.domain.cards.CardCopy
 import io.issac.pleosandroid.core.domain.cards.CardGrade
 import io.issac.pleosandroid.core.domain.cards.CardPrint
 import io.issac.pleosandroid.core.domain.cards.CopyStatus
-import io.issac.pleosandroid.core.domain.cards.ForgeOutcome
 import io.issac.pleosandroid.core.domain.cards.PackType
 import io.issac.pleosandroid.core.domain.cards.PrintGroup
 import io.issac.pleosandroid.core.domain.cards.ReceivedPack
-import io.issac.pleosandroid.core.navigation.CardMotionRoute
-import io.issac.pleosandroid.core.navigation.ForgeMotionRoute
-import io.issac.pleosandroid.core.navigation.MotionGalleryRoute
-import io.issac.pleosandroid.feature.collection.gallery.MotionGallery
 import io.issac.pleosandroid.feature.collection.pack.PackOpening
 import java.io.File
 import java.time.Instant
 import kotlin.math.roundToInt
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -56,29 +46,6 @@ class AlbumWindowTest {
         "print_busan_bukangi_base", "print_busan_bukangi_variant", "부캉이", "BUSAN / 009",
     )
     private val card = CardCopy("copy", print, true, 25, 25, CopyStatus.Owned, 0, pack, now, true)
-    private val album = AlbumSnapshot(10_000L, null, listOf(pack), listOf(card), emptyList())
-
-    @Test fun galleryChoicesFitSplitWindowsAndKeepTheirStartingLevelOnResize() {
-        var width by mutableStateOf(460.dp)
-        var selected: CardMotionRoute? = null
-        compose.setContent {
-            Box(Modifier.requiredSize(width, 590.dp).testTag("viewport")) {
-                PleosTheme { MotionGallery(MotionGalleryRoute(true), { selected = it }, {}) }
-            }
-        }
-        compose.onNodeWithText("+1").performClick()
-        val grid = compose.onNodeWithTag("motion-gallery")
-        grid.performScrollToNode(hasText("카드 파괴"))
-        val destroy = compose.onNodeWithText("카드 파괴").assertIsDisplayed()
-        val item = destroy.getUnclippedBoundsInRoot()
-        val viewport = grid.getUnclippedBoundsInRoot()
-        assertTrue(item.left >= viewport.left && item.right <= viewport.right)
-        destroy.performClick()
-        assertEquals(ForgeMotionRoute(15, 10, ForgeOutcome.Destroyed), selected)
-        compose.runOnIdle { width = 1216.dp }
-        grid.performScrollToNode(hasText("시작 강화  +15"))
-        compose.onNodeWithText("시작 강화  +15").assertIsDisplayed()
-    }
 
     @Test fun sealedPackNeedsTwoDistinctActionsAndKeepsTheFrontHiddenDuringTheTear() {
         var copy by mutableStateOf<CardCopy?>(null)

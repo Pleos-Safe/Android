@@ -5,6 +5,7 @@ plugins {
 }
 
 android {
+    buildFeatures { buildConfig = true }
     namespace = "io.issac.pleosandroid.feature.main"
 }
 
