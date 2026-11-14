@@ -28,9 +28,9 @@
 
 출발 전 탐색에서 목적지나 경유지를 등록하면 차량의 기본 내비게이션에 반영됩니다. **방문 보상과 주행 정산은 별개**입니다. 등록한 장소에 도착하면 P단에 주차해 여정을 끝내기 전에 방문팩을 받고, 주행을 종료하면 거리와 안전점수에 따라 포인트를 받습니다. 장소를 방문하지 않은 일상 주행도 적립 대상입니다.
 
-<img src="docs/qa/chagok-2026-11-13/a03-destination-registered-adjacent.png" width="960" alt="차량 시스템, 기본 내비게이션, 차곡차곡 탐색 화면에 경복궁이 목적지로 등록된 모습">
+<img src="docs/demo/verification/01-first-drive.gif" alt="실제 화면 캡처 순서. 첫 실행과 권한 설정, 경복궁 목적지 등록, 주차 후 서울팩, 7.4km 정산 221P, 별도 1.8km 여정의 0P 기록">
 
-경복궁 주행에서는 [주차 후 서울 방문팩을 받고](docs/qa/chagok-2026-11-13/a09-gyeongbokgung-visit-pack-received.png), 여정을 종료해 [7.4km · 안전점수 100점으로 221P를 적립](docs/qa/chagok-2026-11-13/a12-actual-points-settlement.png)했습니다. [1.8km를 달린 여정](docs/qa/chagok-2026-11-13/e03-under-two-km-score100-zero-points.png)은 2km 미만이라 포인트 없이 기록만 남았습니다.
+실제 화면 캡처를 순서대로 담았습니다. 경복궁에서는 주차 후 서울 방문팩을 받고, 여정을 종료해 **7.4km · 안전점수 100점으로 221P**를 적립했습니다. 별도로 기록한 1.8km 여정은 2km 미만이라 포인트가 0P였습니다.
 
 ### 02 — 카드팩 개봉과 컬렉션
 
@@ -38,14 +38,12 @@
 
 <img src="docs/qa/chagok-2026-11-13/actual-busan-bukangi-opening.gif" width="960" alt="부산 방문팩의 봉투를 뜯고 파란 뒷면을 뒤집어 Rare 북항의 부캉이 카드를 얻는 실제 개봉 장면">
 
-광안리에서 받은 부산 팩을 열었더니 **Rare ‘북항의 부캉이’**가 나왔습니다. 카드의 장소와 방문한 곳이 달라도, 지도에는 팩을 받은 지역이 칠해집니다.
+광안리에서 받은 부산 팩을 열었더니 ‘북항의 부캉이’(Rare)가 나왔습니다. 카드의 장소와 방문한 곳이 달라도, 지도에는 팩을 받은 지역이 칠해집니다.
 
 <details>
-<summary>수집한 카드와 방문 지도 보기</summary>
+<summary>재실행 후 홈 · 주행 기록 · 컬렉션 보기</summary>
 
-<p><img src="docs/qa/chagok-2026-11-13/z04-restarted-four-actual-cards.png" width="960" alt="앱 재실행 후 컬렉션에 남은 서울·부산·제주·현대 카드 네 장"></p>
-
-[방문 지도](docs/qa/chagok-2026-11-13/d12-four-visited-pack-regions-colored.png)에는 서울·부산·경기·제주가 남았습니다. 고양에서 받은 현대 팩에서 대전 E-pit 카드가 나와도 방문 지역은 경기입니다. [같은 부산 지역을 다시 방문했을 때](docs/qa/chagok-2026-11-13/b15-same-busan-region-fourteen-day-limit.png)는 다음 수령까지 14일이 안내됩니다.
+![재실행 뒤 홈에 표시된 1,622P와 대표 카드 부캉이 +2, 주행 기록 3건, 컬렉션의 실제 획득 카드 4장을 차례로 보여 주는 화면 캡처](docs/demo/verification/03-after-restart.gif)
 
 </details>
 
@@ -57,16 +55,18 @@
 
 위에서 얻은 부캉이에 **150P**를 썼고, 대성공으로 **+0 → +2**가 됐습니다. 다시 실행한 뒤에도 강화 수치와 대표 카드 선택이 그대로 홈에 표시됩니다.
 
+<a id="demo-membership"></a>
+
 ### 04 — PLUS 구독
 
 상점에서 PLUS(월 2,900원)를 시작하면 **구독이 적용된 주행 구간**의 포인트가 1.5배가 됩니다. 설정에서 자동 갱신을 꺼도 이미 시작한 이용 기간까지 혜택이 유지됩니다. 결제는 모의 처리하며 실제 청구는 없습니다.
 
-부산에서 고양을 거쳐 협재까지 이어진 한 여정에서는 **기본 434P + PLUS 217P = 651P**가 적립됐습니다.
+![차곡차곡 홈에서 상점 탭을 열고 월 2,900원 PLUS의 모의 결제를 확인한 뒤 구독 중으로 바뀌는 장면](docs/demo/membership/subscribe.gif)
 
 <details>
-<summary>PLUS 추가 적립이 표시된 정산 화면 보기</summary>
+<summary>설정에서 구독 해지를 예약하고 자동 갱신을 다시 켜는 장면</summary>
 
-<p><img src="docs/qa/chagok-2026-11-13/r02-multi-region-plus-points-settlement.png" width="960" alt="여러 장소를 들른 14.5km 주행의 안전점수 100점, PLUS 추가 217P, 총 651P 적립"></p>
+![설정의 PLUS 구독 관리에서 해지 예약 후 이용 종료일을 확인하고, 자동 갱신을 재개해 구독 중으로 돌아오는 장면](docs/demo/membership/cancel-and-resume.gif)
 
 </details>
 
@@ -88,9 +88,9 @@
 
 **달릴 때와 주차했을 때의 화면이 다릅니다.** 주행 중에는 기본 내비게이션 옆에서 기록 상태와 주변 추천 장소를 확인할 수 있습니다. 일반 탭 이동, 팩 개봉과 강화는 제한되며, D단에서 속도만 0이 되어도 이 제한은 풀리지 않습니다.
 
-<img src="docs/qa/chagok-2026-11-13/b07-two-waypoints-confirmed-limit-state.png" width="960" alt="D단 90km/h에서 차량 계기, 기본 내비게이션의 경로 안내, 차곡차곡의 주행 기록을 나란히 표시한 화면">
+![실제 화면 캡처 순서. 주행 중 두 경유지, 부산 재방문의 14일 제한, 네 지역 방문 지도와 PLUS 포함 651P 정산](docs/demo/verification/02-waypoints-and-plus.gif)
 
-P단에 주차하면 방문팩을 받거나 여정을 끝낼 수 있습니다. 속도·기어 신호가 유효하고 **Car UX Restrictions**가 조작을 허용하는지 화면을 열 때와 실제 동작을 실행할 때 모두 검사합니다. [재실행 후 주행 기록](docs/qa/chagok-2026-11-13/z02-restarted-records-three-journeys.png)에서도 저장된 여정 3건과 방문 장소 4곳을 확인할 수 있습니다.
+부산에서 두 경유지를 등록하고 고양을 거쳐 협재까지 달린 이 여정에서는 **기본 434P + PLUS 217P = 651P**를 받았습니다. 방문 지도에는 팩을 수령한 지역이 남습니다. P단 주차 후 팩을 받거나 여정을 끝낼 때는 화면 진입 시와 실행 시 모두 속도·기어 신호와 **Car UX Restrictions**를 확인합니다.
 
 ### Platform integration
 
