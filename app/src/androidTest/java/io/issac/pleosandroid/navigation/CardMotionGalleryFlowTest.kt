@@ -11,8 +11,10 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.issac.pleosandroid.MainActivity
-import io.issac.pleosandroid.debug.CollectionDebugEntryPoint
+import io.issac.pleosandroid.testing.CollectionTestEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -20,7 +22,11 @@ import org.junit.Rule
 import org.junit.Test
 
 /** Exercise the parked app's normal tabs using the existing inventory, including an empty one. */
+@HiltAndroidTest
 class CardMotionGalleryFlowTest {
+    @get:Rule(order = -1)
+    val hilt = HiltAndroidRule(this)
+
     @get:Rule(order = 0)
     val permission: GrantPermissionRule = GrantPermissionRule.grant("android.car.permission.CAR_SPEED")
 
@@ -28,7 +34,7 @@ class CardMotionGalleryFlowTest {
     val compose = createAndroidComposeRule<MainActivity>()
 
     private fun snapshot() = runBlocking {
-        EntryPointAccessors.fromApplication(compose.activity.applicationContext, CollectionDebugEntryPoint::class.java)
+        EntryPointAccessors.fromApplication(compose.activity.applicationContext, CollectionTestEntryPoint::class.java)
             .album().observe().first()
     }
 

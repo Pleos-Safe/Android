@@ -15,8 +15,6 @@ import io.issac.pleosandroid.core.data.collection.repository.DefaultRegionVisitP
 import io.issac.pleosandroid.core.data.collection.repository.DefaultVisitPackRepository
 import io.issac.pleosandroid.core.data.membership.DefaultMembershipRepository
 import io.issac.pleosandroid.core.data.points.DefaultPointRepository
-import io.issac.pleosandroid.core.database.CollectionDatabaseFactory
-import io.issac.pleosandroid.core.database.CollectionDatabaseProvider
 import io.issac.pleosandroid.core.domain.cards.CardAlbumRepository
 import io.issac.pleosandroid.core.domain.collection.repository.CollectionDemoRepository
 import io.issac.pleosandroid.core.domain.collection.repository.HistoryRepository
@@ -36,9 +34,6 @@ internal abstract class CollectionModule {
 
     @Binds @Singleton
     abstract fun source(impl: CatalogLoader): CatalogSource
-
-    @Binds @Singleton
-    abstract fun database(impl: CollectionDatabaseFactory): CollectionDatabaseProvider
 
     @Binds @Singleton
     abstract fun progress(impl: DefaultProgressRepository): ProgressRepository

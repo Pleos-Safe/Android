@@ -3,7 +3,11 @@ package io.issac.pleosandroid.core.database
 import android.content.Context
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteOpenHelper
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import io.issac.pleosandroid.core.database.security.DatabaseKeyStore
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,4 +42,11 @@ class CollectionDatabaseFactory @Inject constructor(@param:ApplicationContext pr
             )
             .build()
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class CollectionDatabaseModule {
+    @Binds @Singleton
+    abstract fun database(impl: CollectionDatabaseFactory): CollectionDatabaseProvider
 }
