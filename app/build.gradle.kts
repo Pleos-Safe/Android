@@ -11,8 +11,8 @@ android {
     defaultConfig {
         applicationId = "io.issac.pleosandroid"
         testInstrumentationRunner = "io.issac.pleosandroid.testing.PleosTestRunner"
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = libs.versions.appVersionCode.get().toInt()
+        versionName = libs.versions.appVersionName.get()
     }
 
     buildTypes {
